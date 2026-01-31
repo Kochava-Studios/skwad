@@ -1,9 +1,12 @@
 //
 //  GhosttyIMEHandler.swift
-//  aizen
+//  Skwad
 //
-//  Handles Input Method Editor (IME) support for Ghostty terminal
-//  Enables proper input for Japanese, Chinese, Korean, etc.
+//  Adapted from aizen (https://github.com/vivy-company/aizen)
+//  which provides NSView integration for Ghostty terminal emulator.
+//  Originally based on Ghostty (MIT license) by Mitchell Hashimoto.
+//
+//  Licensed under MIT
 //
 
 import AppKit

@@ -1,9 +1,12 @@
 //
 //  TerminalScrollView.swift
-//  aizen
+//  Skwad
 //
-//  NSScrollView wrapper for terminal with native macOS scrollbar support.
-//  Adapted from Ghostty's SurfaceScrollView.swift
+//  Adapted from aizen (https://github.com/vivy-company/aizen)
+//  which provides NSView integration for Ghostty terminal emulator.
+//  Originally based on Ghostty (MIT license) by Mitchell Hashimoto.
+//
+//  Licensed under MIT
 //
 
 import AppKit

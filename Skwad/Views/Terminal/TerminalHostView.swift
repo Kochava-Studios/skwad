@@ -22,9 +22,6 @@ struct TerminalHostView: NSViewRepresentable {
     func makeNSView(context: Context) -> ActivityDetectingTerminalView {
         let terminal = ActivityDetectingTerminalView(frame: .zero)
 
-        // Prepare (writes MCP config)
-        controller.prepare()
-
         // Configure terminal appearance from settings
         applySettings(to: terminal)
 

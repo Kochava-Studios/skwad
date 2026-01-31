@@ -12,7 +12,7 @@ struct MCPCommandView: View {
     private var mcpCommand: String {
         switch selectedAgent {
         case "claude":
-            return "claude mcp add --transport http --scope user skwad \(serverURL)"
+            return "Skwad MCP Server is auto-started with your agents. Click copy if you want to install it globally."
         case "codex":
             return "codex mcp add skwad --url \(serverURL)"
         case "opencode":
@@ -20,18 +20,20 @@ struct MCPCommandView: View {
         case "gemini":
             return "gemini mcp add --transport http skwad \(serverURL) --scope user"
         case "copilot":
-            return "MCP server automatically configured when launching Copilot"
+            return "Skward MCP server is auto-started with your agents. No manual setup needed."
         default:
             return ""
         }
     }
-    
+
     private var mcpCommandCopy: String {
         switch selectedAgent {
+        case "claude":
+            return "claude mcp add --transport http --scope user skwad \(serverURL)"
         case "opencode":
             return "opencode mcp add"
         case "copilot":
-            return "" // No command to copy for copilot
+            return ""
         default:
             return mcpCommand
         }
@@ -71,11 +73,12 @@ struct MCPCommandView: View {
             .frame(width: 50)
             
             // Command text
+            let isAutomatic = selectedAgent == "claude" || selectedAgent == "copilot"
             Text(mcpCommand)
-                .font(.system(fontSize == .body ? .body : .title3, design: .monospaced))
-                .foregroundColor(.primary)
+                .font(.system(fontSize == .body ? .body : .title3, design: isAutomatic ? .default : .monospaced))
+                .foregroundColor(isAutomatic ? .secondary : .primary)
                 .textSelection(.enabled)
-                .lineLimit(1)
+                .lineLimit(isAutomatic ? 2 : 1)
             
             Spacer()
             

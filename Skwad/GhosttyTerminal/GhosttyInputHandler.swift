@@ -1,8 +1,12 @@
 //
 //  GhosttyInputHandler.swift
-//  aizen
+//  Skwad
 //
-//  Handles keyboard, mouse, and scroll input forwarding to Ghostty terminal
+//  Adapted from aizen (https://github.com/vivy-company/aizen)
+//  which provides NSView integration for Ghostty terminal emulator.
+//  Originally based on Ghostty (MIT license) by Mitchell Hashimoto.
+//
+//  Licensed under MIT
 //
 
 import AppKit

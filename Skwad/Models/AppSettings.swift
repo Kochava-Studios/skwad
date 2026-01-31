@@ -184,31 +184,6 @@ class AppSettings: ObservableObject {
         "http://127.0.0.1:\(mcpServerPort)/mcp"
     }
 
-    /// Generate MCP config JSON for a project folder
-    func mcpConfigJSON() -> String {
-        """
-        {
-          "mcpServers": {
-            "skwad": {
-              "url": "\(mcpServerURL)",
-              "transport": "streamable-http"
-            }
-          }
-        }
-        """
-    }
-
-    /// Write MCP config to a project folder
-    func writeMCPConfig(to folder: String) {
-        let configPath = (folder as NSString).appendingPathComponent(".mcp.json")
-        let config = mcpConfigJSON()
-        do {
-            try config.write(toFile: configPath, atomically: true, encoding: .utf8)
-        } catch {
-            print("Failed to write MCP config to \(configPath): \(error)")
-        }
-    }
-
     var savedAgents: [SavedAgent] {
         get {
             (try? JSONDecoder().decode([SavedAgent].self, from: savedAgentsData)) ?? []

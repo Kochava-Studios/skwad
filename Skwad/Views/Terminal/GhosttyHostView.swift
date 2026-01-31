@@ -25,9 +25,6 @@ struct GhosttyHostView: NSViewRepresentable {
             fatalError("Ghostty initialization failed")
         }
 
-        // Prepare (writes MCP config)
-        controller.prepare()
-
         // Build command - Ghostty needs it at creation time
         let command = controller.buildInitializationCommand()
 

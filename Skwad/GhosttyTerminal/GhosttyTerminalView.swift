@@ -1,8 +1,12 @@
 //
 //  GhosttyTerminalView.swift
-//  aizen
+//  Skwad
 //
-//  NSView subclass that integrates Ghostty terminal rendering
+//  Adapted from aizen (https://github.com/vivy-company/aizen)
+//  which provides NSView integration for Ghostty terminal emulator.
+//  Originally based on Ghostty (MIT license) by Mitchell Hashimoto.
+//
+//  Licensed under MIT
 //
 
 import AppKit

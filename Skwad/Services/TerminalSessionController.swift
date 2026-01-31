@@ -132,15 +132,6 @@ class TerminalSessionController: ObservableObject {
         )
     }
 
-    /// Prepare the terminal session - writes MCP config
-    /// Called before terminal creation
-    func prepare() {
-        // Write MCP config if enabled
-        if settings.mcpServerEnabled {
-            settings.writeMCPConfig(to: folder)
-        }
-    }
-
     /// Start the terminal session
     /// Behavior depends on adapter's commandMode:
     /// - .atCreation: command already sent, just schedule registration

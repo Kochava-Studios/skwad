@@ -37,7 +37,8 @@ struct TerminalCommandBuilder {
   private static func getMCPArguments(for agentType: String, mcpURL: String) -> String {
     switch agentType {
     case "claude":
-      return " --allowed-tools 'mcp__skwad__*'"
+      let mcpConfig = #"--mcp-config '{"mcpServers":{"skwad":{"type":"http","url":"\#(mcpURL)"}}}'"#
+      return " \(mcpConfig) --allowed-tools 'mcp__skwad__*'"
       
     case "gemini":
       return " --allowed-mcp-server-names skwad"
