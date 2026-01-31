@@ -86,21 +86,42 @@ struct ContentView: View {
                 .font(.title)
                 .foregroundColor(.secondary)
             }
-            
-            Button {
-              showNewAgentSheet = true
-            } label: {
-              Label("Create New Agent", systemImage: "plus")
-                .font(.title2.weight(.semibold))
+
+            VStack(spacing: 12) {
+              
+              Button {
+                showNewAgentSheet = true
+              } label: {
+                Label("Create New Agent", systemImage: "plus")
+                  .font(.title2.weight(.semibold))
+              }
+              .buttonStyle(.borderedProminent)
+              .padding(.vertical, 48)
+              
+              HStack(spacing: 8) {
+                ForEach(settings.recentAgents.prefix(5)) { savedAgent in
+                  Button {
+                    agentManager.addAgent(folder: savedAgent.folder, name: savedAgent.name, avatar: savedAgent.avatar, agentType: savedAgent.agentType)
+                  } label: {
+                    HStack(spacing: 6) {
+                      AvatarView(avatar: savedAgent.avatar, size: 20, font: .caption)
+                      Text(savedAgent.name)
+                        .font(.caption)
+                        .lineLimit(1)
+                    }
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Color.gray.opacity(0.2))
+                    .cornerRadius(12)
+                  }
+                  .buttonStyle(.plain)
+                }
+              }
+              
             }
-            .buttonStyle(.borderedProminent)
-            .padding(.vertical, 48)
 
             VStack(spacing: 24) {
-              Image(systemName: "person.3.fill")
-                .font(.system(size: 64))
-                .foregroundColor(.secondary.opacity(0.5))
-              
+
               Text("Install Skwad MCP Server to enable agent‑to‑agent communication")
                 .font(.title2)
                 .foregroundColor(.secondary)
