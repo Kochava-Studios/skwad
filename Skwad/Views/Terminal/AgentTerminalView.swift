@@ -5,6 +5,7 @@ import AppKit
 struct WindowDragView: NSViewRepresentable {
     func makeNSView(context: Context) -> NSView {
         let view = WindowDragNSView()
+        view.wantsLayer = true
         return view
     }
 
@@ -40,16 +41,26 @@ struct AgentTerminalView: View {
     var body: some View {
         VStack(spacing: 0) {
             // Header - same color as sidebar
-            ViewThatFits(in: .horizontal) {
-                headerVariant(showTitle: true, showFolder: true, showRight: true)
-                headerVariant(showTitle: false, showFolder: true, showRight: true)
-                headerVariant(showTitle: false, showFolder: false, showRight: true)
-                headerVariant(showTitle: false, showFolder: false, showRight: false)
+            HStack(spacing: 12) {
+                // Left side + spacer - draggable
+                HStack(spacing: 12) {
+                    ViewThatFits(in: .horizontal) {
+                        headerLeftVariant(showTitle: true, showFolder: true)
+                        headerLeftVariant(showTitle: false, showFolder: true)
+                        headerLeftVariant(showTitle: false, showFolder: false)
+                    }
+                    
+                    Spacer()
+                }
+                .contentShape(Rectangle())
+                .gesture(WindowDragGesture())
+                
+                // Right side - clickable (status + git stats)
+                headerRight
             }
             .padding()
             .frame(maxWidth: .infinity)
             .background(settings.sidebarBackgroundColor)
-            .background(WindowDragView())
 
             // Terminal view - controller must exist
             if let controller = controller {
@@ -92,7 +103,7 @@ struct AgentTerminalView: View {
     }
 
     @ViewBuilder
-    private func headerVariant(showTitle: Bool, showFolder: Bool, showRight: Bool) -> some View {
+    private func headerLeftVariant(showTitle: Bool, showFolder: Bool) -> some View {
         HStack(spacing: 12) {
             AvatarView(avatar: agent.avatar, size: 36, font: .largeTitle)
 
@@ -120,52 +131,50 @@ struct AgentTerminalView: View {
                     .lineLimit(1)
                     .truncationMode(.tail)
             }
+        }
+    }
+    
+    @ViewBuilder
+    private var headerRight: some View {
+        VStack(alignment: .trailing, spacing: 2) {
+            HStack(spacing: 8) {
+                Circle()
+                    .fill(agent.status.color)
+                    .frame(width: 10, height: 10)
+                Text(agent.status.rawValue)
+                    .font(.body)
+                    .foregroundColor(Theme.secondaryText)
+                    .lineLimit(1)
+            }
 
-            Spacer()
-
-            if showRight {
-                // Status indicator + git stats
-                VStack(alignment: .trailing, spacing: 2) {
+            if let stats = agent.gitStats {
+                if stats.insertions == 0 && stats.deletions == 0 {
+                    Text("Clean")
+                        .foregroundColor(Theme.secondaryText)
+                        .font(.body)
+                        .lineLimit(1)
+                } else {
                     HStack(spacing: 8) {
-                        Circle()
-                            .fill(agent.status.color)
-                            .frame(width: 10, height: 10)
-                        Text(agent.status.rawValue)
-                            .font(.body)
-                            .foregroundColor(Theme.secondaryText)
+                        Text("+\(stats.insertions)")
+                            .foregroundColor(.green)
+                            .font(.body.monospaced())
+                            .lineLimit(1)
+                        Text("-\(stats.deletions)")
+                            .foregroundColor(.red)
+                            .font(.body.monospaced())
                             .lineLimit(1)
                     }
-
-                    if let stats = agent.gitStats {
-                        if stats.insertions == 0 && stats.deletions == 0 {
-                            Text("Clean")
-                                .foregroundColor(Theme.secondaryText)
-                                .font(.body)
-                                .lineLimit(1)
-                        } else {
-                            HStack(spacing: 8) {
-                                Text("+\(stats.insertions)")
-                                    .foregroundColor(.green)
-                                    .font(.body.monospaced())
-                                    .lineLimit(1)
-                                Text("-\(stats.deletions)")
-                                    .foregroundColor(.red)
-                                    .font(.body.monospaced())
-                                    .lineLimit(1)
-                            }
-                        }
-                    } else {
-                        Text("Getting stats...")
-                                .foregroundColor(Theme.secondaryText)
-                                .font(.body)
-                                .lineLimit(1)
-                    }
                 }
-                .contentShape(Rectangle())
-                .onTapGesture {
-                    onGitStatsTap()
-                }
+            } else {
+                Text("Getting stats...")
+                        .foregroundColor(Theme.secondaryText)
+                        .font(.body)
+                        .lineLimit(1)
             }
+        }
+        .contentShape(Rectangle())
+        .onTapGesture {
+            onGitStatsTap()
         }
     }
 }
