@@ -1,0 +1,870 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		01716FCA29A8F9522A2F8A9A /* GitFileWatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 241FF0F3B6265925356C1479 /* GitFileWatcher.swift */; };
+		0327FDF2A2ECDCE0DF53BE02 /* DiffView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA63472ED8A96242C89019C1 /* DiffView.swift */; };
+		05DDBA7B3DCF7C65CF6A9FFF /* GitWorktreeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D95A7EFF9B22BB564BAFA4 /* GitWorktreeManager.swift */; };
+		3FFD4CA0073309E4B34E6B66 /* CommitSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A486F6A72822BE9094B02DA7 /* CommitSheet.swift */; };
+		491170A3B86B4F821B4A1417 /* NewWorktreeSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B074ACAD44D9FA064E28A16 /* NewWorktreeSheet.swift */; };
+		49401D3D3F6B5D076AF44DD4 /* VoiceInputOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3DBC302D03CA10E1AEEE3BC /* VoiceInputOverlay.swift */; };
+		49BE1929AE038865BFCD543D /* GitTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADCF18167D88BA578DBF2B2E /* GitTypes.swift */; };
+		8D6B97222F2DC17900CE877E /* MCPMessageStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6B97212F2DC17900CE877E /* MCPMessageStore.swift */; };
+		8D6B97252F2DC47300CE877E /* AsyncDelay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6B97232F2DC47300CE877E /* AsyncDelay.swift */; };
+		8D6B97262F2DC47300CE877E /* TimingConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6B97242F2DC47300CE877E /* TimingConstants.swift */; };
+		8D6B97282F2E316A00CE877E /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6B97272F2E316A00CE877E /* AppDelegate.swift */; };
+		8D6B972A2F2E317400CE877E /* GitOutputParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6B97292F2E317400CE877E /* GitOutputParser.swift */; };
+		8D6B972C2F2E32DD00CE877E /* NSImage+Scaling.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6B972B2F2E32DD00CE877E /* NSImage+Scaling.swift */; };
+		8D6B972E2F2E366000CE877E /* MCPCommandView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6B972D2F2E366000CE877E /* MCPCommandView.swift */; };
+		8D7622902F2C6506006B6280 /* MCP in Frameworks */ = {isa = PBXBuildFile; productRef = 8D76228F2F2C6506006B6280 /* MCP */; };
+		8D7622932F2C652D006B6280 /* Hummingbird in Frameworks */ = {isa = PBXBuildFile; productRef = 8D7622922F2C652D006B6280 /* Hummingbird */; };
+		8D7622952F2C652D006B6280 /* HummingbirdCore in Frameworks */ = {isa = PBXBuildFile; productRef = 8D7622942F2C652D006B6280 /* HummingbirdCore */; };
+		8D7622982F2C6536006B6280 /* InMemoryLogging in Frameworks */ = {isa = PBXBuildFile; productRef = 8D7622972F2C6536006B6280 /* InMemoryLogging */; };
+		8D76229A2F2C6536006B6280 /* Logging in Frameworks */ = {isa = PBXBuildFile; productRef = 8D7622992F2C6536006B6280 /* Logging */; };
+		8D7622AF2F2C67CE006B6280 /* MCPServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D7622A92F2C67CE006B6280 /* MCPServer.swift */; };
+		8D7622B02F2C67CE006B6280 /* MCPTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D7622AD2F2C67CE006B6280 /* MCPTransport.swift */; };
+		8D7622B12F2C67CE006B6280 /* MCPService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D7622AA2F2C67CE006B6280 /* MCPService.swift */; };
+		8D7622B22F2C67CE006B6280 /* MCPTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D7622AE2F2C67CE006B6280 /* MCPTypes.swift */; };
+		8D7622B32F2C67CE006B6280 /* MCPTools.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D7622AC2F2C67CE006B6280 /* MCPTools.swift */; };
+		8D7622B42F2C67CE006B6280 /* MCPSessionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D7622AB2F2C67CE006B6280 /* MCPSessionManager.swift */; };
+		8DD8074D2F2E52E900D7A935 /* AgentSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DD8074C2F2E52E900D7A935 /* AgentSheet.swift */; };
+		914A53BB8DBD66EC96B19BDA /* GitPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBECFB308DA186BC15E6AE50 /* GitPanelView.swift */; };
+		994333F7B19B798B193F5DDB /* PushToTalkMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE289D29B40A64B7399FFAFC /* PushToTalkMonitor.swift */; };
+		A1789C06B8425D64920E2446 /* GitCLI.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCD187651343B17CF0D9CCCF /* GitCLI.swift */; };
+		AEFEE25756A8C0984BFD4D5C /* VoiceInputManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9895A27293EEDAA78A2585E8 /* VoiceInputManager.swift */; };
+		AS000001 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AS100001 /* Assets.xcassets */; };
+		B8654D4E2D19AA01B9A6072A /* VoiceInputManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03CE69DC7C60F2847F9B8C2E /* VoiceInputManager.swift */; };
+		C5578C32EDC686A572768BD6 /* VoiceInputOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 429BC5DA0748D2B8EA6EC043 /* VoiceInputOverlay.swift */; };
+		C6616FBD9C1D86E51B5D6B0E /* PushToTalkMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 337FE74E7DEB7971FDBEE143 /* PushToTalkMonitor.swift */; };
+		EC4663850678FAF77C0F1381 /* GitRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 137C060CFAE6151E52210D1A /* GitRepository.swift */; };
+		F8001001 /* SkwadApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8000001 /* SkwadApp.swift */; };
+		F8001002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8000002 /* ContentView.swift */; };
+		F8001003 /* Agent.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8000003 /* Agent.swift */; };
+		F8001004 /* AgentManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8000004 /* AgentManager.swift */; };
+		F8001005 /* SidebarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8000005 /* SidebarView.swift */; };
+		F8001007 /* TerminalHostView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8000007 /* TerminalHostView.swift */; };
+		F8001008 /* AgentTerminalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8000008 /* AgentTerminalView.swift */; };
+		F8001009 /* SwiftTerm in Frameworks */ = {isa = PBXBuildFile; productRef = F8002001 /* SwiftTerm */; };
+		F8001010 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8000009 /* AppSettings.swift */; };
+		F8001011 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F800000A /* SettingsView.swift */; };
+		F8001012 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = F800000B /* Theme.swift */; };
+		F8001013 /* AvatarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F800000C /* AvatarView.swift */; };
+		F8001014 /* GhosttyHostView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F800000D /* GhosttyHostView.swift */; };
+		GH000001 /* Ghostty.Action.swift in Sources */ = {isa = PBXBuildFile; fileRef = GH100001 /* Ghostty.Action.swift */; };
+		GH000002 /* Ghostty.App.swift in Sources */ = {isa = PBXBuildFile; fileRef = GH100002 /* Ghostty.App.swift */; };
+		GH000003 /* Ghostty.Input.swift in Sources */ = {isa = PBXBuildFile; fileRef = GH100003 /* Ghostty.Input.swift */; };
+		GH000004 /* Ghostty.Key.swift in Sources */ = {isa = PBXBuildFile; fileRef = GH100004 /* Ghostty.Key.swift */; };
+		GH000005 /* Ghostty.KeyEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = GH100005 /* Ghostty.KeyEvent.swift */; };
+		GH000006 /* Ghostty.Mods.swift in Sources */ = {isa = PBXBuildFile; fileRef = GH100006 /* Ghostty.Mods.swift */; };
+		GH000007 /* Ghostty.MouseEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = GH100007 /* Ghostty.MouseEvent.swift */; };
+		GH000008 /* Ghostty.Surface.swift in Sources */ = {isa = PBXBuildFile; fileRef = GH100008 /* Ghostty.Surface.swift */; };
+		GH000009 /* GhosttyIMEHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = GH100009 /* GhosttyIMEHandler.swift */; };
+		GH000010 /* GhosttyInputHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = GH100010 /* GhosttyInputHandler.swift */; };
+		GH000011 /* GhosttyProgressState.swift in Sources */ = {isa = PBXBuildFile; fileRef = GH100011 /* GhosttyProgressState.swift */; };
+		GH000012 /* GhosttyRenderingSetup.swift in Sources */ = {isa = PBXBuildFile; fileRef = GH100012 /* GhosttyRenderingSetup.swift */; };
+		GH000013 /* GhosttyTerminalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = GH100013 /* GhosttyTerminalView.swift */; };
+		GH000014 /* TerminalScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = GH100014 /* TerminalScrollView.swift */; };
+		LG000001 /* libghostty.a in Frameworks */ = {isa = PBXBuildFile; fileRef = LG100001 /* libghostty.a */; };
+		SF000001 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = SF100001 /* Metal.framework */; };
+		SF000002 /* MetalKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = SF100002 /* MetalKit.framework */; };
+		SF000003 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = SF100003 /* QuartzCore.framework */; };
+		SF000004 /* CoreText.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = SF100004 /* CoreText.framework */; };
+		SF000005 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = SF100005 /* CoreGraphics.framework */; };
+		SF000006 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = SF100006 /* Carbon.framework */; };
+		SF000007 /* IOSurface.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = SF100007 /* IOSurface.framework */; };
+		SF000008 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = SF100008 /* CoreFoundation.framework */; };
+		SF000009 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = SF100009 /* CoreVideo.framework */; };
+		SR000001 /* RepoDiscoveryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = SR100001 /* RepoDiscoveryService.swift */; };
+		SR000002 /* AgentTypePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = SR100002 /* AgentTypePicker.swift */; };
+		SR000003 /* AgentTypePickerContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = SR100003 /* AgentTypePickerContent.swift */; };
+		SR000004 /* TerminalCommandBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = SR100004 /* TerminalCommandBuilder.swift */; };
+		SR000006 /* TerminalSessionController.swift in Sources */ = {isa = PBXBuildFile; fileRef = SR100006 /* TerminalSessionController.swift */; };
+		SR000007 /* TerminalAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = SR100007 /* TerminalAdapter.swift */; };
+		UT000001 /* Clipboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = UT100001 /* Clipboard.swift */; };
+		UT000002 /* TerminalTextCleaner.swift in Sources */ = {isa = PBXBuildFile; fileRef = UT100002 /* TerminalTextCleaner.swift */; };
+		UT000003 /* WindowResizeObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = UT100003 /* WindowResizeObserver.swift */; };
+		UT000004 /* ManagedTimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = UT100004 /* ManagedTimer.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		03CE69DC7C60F2847F9B8C2E /* VoiceInputManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = VoiceInputManager.swift; path = Skwad/Voice/VoiceInputManager.swift; sourceTree = "<group>"; };
+		137C060CFAE6151E52210D1A /* GitRepository.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GitRepository.swift; sourceTree = "<group>"; };
+		241FF0F3B6265925356C1479 /* GitFileWatcher.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GitFileWatcher.swift; sourceTree = "<group>"; };
+		337FE74E7DEB7971FDBEE143 /* PushToTalkMonitor.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PushToTalkMonitor.swift; path = Skwad/Voice/PushToTalkMonitor.swift; sourceTree = "<group>"; };
+		429BC5DA0748D2B8EA6EC043 /* VoiceInputOverlay.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VoiceInputOverlay.swift; sourceTree = "<group>"; };
+		52D95A7EFF9B22BB564BAFA4 /* GitWorktreeManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GitWorktreeManager.swift; sourceTree = "<group>"; };
+		5B074ACAD44D9FA064E28A16 /* NewWorktreeSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NewWorktreeSheet.swift; sourceTree = "<group>"; };
+		8D6B97212F2DC17900CE877E /* MCPMessageStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPMessageStore.swift; sourceTree = "<group>"; };
+		8D6B97232F2DC47300CE877E /* AsyncDelay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsyncDelay.swift; sourceTree = "<group>"; };
+		8D6B97242F2DC47300CE877E /* TimingConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimingConstants.swift; sourceTree = "<group>"; };
+		8D6B97272F2E316A00CE877E /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		8D6B97292F2E317400CE877E /* GitOutputParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitOutputParser.swift; sourceTree = "<group>"; };
+		8D6B972B2F2E32DD00CE877E /* NSImage+Scaling.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSImage+Scaling.swift"; sourceTree = "<group>"; };
+		8D6B972D2F2E366000CE877E /* MCPCommandView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPCommandView.swift; sourceTree = "<group>"; };
+		8D7622A92F2C67CE006B6280 /* MCPServer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPServer.swift; sourceTree = "<group>"; };
+		8D7622AA2F2C67CE006B6280 /* MCPService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPService.swift; sourceTree = "<group>"; };
+		8D7622AB2F2C67CE006B6280 /* MCPSessionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPSessionManager.swift; sourceTree = "<group>"; };
+		8D7622AC2F2C67CE006B6280 /* MCPTools.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPTools.swift; sourceTree = "<group>"; };
+		8D7622AD2F2C67CE006B6280 /* MCPTransport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPTransport.swift; sourceTree = "<group>"; };
+		8D7622AE2F2C67CE006B6280 /* MCPTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPTypes.swift; sourceTree = "<group>"; };
+		8DD8074C2F2E52E900D7A935 /* AgentSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentSheet.swift; sourceTree = "<group>"; };
+		9895A27293EEDAA78A2585E8 /* VoiceInputManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VoiceInputManager.swift; sourceTree = "<group>"; };
+		A486F6A72822BE9094B02DA7 /* CommitSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CommitSheet.swift; sourceTree = "<group>"; };
+		ADCF18167D88BA578DBF2B2E /* GitTypes.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GitTypes.swift; sourceTree = "<group>"; };
+		AS100001 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		C3DBC302D03CA10E1AEEE3BC /* VoiceInputOverlay.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = VoiceInputOverlay.swift; path = Skwad/Voice/VoiceInputOverlay.swift; sourceTree = "<group>"; };
+		EA63472ED8A96242C89019C1 /* DiffView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DiffView.swift; sourceTree = "<group>"; };
+		F8000001 /* SkwadApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SkwadApp.swift; sourceTree = "<group>"; };
+		F8000002 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		F8000003 /* Agent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Agent.swift; sourceTree = "<group>"; };
+		F8000004 /* AgentManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentManager.swift; sourceTree = "<group>"; };
+		F8000005 /* SidebarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarView.swift; sourceTree = "<group>"; };
+		F8000007 /* TerminalHostView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalHostView.swift; sourceTree = "<group>"; };
+		F8000008 /* AgentTerminalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentTerminalView.swift; sourceTree = "<group>"; };
+		F8000009 /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
+		F800000A /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		F800000B /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
+		F800000C /* AvatarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvatarView.swift; sourceTree = "<group>"; };
+		F800000D /* GhosttyHostView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GhosttyHostView.swift; sourceTree = "<group>"; };
+		F8000100 /* Skwad.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Skwad.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F8000200 /* Skwad.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Skwad.entitlements; sourceTree = "<group>"; };
+		FBECFB308DA186BC15E6AE50 /* GitPanelView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GitPanelView.swift; sourceTree = "<group>"; };
+		FCD187651343B17CF0D9CCCF /* GitCLI.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GitCLI.swift; sourceTree = "<group>"; };
+		FE289D29B40A64B7399FFAFC /* PushToTalkMonitor.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PushToTalkMonitor.swift; sourceTree = "<group>"; };
+		GH100001 /* Ghostty.Action.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ghostty.Action.swift; sourceTree = "<group>"; };
+		GH100002 /* Ghostty.App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ghostty.App.swift; sourceTree = "<group>"; };
+		GH100003 /* Ghostty.Input.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ghostty.Input.swift; sourceTree = "<group>"; };
+		GH100004 /* Ghostty.Key.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ghostty.Key.swift; sourceTree = "<group>"; };
+		GH100005 /* Ghostty.KeyEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ghostty.KeyEvent.swift; sourceTree = "<group>"; };
+		GH100006 /* Ghostty.Mods.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ghostty.Mods.swift; sourceTree = "<group>"; };
+		GH100007 /* Ghostty.MouseEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ghostty.MouseEvent.swift; sourceTree = "<group>"; };
+		GH100008 /* Ghostty.Surface.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ghostty.Surface.swift; sourceTree = "<group>"; };
+		GH100009 /* GhosttyIMEHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GhosttyIMEHandler.swift; sourceTree = "<group>"; };
+		GH100010 /* GhosttyInputHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GhosttyInputHandler.swift; sourceTree = "<group>"; };
+		GH100011 /* GhosttyProgressState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GhosttyProgressState.swift; sourceTree = "<group>"; };
+		GH100012 /* GhosttyRenderingSetup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GhosttyRenderingSetup.swift; sourceTree = "<group>"; };
+		GH100013 /* GhosttyTerminalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GhosttyTerminalView.swift; sourceTree = "<group>"; };
+		GH100014 /* TerminalScrollView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalScrollView.swift; sourceTree = "<group>"; };
+		LG100001 /* libghostty.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libghostty.a; path = Vendor/libghostty/lib/libghostty.a; sourceTree = "<group>"; };
+		SF100001 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
+		SF100002 /* MetalKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalKit.framework; path = System/Library/Frameworks/MetalKit.framework; sourceTree = SDKROOT; };
+		SF100003 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		SF100004 /* CoreText.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreText.framework; path = System/Library/Frameworks/CoreText.framework; sourceTree = SDKROOT; };
+		SF100005 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		SF100006 /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = System/Library/Frameworks/Carbon.framework; sourceTree = SDKROOT; };
+		SF100007 /* IOSurface.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOSurface.framework; path = System/Library/Frameworks/IOSurface.framework; sourceTree = SDKROOT; };
+		SF100008 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
+		SF100009 /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
+		SR100001 /* RepoDiscoveryService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RepoDiscoveryService.swift; sourceTree = "<group>"; };
+		SR100002 /* AgentTypePicker.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AgentTypePicker.swift; sourceTree = "<group>"; };
+		SR100003 /* AgentTypePickerContent.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AgentTypePickerContent.swift; sourceTree = "<group>"; };
+		SR100004 /* TerminalCommandBuilder.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TerminalCommandBuilder.swift; sourceTree = "<group>"; };
+		SR100006 /* TerminalSessionController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TerminalSessionController.swift; sourceTree = "<group>"; };
+		SR100007 /* TerminalAdapter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TerminalAdapter.swift; sourceTree = "<group>"; };
+		UT100001 /* Clipboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Clipboard.swift; sourceTree = "<group>"; };
+		UT100002 /* TerminalTextCleaner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalTextCleaner.swift; sourceTree = "<group>"; };
+		UT100003 /* WindowResizeObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowResizeObserver.swift; sourceTree = "<group>"; };
+		UT100004 /* ManagedTimer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManagedTimer.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		F80000FD /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8D76229A2F2C6536006B6280 /* Logging in Frameworks */,
+				8D7622932F2C652D006B6280 /* Hummingbird in Frameworks */,
+				8D7622982F2C6536006B6280 /* InMemoryLogging in Frameworks */,
+				F8001009 /* SwiftTerm in Frameworks */,
+				8D7622952F2C652D006B6280 /* HummingbirdCore in Frameworks */,
+				8D7622902F2C6506006B6280 /* MCP in Frameworks */,
+				LG000001 /* libghostty.a in Frameworks */,
+				SF000001 /* Metal.framework in Frameworks */,
+				SF000002 /* MetalKit.framework in Frameworks */,
+				SF000003 /* QuartzCore.framework in Frameworks */,
+				SF000004 /* CoreText.framework in Frameworks */,
+				SF000005 /* CoreGraphics.framework in Frameworks */,
+				SF000006 /* Carbon.framework in Frameworks */,
+				SF000007 /* IOSurface.framework in Frameworks */,
+				SF000008 /* CoreFoundation.framework in Frameworks */,
+				SF000009 /* CoreVideo.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		2EB8108896BD1402E4BDA10F /* Git */ = {
+			isa = PBXGroup;
+			children = (
+				EA63472ED8A96242C89019C1 /* DiffView.swift */,
+				FBECFB308DA186BC15E6AE50 /* GitPanelView.swift */,
+				A486F6A72822BE9094B02DA7 /* CommitSheet.swift */,
+			);
+			path = Git;
+			sourceTree = "<group>";
+		};
+		77680A9680BE89ECA55216DA /* Voice */ = {
+			isa = PBXGroup;
+			children = (
+				9895A27293EEDAA78A2585E8 /* VoiceInputManager.swift */,
+				FE289D29B40A64B7399FFAFC /* PushToTalkMonitor.swift */,
+				429BC5DA0748D2B8EA6EC043 /* VoiceInputOverlay.swift */,
+			);
+			path = Voice;
+			sourceTree = "<group>";
+		};
+		85314FE3ABA1B9CBE60C509F /* Git */ = {
+			isa = PBXGroup;
+			children = (
+				FCD187651343B17CF0D9CCCF /* GitCLI.swift */,
+				241FF0F3B6265925356C1479 /* GitFileWatcher.swift */,
+				8D6B97292F2E317400CE877E /* GitOutputParser.swift */,
+				137C060CFAE6151E52210D1A /* GitRepository.swift */,
+				ADCF18167D88BA578DBF2B2E /* GitTypes.swift */,
+			);
+			path = Git;
+			sourceTree = "<group>";
+		};
+		8D7622A22F2C65C3006B6280 /* MCP */ = {
+			isa = PBXGroup;
+			children = (
+				8D6B97212F2DC17900CE877E /* MCPMessageStore.swift */,
+				8D7622A92F2C67CE006B6280 /* MCPServer.swift */,
+				8D7622AA2F2C67CE006B6280 /* MCPService.swift */,
+				8D7622AB2F2C67CE006B6280 /* MCPSessionManager.swift */,
+				8D7622AC2F2C67CE006B6280 /* MCPTools.swift */,
+				8D7622AD2F2C67CE006B6280 /* MCPTransport.swift */,
+				8D7622AE2F2C67CE006B6280 /* MCPTypes.swift */,
+			);
+			path = MCP;
+			sourceTree = "<group>";
+		};
+		8D7D26722F2D3E2D0077AADE /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+				03CE69DC7C60F2847F9B8C2E /* VoiceInputManager.swift */,
+				337FE74E7DEB7971FDBEE143 /* PushToTalkMonitor.swift */,
+				C3DBC302D03CA10E1AEEE3BC /* VoiceInputOverlay.swift */,
+			);
+			name = "Recovered References";
+			sourceTree = "<group>";
+		};
+		AS200000 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				AS100001 /* Assets.xcassets */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		F8000010 /* Skwad */ = {
+			isa = PBXGroup;
+			children = (
+				GH200000 /* GhosttyTerminal */,
+				85314FE3ABA1B9CBE60C509F /* Git */,
+				8D7622A22F2C65C3006B6280 /* MCP */,
+				F8000012 /* Models */,
+				AS200000 /* Resources */,
+				SR200000 /* Services */,
+				UT200000 /* Utilities */,
+				F8000013 /* Views */,
+				77680A9680BE89ECA55216DA /* Voice */,
+				8D6B97272F2E316A00CE877E /* AppDelegate.swift */,
+				F800000B /* Theme.swift */,
+				F8000200 /* Skwad.entitlements */,
+				F8000001 /* SkwadApp.swift */,
+			);
+			path = Skwad;
+			sourceTree = "<group>";
+		};
+		F8000012 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				F8000003 /* Agent.swift */,
+				F8000004 /* AgentManager.swift */,
+				F8000009 /* AppSettings.swift */,
+				52D95A7EFF9B22BB564BAFA4 /* GitWorktreeManager.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		F8000013 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				F8000014 /* Sidebar */,
+				F8000015 /* Terminal */,
+				F8000016 /* Settings */,
+				F8000017 /* Components */,
+				2EB8108896BD1402E4BDA10F /* Git */,
+				F8000002 /* ContentView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		F8000014 /* Sidebar */ = {
+			isa = PBXGroup;
+			children = (
+				F8000005 /* SidebarView.swift */,
+				5B074ACAD44D9FA064E28A16 /* NewWorktreeSheet.swift */,
+			);
+			path = Sidebar;
+			sourceTree = "<group>";
+		};
+		F8000015 /* Terminal */ = {
+			isa = PBXGroup;
+			children = (
+				F8000007 /* TerminalHostView.swift */,
+				F800000D /* GhosttyHostView.swift */,
+				F8000008 /* AgentTerminalView.swift */,
+			);
+			path = Terminal;
+			sourceTree = "<group>";
+		};
+		F8000016 /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				F800000A /* SettingsView.swift */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
+		F8000017 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				8DD8074C2F2E52E900D7A935 /* AgentSheet.swift */,
+				SR100002 /* AgentTypePicker.swift */,
+				SR100003 /* AgentTypePickerContent.swift */,
+				F800000C /* AvatarView.swift */,
+				8D6B972D2F2E366000CE877E /* MCPCommandView.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		F80000F7 = {
+			isa = PBXGroup;
+			children = (
+				F8000010 /* Skwad */,
+				SF200000 /* Frameworks */,
+				F8000101 /* Products */,
+				8D7D26722F2D3E2D0077AADE /* Recovered References */,
+			);
+			sourceTree = "<group>";
+		};
+		F8000101 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				F8000100 /* Skwad.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		GH200000 /* GhosttyTerminal */ = {
+			isa = PBXGroup;
+			children = (
+				GH100001 /* Ghostty.Action.swift */,
+				GH100002 /* Ghostty.App.swift */,
+				GH100003 /* Ghostty.Input.swift */,
+				GH100004 /* Ghostty.Key.swift */,
+				GH100005 /* Ghostty.KeyEvent.swift */,
+				GH100006 /* Ghostty.Mods.swift */,
+				GH100007 /* Ghostty.MouseEvent.swift */,
+				GH100008 /* Ghostty.Surface.swift */,
+				GH100009 /* GhosttyIMEHandler.swift */,
+				GH100010 /* GhosttyInputHandler.swift */,
+				GH100011 /* GhosttyProgressState.swift */,
+				GH100012 /* GhosttyRenderingSetup.swift */,
+				GH100013 /* GhosttyTerminalView.swift */,
+				GH100014 /* TerminalScrollView.swift */,
+			);
+			path = GhosttyTerminal;
+			sourceTree = "<group>";
+		};
+		SF200000 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				LG100001 /* libghostty.a */,
+				SF100001 /* Metal.framework */,
+				SF100002 /* MetalKit.framework */,
+				SF100003 /* QuartzCore.framework */,
+				SF100004 /* CoreText.framework */,
+				SF100005 /* CoreGraphics.framework */,
+				SF100006 /* Carbon.framework */,
+				SF100007 /* IOSurface.framework */,
+				SF100008 /* CoreFoundation.framework */,
+				SF100009 /* CoreVideo.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		SR200000 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				SR100001 /* RepoDiscoveryService.swift */,
+				SR100007 /* TerminalAdapter.swift */,
+				SR100004 /* TerminalCommandBuilder.swift */,
+				SR100006 /* TerminalSessionController.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		UT200000 /* Utilities */ = {
+			isa = PBXGroup;
+			children = (
+				8D6B97232F2DC47300CE877E /* AsyncDelay.swift */,
+				UT100001 /* Clipboard.swift */,
+				UT100004 /* ManagedTimer.swift */,
+				8D6B972B2F2E32DD00CE877E /* NSImage+Scaling.swift */,
+				UT100002 /* TerminalTextCleaner.swift */,
+				8D6B97242F2DC47300CE877E /* TimingConstants.swift */,
+				UT100003 /* WindowResizeObserver.swift */,
+			);
+			path = Utilities;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		F80000FF /* Skwad */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F8000109 /* Build configuration list for PBXNativeTarget "Skwad" */;
+			buildPhases = (
+				F80000FC /* Sources */,
+				F80000FD /* Frameworks */,
+				F80000FE /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Skwad;
+			packageProductDependencies = (
+				F8002001 /* SwiftTerm */,
+				8D76228F2F2C6506006B6280 /* MCP */,
+				8D7622922F2C652D006B6280 /* Hummingbird */,
+				8D7622942F2C652D006B6280 /* HummingbirdCore */,
+				8D7622972F2C6536006B6280 /* InMemoryLogging */,
+				8D7622992F2C6536006B6280 /* Logging */,
+			);
+			productName = Skwad;
+			productReference = F8000100 /* Skwad.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		F80000F8 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					F80000FF = {
+						CreatedOnToolsVersion = 15.0;
+					};
+				};
+			};
+			buildConfigurationList = F80000FB /* Build configuration list for PBXProject "Skwad" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = F80000F7;
+			packageReferences = (
+				F8002000 /* XCRemoteSwiftPackageReference "SwiftTerm" */,
+				8D76228E2F2C6506006B6280 /* XCRemoteSwiftPackageReference "swift-sdk" */,
+				8D7622912F2C652D006B6280 /* XCRemoteSwiftPackageReference "hummingbird" */,
+				8D7622962F2C6536006B6280 /* XCRemoteSwiftPackageReference "swift-log" */,
+			);
+			productRefGroup = F8000101 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				F80000FF /* Skwad */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		F80000FE /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AS000001 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		F80000FC /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				SR000002 /* AgentTypePicker.swift in Sources */,
+				SR000003 /* AgentTypePickerContent.swift in Sources */,
+				SR000001 /* RepoDiscoveryService.swift in Sources */,
+				SR000004 /* TerminalCommandBuilder.swift in Sources */,
+				SR000006 /* TerminalSessionController.swift in Sources */,
+				SR000007 /* TerminalAdapter.swift in Sources */,
+				F8001001 /* SkwadApp.swift in Sources */,
+				F8001002 /* ContentView.swift in Sources */,
+				F8001003 /* Agent.swift in Sources */,
+				F8001004 /* AgentManager.swift in Sources */,
+				F8001005 /* SidebarView.swift in Sources */,
+				F8001007 /* TerminalHostView.swift in Sources */,
+				8D6B97222F2DC17900CE877E /* MCPMessageStore.swift in Sources */,
+				F8001008 /* AgentTerminalView.swift in Sources */,
+				F8001010 /* AppSettings.swift in Sources */,
+				F8001011 /* SettingsView.swift in Sources */,
+				8D7622AF2F2C67CE006B6280 /* MCPServer.swift in Sources */,
+				8D7622B02F2C67CE006B6280 /* MCPTransport.swift in Sources */,
+				8DD8074D2F2E52E900D7A935 /* AgentSheet.swift in Sources */,
+				8D7622B12F2C67CE006B6280 /* MCPService.swift in Sources */,
+				8D7622B22F2C67CE006B6280 /* MCPTypes.swift in Sources */,
+				8D7622B32F2C67CE006B6280 /* MCPTools.swift in Sources */,
+				8D6B97282F2E316A00CE877E /* AppDelegate.swift in Sources */,
+				8D7622B42F2C67CE006B6280 /* MCPSessionManager.swift in Sources */,
+				F8001012 /* Theme.swift in Sources */,
+				F8001013 /* AvatarView.swift in Sources */,
+				8D6B972A2F2E317400CE877E /* GitOutputParser.swift in Sources */,
+				F8001014 /* GhosttyHostView.swift in Sources */,
+				GH000001 /* Ghostty.Action.swift in Sources */,
+				GH000002 /* Ghostty.App.swift in Sources */,
+				GH000003 /* Ghostty.Input.swift in Sources */,
+				GH000004 /* Ghostty.Key.swift in Sources */,
+				8D6B972C2F2E32DD00CE877E /* NSImage+Scaling.swift in Sources */,
+				GH000005 /* Ghostty.KeyEvent.swift in Sources */,
+				GH000006 /* Ghostty.Mods.swift in Sources */,
+				GH000007 /* Ghostty.MouseEvent.swift in Sources */,
+				GH000008 /* Ghostty.Surface.swift in Sources */,
+				GH000009 /* GhosttyIMEHandler.swift in Sources */,
+				GH000010 /* GhosttyInputHandler.swift in Sources */,
+				GH000011 /* GhosttyProgressState.swift in Sources */,
+				8D6B972E2F2E366000CE877E /* MCPCommandView.swift in Sources */,
+				GH000012 /* GhosttyRenderingSetup.swift in Sources */,
+				GH000013 /* GhosttyTerminalView.swift in Sources */,
+				GH000014 /* TerminalScrollView.swift in Sources */,
+				UT000001 /* Clipboard.swift in Sources */,
+				UT000002 /* TerminalTextCleaner.swift in Sources */,
+				UT000003 /* WindowResizeObserver.swift in Sources */,
+				UT000004 /* ManagedTimer.swift in Sources */,
+				05DDBA7B3DCF7C65CF6A9FFF /* GitWorktreeManager.swift in Sources */,
+				491170A3B86B4F821B4A1417 /* NewWorktreeSheet.swift in Sources */,
+				A1789C06B8425D64920E2446 /* GitCLI.swift in Sources */,
+				49BE1929AE038865BFCD543D /* GitTypes.swift in Sources */,
+				EC4663850678FAF77C0F1381 /* GitRepository.swift in Sources */,
+				0327FDF2A2ECDCE0DF53BE02 /* DiffView.swift in Sources */,
+				914A53BB8DBD66EC96B19BDA /* GitPanelView.swift in Sources */,
+				01716FCA29A8F9522A2F8A9A /* GitFileWatcher.swift in Sources */,
+				3FFD4CA0073309E4B34E6B66 /* CommitSheet.swift in Sources */,
+				8D6B97252F2DC47300CE877E /* AsyncDelay.swift in Sources */,
+				8D6B97262F2DC47300CE877E /* TimingConstants.swift in Sources */,
+				B8654D4E2D19AA01B9A6072A /* VoiceInputManager.swift in Sources */,
+				C6616FBD9C1D86E51B5D6B0E /* PushToTalkMonitor.swift in Sources */,
+				49401D3D3F6B5D076AF44DD4 /* VoiceInputOverlay.swift in Sources */,
+				AEFEE25756A8C0984BFD4D5C /* VoiceInputManager.swift in Sources */,
+				994333F7B19B798B193F5DDB /* PushToTalkMonitor.swift in Sources */,
+				C5578C32EDC686A572768BD6 /* VoiceInputOverlay.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		F8000107 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Vendor/libghostty/include",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Vendor/libghostty/lib",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		F8000108 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Vendor/libghostty/include",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Vendor/libghostty/lib",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+			};
+			name = Release;
+		};
+		F800010A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Skwad/Skwad.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = TP8BYQ64C4;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Skwad uses the microphone for voice input to control your agents.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Skwad uses speech recognition to transcribe your voice commands.";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = fr.bonamy.skwad;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "Skwad/ghostty-bridging-header.h";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		F800010B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Skwad/Skwad.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = TP8BYQ64C4;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Skwad uses the microphone for voice input to control your agents.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Skwad uses speech recognition to transcribe your voice commands.";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = fr.bonamy.skwad;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "Skwad/ghostty-bridging-header.h";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		F80000FB /* Build configuration list for PBXProject "Skwad" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F8000107 /* Debug */,
+				F8000108 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F8000109 /* Build configuration list for PBXNativeTarget "Skwad" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F800010A /* Debug */,
+				F800010B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		8D76228E2F2C6506006B6280 /* XCRemoteSwiftPackageReference "swift-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/modelcontextprotocol/swift-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.10.2;
+			};
+		};
+		8D7622912F2C652D006B6280 /* XCRemoteSwiftPackageReference "hummingbird" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/hummingbird-project/hummingbird.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.19.0;
+			};
+		};
+		8D7622962F2C6536006B6280 /* XCRemoteSwiftPackageReference "swift-log" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-log.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.9.1;
+			};
+		};
+		F8002000 /* XCRemoteSwiftPackageReference "SwiftTerm" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/migueldeicaza/SwiftTerm.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.2.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		8D76228F2F2C6506006B6280 /* MCP */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8D76228E2F2C6506006B6280 /* XCRemoteSwiftPackageReference "swift-sdk" */;
+			productName = MCP;
+		};
+		8D7622922F2C652D006B6280 /* Hummingbird */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8D7622912F2C652D006B6280 /* XCRemoteSwiftPackageReference "hummingbird" */;
+			productName = Hummingbird;
+		};
+		8D7622942F2C652D006B6280 /* HummingbirdCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8D7622912F2C652D006B6280 /* XCRemoteSwiftPackageReference "hummingbird" */;
+			productName = HummingbirdCore;
+		};
+		8D7622972F2C6536006B6280 /* InMemoryLogging */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8D7622962F2C6536006B6280 /* XCRemoteSwiftPackageReference "swift-log" */;
+			productName = InMemoryLogging;
+		};
+		8D7622992F2C6536006B6280 /* Logging */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8D7622962F2C6536006B6280 /* XCRemoteSwiftPackageReference "swift-log" */;
+			productName = Logging;
+		};
+		F8002001 /* SwiftTerm */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F8002000 /* XCRemoteSwiftPackageReference "SwiftTerm" */;
+			productName = SwiftTerm;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = F80000F8 /* Project object */;
+}

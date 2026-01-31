@@ -1,0 +1,302 @@
+import Foundation
+import Logging
+
+// MARK: - MCP Service Protocol
+
+protocol MCPServiceProtocol {
+    func listAgents() async -> [AgentInfo]
+    func registerAgent(agentId: String) async -> Bool
+    func unregisterAgent(agentId: String) async -> Bool
+    func sendMessage(from: String, to: String, content: String) async -> Bool
+    func checkMessages(for agentId: String, markAsRead: Bool) async -> [MCPMessage]
+    func broadcastMessage(from: String, content: String) async -> Int
+    func hasUnreadMessages(for agentId: String) async -> Bool
+}
+
+// MARK: - Agent Data Provider Protocol
+// Allows MCPService to query agent data without holding a reference to AgentManager
+
+protocol AgentDataProvider: Sendable {
+    func getAgents() async -> [Agent]
+    func setRegistered(for agentId: UUID, registered: Bool) async
+    func injectText(_ text: String, for agentId: UUID) async
+}
+
+// MARK: - MCP Service
+
+actor MCPService: MCPServiceProtocol {
+    static let shared = MCPService()
+
+    private let logger = Logger(label: "com.skwad.mcp")
+    private let sessionManager = MCPSessionManager()
+    private let messageStore = MCPMessageStore()
+
+    // Agent data provider - queried through async boundaries
+    private var agentDataProvider: AgentDataProvider?
+
+    private init() {}
+
+    // MARK: - Agent Manager Integration
+
+    func setAgentDataProvider(_ provider: AgentDataProvider) {
+        agentDataProvider = provider
+    }
+
+    // Legacy method for compatibility during transition
+    func setAgentManager(_ manager: AgentManager) {
+        // Create a wrapper that safely queries the MainActor-isolated AgentManager
+        let wrapper = AgentManagerWrapper(manager: manager)
+        agentDataProvider = wrapper
+    }
+
+    // MARK: - Agent Operations
+
+    func listAgents() async -> [AgentInfo] {
+        guard let provider = agentDataProvider else {
+            logger.warning("[skwad] AgentDataProvider not available")
+            return []
+        }
+
+        let agents = await provider.getAgents()
+        return agents.map { agent in
+            AgentInfo(
+                id: agent.id.uuidString,
+                name: agent.name,
+                folder: agent.folder,
+                status: agent.status.rawValue,
+                isRegistered: agent.isRegistered
+            )
+        }
+    }
+
+    func registerAgent(agentId: String) async -> Bool {
+        logger.info("[skwad] Register agent called: \(agentId)")
+        
+        guard let uuid = UUID(uuidString: agentId) else {
+            logger.error("[skwad] Invalid agent ID format: \(agentId)")
+            return false
+        }
+
+        guard let provider = agentDataProvider else {
+            logger.error("[skwad] AgentDataProvider not available")
+            return false
+        }
+
+        // Check if agent exists
+        let agents = await provider.getAgents()
+        guard agents.contains(where: { $0.id == uuid }) else {
+            logger.error("[skwad] Agent not found: \(agentId)")
+            return false
+        }
+
+        // Mark agent as registered
+        await provider.setRegistered(for: uuid, registered: true)
+
+        // Create MCP session for this agent
+        _ = await sessionManager.createSession(for: uuid)
+
+        logger.info("[skwad][\(String(uuid.uuidString.prefix(8)).lowercased())] Agent registered")
+        return true
+    }
+    
+    func unregisterAgent(agentId: String) async -> Bool {
+        logger.info("[skwad] Unregister agent called: \(agentId)")
+        
+        guard let uuid = UUID(uuidString: agentId) else {
+            logger.error("[skwad] Invalid agent ID format: \(agentId)")
+            return false
+        }
+
+        guard let provider = agentDataProvider else {
+            logger.error("[skwad] AgentDataProvider not available")
+            return false
+        }
+
+        // Mark agent as unregistered
+        await provider.setRegistered(for: uuid, registered: false)
+
+        // Remove MCP session for this agent
+        await sessionManager.removeSession(for: uuid)
+
+        logger.info("[skwad][\(String(uuid.uuidString.prefix(8)).lowercased())] Agent unregistered")
+        return true
+    }
+
+    func findAgent(byNameOrId identifier: String) async -> Agent? {
+        guard let provider = agentDataProvider else { return nil }
+        let agents = await provider.getAgents()
+
+        // Try UUID first
+        if let uuid = UUID(uuidString: identifier) {
+            return agents.first { $0.id == uuid }
+        }
+
+        // Try name (case-insensitive)
+        return agents.first { $0.name.lowercased() == identifier.lowercased() }
+    }
+
+    // MARK: - Message Operations
+
+    func sendMessage(from: String, to: String, content: String) async -> Bool {
+        // Verify sender exists and is registered
+        guard let sender = await findAgent(byNameOrId: from) else {
+            logger.warning("Sender not found: \(from)")
+            return false
+        }
+
+        guard sender.isRegistered else {
+            logger.warning("Sender not registered: \(from)")
+            return false
+        }
+
+        // Find recipient
+        guard let recipient = await findAgent(byNameOrId: to) else {
+            logger.warning("Recipient not found: \(to)")
+            return false
+        }
+
+        // Create and store message
+        let message = MCPMessage(
+            from: sender.id.uuidString,
+            to: recipient.id.uuidString,
+            content: content
+        )
+        await messageStore.add(message)
+
+        // If recipient is idle, notify them they have a message
+        if recipient.status == .idle {
+            await notifyAgentOfMessage(recipient, messageId: message.id)
+        }
+
+        return true
+    }
+
+    private func notifyAgentOfMessage(_ agent: Agent, messageId: UUID) async {
+        guard let provider = agentDataProvider else { return }
+        await provider.injectText("Check your inbox for messages from other agents", for: agent.id)
+    }
+
+    func checkMessages(for agentId: String, markAsRead: Bool = true) async -> [MCPMessage] {
+        guard let agent = await findAgent(byNameOrId: agentId) else {
+            logger.warning("[skwad] Agent not found for check-messages: \(agentId)")
+            return []
+        }
+
+        let agentUUID = agent.id.uuidString
+        let unread = await messageStore.getUnread(for: agentUUID)
+
+        if markAsRead {
+            await messageStore.markAsRead(for: agentUUID)
+        }
+
+        return unread
+    }
+
+    func broadcastMessage(from: String, content: String) async -> Int {
+        guard let sender = await findAgent(byNameOrId: from) else {
+            logger.warning("[skwad] Sender not found for broadcast: \(from)")
+            return 0
+        }
+
+        guard sender.isRegistered else {
+            logger.warning("[skwad] Sender not registered for broadcast: \(from)")
+            return 0
+        }
+
+        guard let provider = agentDataProvider else { return 0 }
+        let agents = await provider.getAgents()
+
+        var count = 0
+        var recipients: [(Agent, UUID)] = []
+
+        for agent in agents where agent.id != sender.id && agent.isRegistered {
+            let message = MCPMessage(
+                from: sender.id.uuidString,
+                to: agent.id.uuidString,
+                content: content
+            )
+            await messageStore.add(message)
+            recipients.append((agent, message.id))
+            count += 1
+        }
+
+        // Notify all recipients to check their inbox
+        for (agent, messageId) in recipients {
+            await notifyAgentOfMessage(agent, messageId: messageId)
+        }
+
+        return count
+    }
+
+    func hasUnreadMessages(for agentId: String) async -> Bool {
+        guard let agent = await findAgent(byNameOrId: agentId) else {
+            return false
+        }
+        let agentUUID = agent.id.uuidString
+        return await messageStore.hasUnread(for: agentUUID)
+    }
+
+    func getLatestUnreadMessageId(for agentId: String) async -> UUID? {
+        guard let agent = await findAgent(byNameOrId: agentId) else {
+            return nil
+        }
+        let agentUUID = agent.id.uuidString
+        return await messageStore.getLatestUnreadId(for: agentUUID)
+    }
+
+    // MARK: - Session Management
+
+    func getSession(id: String) async -> MCPSession? {
+        await sessionManager.getSession(id: id)
+    }
+
+    func createSession(for agentId: UUID) async -> MCPSession {
+        await sessionManager.createSession(for: agentId)
+    }
+
+    // MARK: - Helper to get sender name from ID
+
+    func getAgentName(for agentId: String) async -> String? {
+        guard let agent = await findAgent(byNameOrId: agentId) else {
+            return nil
+        }
+        return agent.name
+    }
+
+    // MARK: - Cleanup
+
+    func cleanup() async {
+        await sessionManager.cleanupStaleSessions()
+        await messageStore.cleanup()
+    }
+}
+
+// MARK: - Agent Manager Wrapper
+
+/// Wrapper that safely bridges MainActor-isolated AgentManager to the MCPService actor
+/// All calls go through proper async boundaries
+final class AgentManagerWrapper: AgentDataProvider, @unchecked Sendable {
+    private weak var manager: AgentManager?
+
+    init(manager: AgentManager) {
+        self.manager = manager
+    }
+
+    func getAgents() async -> [Agent] {
+        await MainActor.run {
+            manager?.agents ?? []
+        }
+    }
+
+    func setRegistered(for agentId: UUID, registered: Bool) async {
+        await MainActor.run {
+            manager?.setRegistered(for: agentId, registered: registered)
+        }
+    }
+
+    func injectText(_ text: String, for agentId: UUID) async {
+        await MainActor.run {
+            manager?.injectText(text, for: agentId)
+        }
+    }
+}
