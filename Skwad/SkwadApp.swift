@@ -214,9 +214,15 @@ struct BroadcastSheet: View {
                 .foregroundColor(.secondary)
 
             TextEditor(text: $message)
-                .font(.body)
-                .frame(minHeight: 100)
-                .border(Color.gray.opacity(0.3))
+                .font(.system(size: 16))
+                .frame(minHeight: 150)
+                .padding(8)
+                .background(Color(NSColor.textBackgroundColor))
+                .cornerRadius(6)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 6)
+                        .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                )
 
             HStack {
                 Button("Cancel") {
