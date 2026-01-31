@@ -87,7 +87,7 @@ struct ContentView: View {
                 .foregroundColor(.secondary)
             }
 
-            VStack(spacing: 12) {
+            VStack(spacing: 32) {
               
               Button {
                 showNewAgentSheet = true
@@ -96,7 +96,6 @@ struct ContentView: View {
                   .font(.title2.weight(.semibold))
               }
               .buttonStyle(.borderedProminent)
-              .padding(.vertical, 48)
               
               HStack(spacing: 8) {
                 ForEach(settings.recentAgents.prefix(5)) { savedAgent in
@@ -118,9 +117,9 @@ struct ContentView: View {
                 }
               }
               
-            }
+            }.padding(.vertical, 32)
 
-            VStack(spacing: 24) {
+            VStack(spacing: 12) {
 
               Text("Install Skwad MCP Server to enable agent‑to‑agent communication")
                 .font(.title2)
@@ -176,6 +175,15 @@ struct ContentView: View {
       // Close git panel when switching agents
       if showGitPanel {
         showGitPanel = false
+      }
+    }
+    .onChange(of: showGitPanel) { _, _ in
+      // Notify terminal to resize when git panel toggles
+      // Add small delay to ensure animation completes and layout stabilizes
+      DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+        if let selectedId = agentManager.selectedAgentId {
+          agentManager.notifyTerminalResize(for: selectedId)
+        }
       }
     }
     .onAppear {

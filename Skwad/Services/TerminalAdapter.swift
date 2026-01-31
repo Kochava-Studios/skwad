@@ -30,6 +30,9 @@ protocol TerminalAdapter: AnyObject {
 
     /// Focus the terminal
     func focus()
+    
+    /// Notify terminal to resize/relayout
+    func notifyResize()
 
     /// Activate the adapter - wires terminal callbacks to adapter properties
     /// Called by controller after all callbacks are set
@@ -127,6 +130,13 @@ class GhosttyTerminalAdapter: TerminalAdapter {
         // We can't reliably send commands since TUI apps intercept them
         terminal = nil
     }
+    
+    func notifyResize() {
+        guard let terminal = terminal else { return }
+        // Trigger a layout update which will call ghostty_surface_set_size
+        terminal.needsLayout = true
+        terminal.layoutSubtreeIfNeeded()
+    }
 }
 
 // MARK: - SwiftTerm Adapter
@@ -190,5 +200,12 @@ class SwiftTermAdapter: TerminalAdapter {
         // The underlying process will be terminated when the view is deallocated
         // We can't reliably send commands since TUI apps intercept them
         terminal = nil
+    }
+    
+    func notifyResize() {
+        guard let terminal = terminal else { return }
+        // Trigger a layout update which will resize the terminal grid
+        terminal.needsLayout = true
+        terminal.layoutSubtreeIfNeeded()
     }
 }

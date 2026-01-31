@@ -193,6 +193,12 @@ class TerminalSessionController: ObservableObject {
     func focus() {
         adapter?.focus()
     }
+    
+    /// Notify terminal to resize/relayout
+    /// Called when the available terminal space changes (e.g., git panel toggle)
+    func notifyResize() {
+        adapter?.notifyResize()
+    }
 
     // MARK: - Activity Detection
 

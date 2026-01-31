@@ -102,6 +102,12 @@ class AgentManager: ObservableObject {
         controllers[agentId]?.injectText(text)
     }
 
+    
+    /// Notify terminal to resize (e.g., when git panel toggles)
+    func notifyTerminalResize(for agentId: UUID) {
+        controllers[agentId]?.notifyResize()
+    }
+
     // MARK: - Registration State
 
     func setRegistered(for agentId: UUID, registered: Bool) {
