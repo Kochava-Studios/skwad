@@ -18,5 +18,8 @@ Package.resolved
 *.swp
 *~
 
+# Environment
+.env
+
 # Build artifacts
 build/

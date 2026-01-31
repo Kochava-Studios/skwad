@@ -1,0 +1,163 @@
+.PHONY: help build clean archive export notarize dmg release
+
+# Load .env file if it exists
+-include .env
+export
+
+# Configuration
+SCHEME := Skwad
+APP_NAME := Skwad
+BUILD_DIR := build
+ARCHIVE_PATH := $(BUILD_DIR)/$(APP_NAME).xcarchive
+EXPORT_PATH := $(BUILD_DIR)/export
+DMG_PATH := $(BUILD_DIR)/$(APP_NAME).dmg
+ZIP_PATH := $(BUILD_DIR)/$(APP_NAME).zip
+
+# Apple Developer settings (override via environment variables)
+TEAM_ID ?= $(shell /usr/libexec/PlistBuddy -c "Print :TeamIdentifier:0" ~/Library/Preferences/com.apple.dt.Xcode.plist 2>/dev/null)
+APPLE_ID ?= $(shell /usr/libexec/PlistBuddy -c "Print :IDEKit:PreviousAccount" ~/Library/Preferences/com.apple.dt.Xcode.plist 2>/dev/null)
+SIGNING_CERTIFICATE ?= Developer ID Application
+
+help:
+	@echo "Skwad Build and Distribution Makefile"
+	@echo ""
+	@echo "Usage:"
+	@echo "  make build        - Build the app in Release configuration"
+	@echo "  make archive      - Create an archive for distribution"
+	@echo "  make export       - Export and sign the app (requires archive)"
+	@echo "  make dmg          - Create a DMG (requires export)"
+	@echo "  make zip          - Create a notarization-ready ZIP (requires export)"
+	@echo "  make notarize     - Submit ZIP for notarization and staple"
+	@echo "  make release      - Full release pipeline (archive + export + dmg + notarize)"
+	@echo "  make clean        - Clean build artifacts"
+	@echo ""
+	@echo "Environment variables (can be set in .env file):"
+	@echo "  APPLE_ID              - Apple ID for notarization (current: $(APPLE_ID))"
+	@echo "  TEAM_ID               - Team ID (current: $(TEAM_ID))"
+	@echo "  APP_PASSWORD          - App-specific password for notarization"
+	@echo "  SIGNING_CERTIFICATE   - Code signing certificate name (current: $(SIGNING_CERTIFICATE))"
+	@echo ""
+	@echo "Example .env file:"
+	@echo "  APPLE_ID=your.email@example.com"
+	@echo "  TEAM_ID=ABCD123456"
+	@echo "  APP_PASSWORD=abcd-efgh-ijkl-mnop"
+	@echo "  SIGNING_CERTIFICATE=Developer ID Application"
+
+build:
+	@echo "Building $(APP_NAME)..."
+	xcodebuild -scheme $(SCHEME) \
+		-configuration Release \
+		-derivedDataPath $(BUILD_DIR)/DerivedData \
+		build
+
+clean:
+	@echo "Cleaning build artifacts..."
+	rm -rf $(BUILD_DIR)
+
+archive:
+	@echo "Creating archive..."
+	xcodebuild -scheme $(SCHEME) \
+		-configuration Release \
+		-archivePath $(ARCHIVE_PATH) \
+		clean archive
+	@echo "Archive created at $(ARCHIVE_PATH)"
+
+export: archive
+	@echo "Exporting signed app..."
+	@if [ -z "$(TEAM_ID)" ]; then \
+		echo "Error: TEAM_ID not set"; \
+		exit 1; \
+	fi
+	@mkdir -p $(EXPORT_PATH)
+	@echo '<?xml version="1.0" encoding="UTF-8"?>' > $(BUILD_DIR)/ExportOptions.plist
+	@echo '<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">' >> $(BUILD_DIR)/ExportOptions.plist
+	@echo '<plist version="1.0">' >> $(BUILD_DIR)/ExportOptions.plist
+	@echo '<dict>' >> $(BUILD_DIR)/ExportOptions.plist
+	@echo '    <key>method</key>' >> $(BUILD_DIR)/ExportOptions.plist
+	@echo '    <string>developer-id</string>' >> $(BUILD_DIR)/ExportOptions.plist
+	@echo '    <key>teamID</key>' >> $(BUILD_DIR)/ExportOptions.plist
+	@echo '    <string>$(TEAM_ID)</string>' >> $(BUILD_DIR)/ExportOptions.plist
+	@echo '    <key>signingStyle</key>' >> $(BUILD_DIR)/ExportOptions.plist
+	@echo '    <string>automatic</string>' >> $(BUILD_DIR)/ExportOptions.plist
+	@echo '    <key>signingCertificate</key>' >> $(BUILD_DIR)/ExportOptions.plist
+	@echo '    <string>$(SIGNING_CERTIFICATE)</string>' >> $(BUILD_DIR)/ExportOptions.plist
+	@echo '</dict>' >> $(BUILD_DIR)/ExportOptions.plist
+	@echo '</plist>' >> $(BUILD_DIR)/ExportOptions.plist
+	xcodebuild -exportArchive \
+		-archivePath $(ARCHIVE_PATH) \
+		-exportPath $(EXPORT_PATH) \
+		-exportOptionsPlist $(BUILD_DIR)/ExportOptions.plist \
+		-allowProvisioningUpdates
+	@echo "Signed app exported to $(EXPORT_PATH)"
+
+dmg: export
+	@echo "Creating DMG..."
+	@if [ ! -d "$(EXPORT_PATH)/$(APP_NAME).app" ]; then \
+		echo "Error: App not found in export"; \
+		exit 1; \
+	fi
+	@mkdir -p $(BUILD_DIR)
+	@rm -f $(DMG_PATH)
+	hdiutil create -volname "$(APP_NAME)" \
+		-srcfolder "$(EXPORT_PATH)/$(APP_NAME).app" \
+		-ov -format UDZO \
+		$(DMG_PATH)
+	@echo "DMG created at $(DMG_PATH)"
+
+zip: export
+	@echo "Creating ZIP for notarization..."
+	@if [ ! -d "$(EXPORT_PATH)/$(APP_NAME).app" ]; then \
+		echo "Error: App not found in export"; \
+		exit 1; \
+	fi
+	@mkdir -p $(BUILD_DIR)
+	@rm -f $(ZIP_PATH)
+	ditto -c -k --keepParent \
+		"$(EXPORT_PATH)/$(APP_NAME).app" \
+		$(ZIP_PATH)
+	@echo "ZIP created at $(ZIP_PATH)"
+
+notarize: zip
+	@echo "Submitting for notarization..."
+	@if [ -z "$(APPLE_ID)" ]; then \
+		echo "Error: APPLE_ID not set"; \
+		exit 1; \
+	fi
+	@if [ -z "$(TEAM_ID)" ]; then \
+		echo "Error: TEAM_ID not set"; \
+		exit 1; \
+	fi
+	@if [ -z "$(APP_PASSWORD)" ]; then \
+		echo "Error: APP_PASSWORD not set. Create an app-specific password at appleid.apple.com"; \
+		exit 1; \
+	fi
+	@echo "Uploading to Apple (this may take a few minutes)..."
+	xcrun notarytool submit $(ZIP_PATH) \
+		--apple-id "$(APPLE_ID)" \
+		--team-id "$(TEAM_ID)" \
+		--password "$(APP_PASSWORD)" \
+		--wait
+	@echo "Stapling notarization ticket..."
+	xcrun stapler staple "$(EXPORT_PATH)/$(APP_NAME).app"
+	@echo "Creating stapled ZIP..."
+	@rm -f $(ZIP_PATH)
+	ditto -c -k --keepParent \
+		"$(EXPORT_PATH)/$(APP_NAME).app" \
+		$(ZIP_PATH)
+	@echo "Creating notarized DMG..."
+	@rm -f $(DMG_PATH)
+	hdiutil create -volname "$(APP_NAME)" \
+		-srcfolder "$(EXPORT_PATH)/$(APP_NAME).app" \
+		-ov -format UDZO \
+		$(DMG_PATH)
+	@echo ""
+	@echo "✅ Notarization complete!"
+	@echo "   App: $(EXPORT_PATH)/$(APP_NAME).app"
+	@echo "   ZIP: $(ZIP_PATH) (stapled)"
+	@echo "   DMG: $(DMG_PATH)"
+
+release: notarize
+	@echo ""
+	@echo "🎉 Release build complete!"
+	@echo "   Distribution package: $(DMG_PATH)"
+	@ls -lh $(DMG_PATH)
