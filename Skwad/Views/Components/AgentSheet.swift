@@ -672,34 +672,40 @@ struct ImageCropperSheet: View {
                 .font(.headline)
 
             ZStack {
-                Image(nsImage: image)
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-                    .frame(width: cropSize, height: cropSize)
-                    .scaleEffect(scale)
-                    .offset(offset)
-                    .clipped()
-                    .gesture(
-                        DragGesture()
-                            .onChanged { value in
-                                offset = CGSize(
-                                    width: lastOffset.width + value.translation.width,
-                                    height: lastOffset.height + value.translation.height
-                                )
-                            }
-                            .onEnded { _ in
-                                lastOffset = offset
-                            }
-                    )
-                    .gesture(
-                        MagnificationGesture()
-                            .onChanged { value in
-                                scale = max(0.5, min(4.0, lastScale * value))
-                            }
-                            .onEnded { _ in
-                                lastScale = scale
-                            }
-                    )
+                ScrollWheelView { delta in
+                    let zoomFactor = 1.0 + (delta * 0.01)
+                    scale = max(0.5, min(4.0, scale * zoomFactor))
+                    lastScale = scale
+                } content: {
+                    Image(nsImage: image)
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(width: cropSize, height: cropSize)
+                        .scaleEffect(scale)
+                        .offset(offset)
+                        .clipped()
+                }
+                .gesture(
+                    DragGesture()
+                        .onChanged { value in
+                            offset = CGSize(
+                                width: lastOffset.width + value.translation.width,
+                                height: lastOffset.height + value.translation.height
+                            )
+                        }
+                        .onEnded { _ in
+                            lastOffset = offset
+                        }
+                )
+                .gesture(
+                    MagnificationGesture()
+                        .onChanged { value in
+                            scale = max(0.5, min(4.0, lastScale * value))
+                        }
+                        .onEnded { _ in
+                            lastScale = scale
+                        }
+                )
 
                 Circle()
                     .stroke(Color.white, lineWidth: 2)
@@ -776,5 +782,47 @@ struct ImageCropperSheet: View {
 
         outputImage.unlockFocus()
         return outputImage
+    }
+}
+
+// MARK: - ScrollWheelView Helper
+
+struct ScrollWheelView<Content: View>: NSViewRepresentable {
+    let onScroll: (CGFloat) -> Void
+    let content: Content
+    
+    init(onScroll: @escaping (CGFloat) -> Void, @ViewBuilder content: () -> Content) {
+        self.onScroll = onScroll
+        self.content = content()
+    }
+    
+    func makeNSView(context: Context) -> NSHostingView<Content> {
+        let hostingView = ScrollWheelHostingView(rootView: content, onScroll: onScroll)
+        return hostingView
+    }
+    
+    func updateNSView(_ nsView: NSHostingView<Content>, context: Context) {
+        nsView.rootView = content
+    }
+}
+
+private class ScrollWheelHostingView<Content: View>: NSHostingView<Content> {
+    let onScroll: (CGFloat) -> Void
+    
+    init(rootView: Content, onScroll: @escaping (CGFloat) -> Void) {
+        self.onScroll = onScroll
+        super.init(rootView: rootView)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    required init(rootView: Content) {
+        fatalError("init(rootView:) has not been implemented")
+    }
+    
+    override func scrollWheel(with event: NSEvent) {
+        onScroll(event.scrollingDeltaY)
     }
 }
