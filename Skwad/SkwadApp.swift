@@ -21,6 +21,10 @@ struct SkwadApp: App {
     private static let isPreview = ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
 
     init() {
+
+        // preview mode
+        guard !SkwadApp.isPreview else { return }
+      
         // Initialize logging
         LoggingSystem.bootstrap { label in
             var handler = StreamLogHandler.standardOutput(label: label)
@@ -28,15 +32,12 @@ struct SkwadApp: App {
             return handler
         }
 
-        guard !SkwadApp.isPreview else { return }
-
         // Initialize source base folder on first launch
         AppSettings.shared.initializeSourceBaseFolderIfNeeded()
 
         // Start background repo discovery service
         RepoDiscoveryService.shared.start()
 
-        // Note: MCP server startup and appearance moved to onAppear
     }
 
     var body: some Scene {
@@ -62,6 +63,10 @@ struct SkwadApp: App {
                     Text("Are you sure you want to close \"\(agent.name)\"?")
                 }
                 .onAppear {
+
+                    // Skip initialization in previews
+                    guard !SkwadApp.isPreview else { return }
+
                     // Only initialize once
                     guard !mcpInitialized else { return }
                     mcpInitialized = true
