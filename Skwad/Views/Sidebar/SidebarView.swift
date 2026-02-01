@@ -47,6 +47,9 @@ struct SidebarView: View {
     @State private var showingNewAgentSheet = false
     @State private var agentToEdit: Agent?
     @State private var forkPrefill: AgentPrefill?
+    @State private var showBroadcastSheet = false
+    @State private var broadcastMessage = ""
+    @State private var showCloseAllConfirmation = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -196,6 +199,23 @@ struct SidebarView: View {
                     Label("New Agent", systemImage: "plus.app")
                 }
                 
+                Button {
+                    showCloseAllConfirmation = true
+                } label: {
+                    Label("Close All", systemImage: "xmark.circle")
+                }
+                .disabled(agentManager.agents.isEmpty)
+                
+                Divider()
+                
+                Button {
+                    broadcastMessage = ""
+                    showBroadcastSheet = true
+                } label: {
+                    Label("Broadcast to All Agents...", systemImage: "megaphone")
+                }
+                .disabled(agentManager.agents.isEmpty)
+                
                 Divider()
                 
                 Menu {
@@ -253,8 +273,43 @@ struct SidebarView: View {
         .sheet(item: $agentToEdit) { agent in
             AgentSheet(editing: agent)
         }
+        .sheet(isPresented: $showBroadcastSheet) {
+            BroadcastSheet(message: $broadcastMessage) { message in
+                sendBroadcast(message)
+            }
+        }
+        .alert("Close All Agents", isPresented: $showCloseAllConfirmation) {
+            Button("Cancel", role: .cancel) {}
+            Button("Close All", role: .destructive) {
+                closeAllAgents()
+            }
+        } message: {
+            Text("Are you sure you want to close all \(agentManager.agents.count) agent(s)?")
+        }
         .onReceive(NotificationCenter.default.publisher(for: .showNewAgentSheet)) { _ in
             showingNewAgentSheet = true
+        }
+    }
+
+    // MARK: - Broadcast
+    
+    private func sendBroadcast(_ message: String) {
+        let trimmed = message.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        
+        // Inject message into all agents
+        for agent in agentManager.agents {
+            agentManager.injectText(trimmed, for: agent.id)
+        }
+    }
+    
+    // MARK: - Close All
+    
+    private func closeAllAgents() {
+        // Remove all agents
+        let agentsToClose = agentManager.agents
+        for agent in agentsToClose {
+            agentManager.removeAgent(agent)
         }
     }
 
