@@ -113,6 +113,17 @@ struct SkwadApp: App {
                 .keyboardShortcut("b", modifiers: [.command, .shift])
                 .disabled(agentManager.agents.isEmpty)
             }
+            
+            // Clear terminal in Edit menu
+            CommandGroup(after: .textEditing) {
+                Button("Clear Agent") {
+                    if let selectedId = agentManager.selectedAgentId {
+                        agentManager.injectText("/clear", for: selectedId)
+                    }
+                }
+                .keyboardShortcut("c", modifiers: [.command, .shift])
+                .disabled(agentManager.selectedAgentId == nil)
+            }
 
             // Agent cycling with Ctrl+Tab / Ctrl+Shift+Tab
             CommandGroup(after: .windowArrangement) {
