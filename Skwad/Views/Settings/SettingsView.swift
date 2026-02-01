@@ -125,7 +125,7 @@ struct GeneralSettingsView: View {
           }
         }
       } header: {
-        Text("Git Worktrees")
+        Text("Source Folder")
       } footer: {
         Text("Base folder containing your git repositories (e.g. ~/src). Enables quick repo and worktree selection when creating agents.")
           .foregroundColor(.secondary)
