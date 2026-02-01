@@ -186,6 +186,40 @@ struct SidebarView: View {
                 }
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                .contentShape(Rectangle())
+            }
+            .contextMenu {
+                Button {
+                    showingNewAgentSheet = true
+                } label: {
+                    Label("New Agent", systemImage: "plus.app")
+                }
+                
+                Divider()
+                
+                Menu {
+                    if settings.recentAgents.isEmpty {
+                        Button("No Recent Agents") {}
+                            .disabled(true)
+                    } else {
+                        ForEach(settings.recentAgents) { agent in
+                            Button {
+                                openRecentAgent(agent)
+                            } label: {
+                                Text("\(agent.name) — \(URL(fileURLWithPath: agent.folder).lastPathComponent)")
+                            }
+                        }
+                        
+                        Divider()
+                        
+                        Button("Clear Recent Agents") {
+                            settings.recentAgents = []
+                        }
+                    }
+                } label: {
+                    Label("Recent Agents", systemImage: "clock")
+                }
             }
 
             Divider()
@@ -222,6 +256,18 @@ struct SidebarView: View {
         .onReceive(NotificationCenter.default.publisher(for: .showNewAgentSheet)) { _ in
             showingNewAgentSheet = true
         }
+    }
+
+    // MARK: - Recent Agents
+    
+    private func openRecentAgent(_ saved: SavedAgent) {
+        let fileManager = FileManager.default
+        var isDirectory: ObjCBool = false
+        guard fileManager.fileExists(atPath: saved.folder, isDirectory: &isDirectory), isDirectory.boolValue else {
+            settings.removeRecentAgent(saved)
+            return
+        }
+        agentManager.addAgent(folder: saved.folder, name: saved.name, avatar: saved.avatar)
     }
 
     // MARK: - Open In IDE
