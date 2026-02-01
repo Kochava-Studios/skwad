@@ -42,92 +42,13 @@ struct AgentTerminalView: View {
     var body: some View {
         VStack(spacing: 0) {
             if sidebarVisible {
-                // Full header when sidebar is visible
-                HStack(spacing: 12) {
-                    HStack(spacing: 12) {
-                        ViewThatFits(in: .horizontal) {
-                            headerLeftVariant(showTitle: true, showFolder: true)
-                            headerLeftVariant(showTitle: false, showFolder: true)
-                            headerLeftVariant(showTitle: false, showFolder: false)
-                        }
-                        Spacer()
-                    }
-                    .contentShape(Rectangle())
-                    .gesture(WindowDragGesture())
-
-                    headerRight
-                }
-                .padding(16)
-                .frame(maxWidth: .infinity)
-                .background(settings.sidebarBackgroundColor)
+                AgentFullHeader(agent: agent, onGitStatsTap: onGitStatsTap)
             } else {
-                // Compact single-line header when sidebar is collapsed
-                HStack(spacing: 10) {
-                    Button {
-                        withAnimation(.easeInOut(duration: 0.25)) {
-                            sidebarVisible = true
-                        }
-                    } label: {
-                        Image(systemName: "sidebar.right")
-                            .font(.system(size: 12))
-                            .foregroundColor(Theme.secondaryText)
+                AgentCompactHeader(agent: agent, onShowSidebar: {
+                    withAnimation(.easeInOut(duration: 0.25)) {
+                        sidebarVisible = true
                     }
-                    .buttonStyle(.plain)
-                    .help("Show sidebar")
-
-                    AvatarView(avatar: agent.avatar, size: 16, font: .title3)
-
-                    Text(agent.name)
-                        .font(.body)
-                        .fontWeight(.bold)
-                        .foregroundColor(Theme.secondaryText)
-                        .lineLimit(1)
-
-                    Text("•")
-                      .font(.body)
-                      .fontWeight(.bold)
-                      .foregroundColor(Theme.secondaryText)
-
-                  Text(shortenPath(agent.folder))
-                        .font(.body)
-                        .fontWeight(.bold)
-                        .foregroundColor(Theme.secondaryText)
-                        .lineLimit(1)
-                        .truncationMode(.middle)
-
-                    if !agent.displayTitle.isEmpty {
-                        Text("•")
-                          .font(.body)
-                          .fontWeight(.bold)
-                          .foregroundColor(Theme.secondaryText)
-                      
-                        Text(agent.displayTitle)
-                            .font(.body)
-                            .fontWeight(.bold)
-                            .foregroundColor(Theme.secondaryText)
-                            .lineLimit(1)
-                            .truncationMode(.tail)
-                    }
-
-                    Spacer()
-                        .contentShape(Rectangle())
-                        .gesture(WindowDragGesture())
-
-                    // Status only
-                    HStack(spacing: 6) {
-                        Circle()
-                            .fill(agent.status.color)
-                            .frame(width: 8, height: 8)
-                        Text(agent.status.rawValue)
-                            .font(.callout)
-                            .foregroundColor(Theme.secondaryText)
-                    }
-                }
-                .padding(.leading, 82)
-                .padding(.trailing, 16)
-                .padding(.vertical, 6)
-                .frame(maxWidth: .infinity)
-                .background(settings.sidebarBackgroundColor)
+                })
             }
 
             // Terminal view - controller must exist
@@ -163,15 +84,77 @@ struct AgentTerminalView: View {
         }
     }
 
-    private func shortenPath(_ path: String) -> String {
-        if let home = ProcessInfo.processInfo.environment["HOME"], path.hasPrefix(home) {
-            return "~" + path.dropFirst(home.count)
+}
+
+// MARK: - Full Header (sidebar visible)
+
+struct AgentFullHeader: View {
+    let agent: Agent
+    let onGitStatsTap: () -> Void
+
+    @ObservedObject private var settings = AppSettings.shared
+
+    var body: some View {
+        HStack(spacing: 12) {
+            HStack(spacing: 12) {
+                ViewThatFits(in: .horizontal) {
+                    leftVariant(showTitle: true, showFolder: true)
+                    leftVariant(showTitle: false, showFolder: true)
+                    leftVariant(showTitle: false, showFolder: false)
+                }
+                Spacer()
+            }
+            .contentShape(Rectangle())
+            .gesture(WindowDragGesture())
+
+            VStack(alignment: .trailing, spacing: 2) {
+                HStack(spacing: 8) {
+                    Circle()
+                        .fill(agent.status.color)
+                        .frame(width: 10, height: 10)
+                    Text(agent.status.rawValue)
+                        .font(.body)
+                        .foregroundColor(Theme.secondaryText)
+                        .lineLimit(1)
+                }
+
+                if let stats = agent.gitStats {
+                    if stats.insertions == 0 && stats.deletions == 0 {
+                        Text("Clean")
+                            .foregroundColor(Theme.secondaryText)
+                            .font(.body)
+                            .lineLimit(1)
+                    } else {
+                        HStack(spacing: 8) {
+                            Text("+\(stats.insertions)")
+                                .foregroundColor(.green)
+                                .font(.body.monospaced())
+                                .lineLimit(1)
+                            Text("-\(stats.deletions)")
+                                .foregroundColor(.red)
+                                .font(.body.monospaced())
+                                .lineLimit(1)
+                        }
+                    }
+                } else {
+                    Text("Getting stats...")
+                        .foregroundColor(Theme.secondaryText)
+                        .font(.body)
+                        .lineLimit(1)
+                }
+            }
+            .contentShape(Rectangle())
+            .onTapGesture {
+                onGitStatsTap()
+            }
         }
-        return path
+        .padding(16)
+        .frame(maxWidth: .infinity)
+        .background(settings.sidebarBackgroundColor)
     }
 
     @ViewBuilder
-    private func headerLeftVariant(showTitle: Bool, showFolder: Bool) -> some View {
+    private func leftVariant(showTitle: Bool, showFolder: Bool) -> some View {
         HStack(spacing: 12) {
             AvatarView(avatar: agent.avatar, size: 36, font: .largeTitle)
 
@@ -201,52 +184,122 @@ struct AgentTerminalView: View {
             }
         }
     }
-    
-    @ViewBuilder
-    private var headerRight: some View {
-        VStack(alignment: .trailing, spacing: 2) {
-            HStack(spacing: 8) {
-                Circle()
-                    .fill(agent.status.color)
-                    .frame(width: 10, height: 10)
-                Text(agent.status.rawValue)
+}
+
+// MARK: - Compact Header (sidebar collapsed)
+
+struct AgentCompactHeader: View {
+    let agent: Agent
+    let onShowSidebar: () -> Void
+
+    @ObservedObject private var settings = AppSettings.shared
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Button {
+                onShowSidebar()
+            } label: {
+                Image(systemName: "sidebar.right")
+                    .font(.system(size: 12))
+                    .foregroundColor(Theme.secondaryText)
+            }
+            .buttonStyle(.plain)
+            .help("Show sidebar")
+
+            AvatarView(avatar: agent.avatar, size: 16, font: .title3)
+
+            Text(agent.name)
+                .font(.body)
+                .fontWeight(.bold)
+                .foregroundColor(Theme.secondaryText)
+                .lineLimit(1)
+
+            Text("•")
+                .font(.body)
+                .fontWeight(.bold)
+                .foregroundColor(Theme.secondaryText)
+
+            Text(shortenPath(agent.folder))
+                .font(.body)
+                .fontWeight(.bold)
+                .foregroundColor(Theme.secondaryText)
+                .lineLimit(1)
+                .truncationMode(.middle)
+
+            if !agent.displayTitle.isEmpty {
+                Text("•")
                     .font(.body)
+                    .fontWeight(.bold)
+                    .foregroundColor(Theme.secondaryText)
+
+                Text(agent.displayTitle)
+                    .font(.body)
+                    .fontWeight(.bold)
                     .foregroundColor(Theme.secondaryText)
                     .lineLimit(1)
+                    .truncationMode(.tail)
             }
 
-            if let stats = agent.gitStats {
-                if stats.insertions == 0 && stats.deletions == 0 {
-                    Text("Clean")
-                        .foregroundColor(Theme.secondaryText)
-                        .font(.body)
-                        .lineLimit(1)
-                } else {
-                    HStack(spacing: 8) {
-                        Text("+\(stats.insertions)")
-                            .foregroundColor(.green)
-                            .font(.body.monospaced())
-                            .lineLimit(1)
-                        Text("-\(stats.deletions)")
-                            .foregroundColor(.red)
-                            .font(.body.monospaced())
-                            .lineLimit(1)
-                    }
-                }
-            } else {
-                Text("Getting stats...")
-                        .foregroundColor(Theme.secondaryText)
-                        .font(.body)
-                        .lineLimit(1)
+            Spacer()
+                .contentShape(Rectangle())
+                .gesture(WindowDragGesture())
+
+            HStack(spacing: 6) {
+                Circle()
+                    .fill(agent.status.color)
+                    .frame(width: 8, height: 8)
+                Text(agent.status.rawValue)
+                    .font(.callout)
+                    .foregroundColor(Theme.secondaryText)
             }
         }
-        .contentShape(Rectangle())
-        .onTapGesture {
-            onGitStatsTap()
-        }
+        .padding(.leading, 82)
+        .padding(.trailing, 16)
+        .padding(.vertical, 6)
+        .frame(maxWidth: .infinity)
+        .background(settings.sidebarBackgroundColor)
     }
 }
 
+private func shortenPath(_ path: String) -> String {
+    if let home = ProcessInfo.processInfo.environment["HOME"], path.hasPrefix(home) {
+        return "~" + path.dropFirst(home.count)
+    }
+    return path
+}
+
+
+// MARK: - Preview
+
+private func previewAgent(_ name: String, _ avatar: String, _ folder: String, status: AgentStatus = .idle, title: String = "", stats: GitLineStats? = nil) -> Agent {
+    var agent = Agent(name: name, avatar: avatar, folder: folder)
+    agent.status = status
+    agent.terminalTitle = title
+    agent.gitStats = stats
+    return agent
+}
+
+#Preview("Full Header") {
+    VStack(spacing: 0) {
+        AgentFullHeader(agent: previewAgent("skwad", "🐱", "/Users/nbonamy/src/skwad", status: .running, title: "Editing ContentView.swift", stats: .init(insertions: 42, deletions: 7, files: 3)), onGitStatsTap: {})
+        Divider()
+        AgentFullHeader(agent: previewAgent("witsy", "🤖", "/Users/nbonamy/src/witsy", status: .idle, stats: .init(insertions: 0, deletions: 0, files: 0)), onGitStatsTap: {})
+        Divider()
+        AgentFullHeader(agent: previewAgent("broken", "🦊", "/Users/nbonamy/src/broken", status: .error), onGitStatsTap: {})
+    }
+    .frame(width: 600)
+}
+
+#Preview("Compact Header") {
+    VStack(spacing: 0) {
+        AgentCompactHeader(agent: previewAgent("skwad", "🐱", "/Users/nbonamy/src/skwad", status: .running, title: "Editing ContentView.swift"), onShowSidebar: {})
+        Divider()
+        AgentCompactHeader(agent: previewAgent("witsy", "🤖", "/Users/nbonamy/src/witsy", status: .idle), onShowSidebar: {})
+        Divider()
+        AgentCompactHeader(agent: previewAgent("broken", "🦊", "/Users/nbonamy/src/broken", status: .error), onShowSidebar: {})
+    }
+    .frame(width: 600)
+}
 
 // MARK: - Ghostty Terminal Wrapper
 // Ghostty handles its own padding via window-padding-x/y config

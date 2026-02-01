@@ -307,13 +307,12 @@ class AppSettings: ObservableObject {
     }
 
     var sidebarBackgroundColor: Color {
-        // In Light/Dark mode, use system colors
+        // In previews, no terminal is running — use system colors so SwiftUI color scheme works
+        guard ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == nil else {
+            return Color(nsColor: .windowBackgroundColor)
+        }
         switch AppearanceMode(rawValue: appearanceMode) {
-        case .light:
-            return Color(nsColor: .windowBackgroundColor)
-        case .dark:
-            return Color(nsColor: .windowBackgroundColor)
-        case .system:
+        case .light, .dark, .system:
             return Color(nsColor: .windowBackgroundColor)
         case .auto, .none:
             return effectiveBackgroundColor.darkened(by: 0.05)
@@ -322,16 +321,14 @@ class AppSettings: ObservableObject {
 
     /// Returns the effective background color based on terminal engine and appearance mode
     var effectiveBackgroundColor: Color {
-        // In Light/Dark mode, use system colors
+        // In previews, no terminal is running — use system colors so SwiftUI color scheme works
+        guard ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == nil else {
+            return Color(nsColor: .controlBackgroundColor)
+        }
         switch AppearanceMode(rawValue: appearanceMode) {
-        case .light:
-            return Color(nsColor: .controlBackgroundColor)
-        case .dark:
-            return Color(nsColor: .controlBackgroundColor)
-        case .system:
+        case .light, .dark, .system:
             return Color(nsColor: .controlBackgroundColor)
         case .auto, .none:
-            // Use terminal background color
             if terminalEngine == "ghostty" {
                 return ghosttyBackgroundColor ?? defaultGhosttyBackground
             }

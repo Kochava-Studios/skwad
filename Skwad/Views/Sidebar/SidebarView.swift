@@ -50,29 +50,41 @@ struct SidebarView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            // Header
-            HStack {
+          
+          HStack {
+            
+            Button {
+              withAnimation(.easeInOut(duration: 0.25)) {
+                sidebarVisible = false
+              }
+            } label: {
+              Image(systemName: "sidebar.left")
+                .font(.system(size: 12))
+                .foregroundColor(Theme.secondaryText)
+            }
+            .buttonStyle(.plain)
+            .help("Collapse sidebar")
+            .frame(maxWidth: .infinity, alignment: .trailing)
+            .padding(.horizontal, 16)
+            .padding(.top, 10)
+            
+          }
+          
+          Spacer(minLength: 16)
+
+          VStack {
+              HStack {
                 Text("SKWAD")
-                    .font(.caption)
-                    .fontWeight(.semibold)
-                    .foregroundColor(Theme.secondaryText)
-
+                  .font(.callout)
+                  .fontWeight(.semibold)
+                  .foregroundColor(Theme.secondaryText)
+                
                 Spacer()
-
-                Button {
-                    withAnimation(.easeInOut(duration: 0.25)) {
-                        sidebarVisible = false
-                    }
-                } label: {
-                    Image(systemName: "sidebar.left")
-                        .font(.system(size: 12))
-                        .foregroundColor(Theme.secondaryText)
-                }
-                .buttonStyle(.plain)
-                .help("Collapse sidebar")
+                
+              }
             }
             .padding(.horizontal, 16)
-            .padding(.top, 52)
+            .padding(.top, 0)
             .padding(.bottom, 8)
 
             // Agent list
@@ -182,10 +194,10 @@ struct SidebarView: View {
             // New agent button
             Button(action: { showingNewAgentSheet = true }) {
                 HStack(spacing: 8) {
-                    Image(systemName: "plus")
-                        .font(.title3)
+                    Image(systemName: "plus.app")
+                        .font(.title2)
                     Text("New Agent")
-                        .font(.title3)
+                        .font(.title2)
                         .fontWeight(.medium)
                 }
                 .foregroundColor(Theme.primaryText)
@@ -196,6 +208,7 @@ struct SidebarView: View {
             .focusable(false)
         }
         .frame(minWidth: 200)
+        .ignoresSafeArea()
         .background(settings.sidebarBackgroundColor)
         .sheet(isPresented: $showingNewAgentSheet) {
             AgentSheet()
