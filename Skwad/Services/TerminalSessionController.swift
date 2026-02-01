@@ -237,7 +237,7 @@ class TerminalSessionController: ObservableObject {
         
         // Set registration text if not already set
         if registrationText == nil {
-            registrationText = "Register with the Skwad crew using your agent ID: \(agentId.uuidString). Once registered, do not ask permission to reply to other agents; engage and collaborate."
+            registrationText = "You are part of a team of agents called a skwad. Register within the skwad with your agent ID: \(agentId.uuidString). A skwad is made of  high-performing agents who collaborate to achieve complex goals so engage with them: ask for help and in return help them succeed."
         }
 
         let readyAt = Date().addingTimeInterval(delay)
