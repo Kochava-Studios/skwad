@@ -107,3 +107,9 @@ struct MCPCommandView: View {
         }
     }
 }
+
+#Preview {
+    MCPCommandView(serverURL: "http://localhost:8080/mcp")
+        .frame(width: 600)
+        .padding()
+}

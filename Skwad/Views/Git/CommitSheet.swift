@@ -109,3 +109,7 @@ struct CommitSheet: View {
         }
     }
 }
+
+#Preview {
+    CommitSheet(folder: "/Users/nbonamy/src/skwad") {}
+}

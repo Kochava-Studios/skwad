@@ -29,6 +29,7 @@ struct AgentTerminalView: View {
     @EnvironmentObject var agentManager: AgentManager
     @ObservedObject private var settings = AppSettings.shared
     let agent: Agent
+    @Binding var sidebarVisible: Bool
     let onGitStatsTap: () -> Void
 
     @State private var isWindowResizing = false
@@ -40,27 +41,94 @@ struct AgentTerminalView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // Header - same color as sidebar
-            HStack(spacing: 12) {
-                // Left side + spacer - draggable
+            if sidebarVisible {
+                // Full header when sidebar is visible
                 HStack(spacing: 12) {
-                    ViewThatFits(in: .horizontal) {
-                        headerLeftVariant(showTitle: true, showFolder: true)
-                        headerLeftVariant(showTitle: false, showFolder: true)
-                        headerLeftVariant(showTitle: false, showFolder: false)
+                    HStack(spacing: 12) {
+                        ViewThatFits(in: .horizontal) {
+                            headerLeftVariant(showTitle: true, showFolder: true)
+                            headerLeftVariant(showTitle: false, showFolder: true)
+                            headerLeftVariant(showTitle: false, showFolder: false)
+                        }
+                        Spacer()
                     }
-                    
-                    Spacer()
+                    .contentShape(Rectangle())
+                    .gesture(WindowDragGesture())
+
+                    headerRight
                 }
-                .contentShape(Rectangle())
-                .gesture(WindowDragGesture())
-                
-                // Right side - clickable (status + git stats)
-                headerRight
+                .padding(16)
+                .frame(maxWidth: .infinity)
+                .background(settings.sidebarBackgroundColor)
+            } else {
+                // Compact single-line header when sidebar is collapsed
+                HStack(spacing: 10) {
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.25)) {
+                            sidebarVisible = true
+                        }
+                    } label: {
+                        Image(systemName: "sidebar.right")
+                            .font(.system(size: 12))
+                            .foregroundColor(Theme.secondaryText)
+                    }
+                    .buttonStyle(.plain)
+                    .help("Show sidebar")
+
+                    AvatarView(avatar: agent.avatar, size: 16, font: .title3)
+
+                    Text(agent.name)
+                        .font(.body)
+                        .fontWeight(.bold)
+                        .foregroundColor(Theme.secondaryText)
+                        .lineLimit(1)
+
+                    Text("•")
+                      .font(.body)
+                      .fontWeight(.bold)
+                      .foregroundColor(Theme.secondaryText)
+
+                  Text(shortenPath(agent.folder))
+                        .font(.body)
+                        .fontWeight(.bold)
+                        .foregroundColor(Theme.secondaryText)
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+
+                    if !agent.displayTitle.isEmpty {
+                        Text("•")
+                          .font(.body)
+                          .fontWeight(.bold)
+                          .foregroundColor(Theme.secondaryText)
+                      
+                        Text(agent.displayTitle)
+                            .font(.body)
+                            .fontWeight(.bold)
+                            .foregroundColor(Theme.secondaryText)
+                            .lineLimit(1)
+                            .truncationMode(.tail)
+                    }
+
+                    Spacer()
+                        .contentShape(Rectangle())
+                        .gesture(WindowDragGesture())
+
+                    // Status only
+                    HStack(spacing: 6) {
+                        Circle()
+                            .fill(agent.status.color)
+                            .frame(width: 8, height: 8)
+                        Text(agent.status.rawValue)
+                            .font(.callout)
+                            .foregroundColor(Theme.secondaryText)
+                    }
+                }
+                .padding(.leading, 82)
+                .padding(.trailing, 16)
+                .padding(.vertical, 6)
+                .frame(maxWidth: .infinity)
+                .background(settings.sidebarBackgroundColor)
             }
-            .padding()
-            .frame(maxWidth: .infinity)
-            .background(settings.sidebarBackgroundColor)
 
             // Terminal view - controller must exist
             if let controller = controller {

@@ -104,6 +104,7 @@ class GhosttyAppManager {
     /// Initialize the Ghostty app - call this at app startup
     func initialize() {
         guard appWrapper == nil else { return }
+        guard ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == nil else { return }
         appWrapper = Ghostty.App()
 
         if appWrapper?.readiness == .ready {

@@ -806,6 +806,32 @@ struct ScrollWheelView<Content: View>: NSViewRepresentable {
     }
 }
 
+// MARK: - Previews
+
+#Preview("New Agent") {
+    AgentSheet()
+        .environmentObject(AgentManager())
+}
+
+#Preview("Edit Agent") {
+    var agent = Agent(name: "skwad", avatar: "🐱", folder: "/Users/nbonamy/src/skwad")
+    agent.status = .running
+    return AgentSheet(editing: agent)
+        .environmentObject(AgentManager())
+}
+
+#Preview("Fork Agent") {
+    let prefill = AgentPrefill(
+        name: "skwad (fork)",
+        avatar: "🐱",
+        folder: "/Users/nbonamy/src/skwad",
+        agentType: "claude",
+        insertAfterId: nil
+    )
+    return AgentSheet(prefill: prefill)
+        .environmentObject(AgentManager())
+}
+
 private class ScrollWheelHostingView<Content: View>: NSHostingView<Content> {
     let onScroll: (CGFloat) -> Void
     

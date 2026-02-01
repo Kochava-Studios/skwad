@@ -19,3 +19,12 @@ struct AgentTypePicker: View {
         }
     }
 }
+
+#Preview {
+    @Previewable @State var selection = "claude"
+    Form {
+        AgentTypePicker(label: "Coding Agent", selection: $selection)
+    }
+    .formStyle(.grouped)
+    .frame(width: 400)
+}

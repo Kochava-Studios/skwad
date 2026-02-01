@@ -11,7 +11,8 @@ struct ContentView: View {
   @State private var showVoiceOverlay = false
   @State private var escapeMonitor: Any?
   @State private var showNewAgentSheet = false
-  
+  @State private var sidebarVisible = true
+
   private let minSidebarWidth: CGFloat = 200
   private let maxSidebarWidth: CGFloat = 400
   
@@ -26,11 +27,11 @@ struct ContentView: View {
   
   var body: some View {
     HStack(spacing: 0) {
-      if !agentManager.agents.isEmpty {
-        SidebarView()
+      if !agentManager.agents.isEmpty && sidebarVisible {
+        SidebarView(sidebarVisible: $sidebarVisible)
           .frame(width: sidebarWidth)
           .transition(.move(edge: .leading).combined(with: .opacity))
-        
+
         // Resize handle
         Rectangle()
           .fill(Color.clear)
@@ -56,7 +57,7 @@ struct ContentView: View {
         // Keep all terminals alive, show/hide based on selection
         // Use restartToken in id() to force terminal recreation on restart
         ForEach(agentManager.agents) { agent in
-          AgentTerminalView(agent: agent) {
+          AgentTerminalView(agent: agent, sidebarVisible: $sidebarVisible) {
             if GitWorktreeManager.shared.isGitRepo(agent.folder) {
               withAnimation(.easeInOut(duration: 0.2)) {
                 showGitPanel.toggle()
@@ -180,6 +181,13 @@ struct ContentView: View {
     .onChange(of: showGitPanel) { _, _ in
       // Notify terminal to resize when git panel toggles
       // Add small delay to ensure animation completes and layout stabilizes
+      DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+        if let selectedId = agentManager.selectedAgentId {
+          agentManager.notifyTerminalResize(for: selectedId)
+        }
+      }
+    }
+    .onChange(of: sidebarVisible) { _, _ in
       DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
         if let selectedId = agentManager.selectedAgentId {
           agentManager.notifyTerminalResize(for: selectedId)

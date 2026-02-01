@@ -224,3 +224,7 @@ struct NewWorktreeSheet: View {
         }
     }
 }
+
+#Preview {
+    NewWorktreeSheet(repo: RepoInfo(name: "skwad", path: "/Users/nbonamy/src/skwad", worktreeCount: 2)) { _ in }
+}

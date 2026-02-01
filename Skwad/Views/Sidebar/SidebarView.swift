@@ -43,6 +43,7 @@ struct IconLabel: View {
 struct SidebarView: View {
     @EnvironmentObject var agentManager: AgentManager
     @ObservedObject private var settings = AppSettings.shared
+    @Binding var sidebarVisible: Bool
     @State private var showingNewAgentSheet = false
     @State private var agentToEdit: Agent?
     @State private var forkPrefill: AgentPrefill?
@@ -50,13 +51,29 @@ struct SidebarView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             // Header
-            Text("SKWAD")
-                .font(.caption)
-                .fontWeight(.semibold)
-                .foregroundColor(Theme.secondaryText)
-                .padding(.horizontal, 16)
-                .padding(.top, 52)
-                .padding(.bottom, 8)
+            HStack {
+                Text("SKWAD")
+                    .font(.caption)
+                    .fontWeight(.semibold)
+                    .foregroundColor(Theme.secondaryText)
+
+                Spacer()
+
+                Button {
+                    withAnimation(.easeInOut(duration: 0.25)) {
+                        sidebarVisible = false
+                    }
+                } label: {
+                    Image(systemName: "sidebar.left")
+                        .font(.system(size: 12))
+                        .foregroundColor(Theme.secondaryText)
+                }
+                .buttonStyle(.plain)
+                .help("Collapse sidebar")
+            }
+            .padding(.horizontal, 16)
+            .padding(.top, 52)
+            .padding(.bottom, 8)
 
             // Agent list
             ScrollView {
@@ -294,4 +311,36 @@ struct AgentRowView: View {
         .cornerRadius(8)
         .contentShape(Rectangle())
     }
+}
+
+private func previewAgent(_ name: String, _ avatar: String, _ folder: String, status: AgentStatus = .idle, title: String = "") -> Agent {
+    var agent = Agent(name: name, avatar: avatar, folder: folder)
+    agent.status = status
+    agent.terminalTitle = title
+    return agent
+}
+
+#Preview("AgentRow") {
+    VStack(spacing: 4) {
+        AgentRowView(agent: previewAgent("skwad", "🐱", "/Users/nbonamy/src/skwad"), isSelected: false)
+        AgentRowView(agent: previewAgent("witsy", "🤖", "/Users/nbonamy/src/witsy", status: .running, title: "Editing App.swift"), isSelected: true)
+        AgentRowView(agent: previewAgent("broken", "🦊", "/Users/nbonamy/src/broken", status: .error), isSelected: false)
+    }
+    .padding(8)
+    .frame(width: 250)
+}
+
+@MainActor private func previewAgentManager() -> AgentManager {
+    let m = AgentManager()
+    let a1 = previewAgent("skwad", "🐱", "/Users/nbonamy/src/skwad", status: .running, title: "Editing ContentView.swift")
+    let a2 = previewAgent("witsy", "🤖", "/Users/nbonamy/src/witsy")
+    m.agents = [a1, a2]
+    m.selectedAgentId = a1.id
+    return m
+}
+
+#Preview("Sidebar") {
+    SidebarView(sidebarVisible: .constant(true))
+        .environmentObject(previewAgentManager())
+        .frame(width: 250, height: 500)
 }

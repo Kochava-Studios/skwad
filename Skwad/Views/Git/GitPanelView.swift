@@ -582,3 +582,18 @@ struct FileRowView: View {
         return "?"
     }
 }
+
+#Preview("FileRow") {
+    let staged = FileStatus(path: "Skwad/Views/ContentView.swift", originalPath: nil, stagedStatus: .modified, unstagedStatus: nil)
+    let unstaged = FileStatus(path: "Skwad/Models/Agent.swift", originalPath: nil, stagedStatus: nil, unstagedStatus: .modified)
+    let untracked = FileStatus(path: "Skwad/Views/NewView.swift", originalPath: nil, stagedStatus: .untracked, unstagedStatus: .untracked)
+    let deleted = FileStatus(path: "Skwad/Old/Removed.swift", originalPath: nil, stagedStatus: .deleted, unstagedStatus: nil)
+
+    VStack(spacing: 0) {
+        FileRowView(file: staged, isSelected: true, color: .green, onSelect: {}, onStage: nil, onUnstage: {}, onDiscard: nil)
+        FileRowView(file: unstaged, isSelected: false, color: .orange, onSelect: {}, onStage: {}, onUnstage: nil, onDiscard: {})
+        FileRowView(file: untracked, isSelected: false, color: .gray, onSelect: {}, onStage: {}, onUnstage: nil, onDiscard: nil)
+        FileRowView(file: deleted, isSelected: false, color: .green, onSelect: {}, onStage: nil, onUnstage: {}, onDiscard: nil)
+    }
+    .frame(width: 400)
+}

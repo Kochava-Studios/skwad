@@ -27,3 +27,14 @@ struct AvatarView: View {
         return NSImage(data: data)
     }
 }
+
+#Preview {
+    HStack(spacing: 24) {
+        AvatarView(avatar: "🤖", size: 40, font: .largeTitle)
+        AvatarView(avatar: "🐱", size: 40, font: .largeTitle)
+        AvatarView(avatar: nil, size: 40, font: .largeTitle)
+        AvatarView(avatar: "🦊", size: 24, font: .title3)
+        AvatarView(avatar: "🚀", size: 16, font: .body)
+    }
+    .padding()
+}

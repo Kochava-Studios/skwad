@@ -25,3 +25,12 @@ struct AgentTypePickerContent: View {
         }
     }
 }
+
+#Preview {
+    VStack(alignment: .leading, spacing: 12) {
+        ForEach(availableAgents) { agent in
+            AgentTypePickerContent(agent: agent, iconSize: 18)
+        }
+    }
+    .padding()
+}

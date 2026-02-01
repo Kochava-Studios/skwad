@@ -18,6 +18,8 @@ struct SkwadApp: App {
 
     private var settings: AppSettings { AppSettings.shared }
 
+    private static let isPreview = ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
+
     init() {
         // Initialize logging
         LoggingSystem.bootstrap { label in
@@ -25,6 +27,8 @@ struct SkwadApp: App {
             handler.logLevel = .info
             return handler
         }
+
+        guard !SkwadApp.isPreview else { return }
 
         // Initialize source base folder on first launch
         AppSettings.shared.initializeSourceBaseFolderIfNeeded()

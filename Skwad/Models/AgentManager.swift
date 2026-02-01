@@ -24,6 +24,7 @@ class AgentManager: ObservableObject {
     private var controllers: [UUID: TerminalSessionController] = [:]
 
     init() {
+        guard ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] != "1" else { return }
         if settings.restoreLayoutOnLaunch {
             agents = settings.loadSavedAgents()
             selectedAgentId = agents.first?.id
