@@ -31,6 +31,9 @@ class VoiceInputManager: ObservableObject {
     private let sampleInterval: CFTimeInterval = 0.1  // 100ms between samples (like Witsy)
 
     private init() {
+        // Skip expensive initialization in Xcode Previews
+        guard ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] != "1" else { return }
+        
         speechRecognizer = SFSpeechRecognizer(locale: Locale.current)
         setupDisplayLink()
     }

@@ -58,6 +58,9 @@ class AppSettings: ObservableObject {
 
     /// Apply the current appearance mode to the app
     func applyAppearance() {
+        // Skip in Xcode Previews - NSApp is not available
+        guard ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] != "1" else { return }
+        
         switch AppearanceMode(rawValue: appearanceMode) {
         case .auto:
             // Determine appearance from terminal background color
@@ -80,6 +83,8 @@ class AppSettings: ObservableObject {
     // Source folder for git worktree features
     @AppStorage("sourceBaseFolder") var sourceBaseFolder: String = "" {
         didSet {
+            // Skip in Xcode Previews
+            guard ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] != "1" else { return }
             RepoDiscoveryService.shared.updateBaseFolder(sourceBaseFolder)
         }
     }

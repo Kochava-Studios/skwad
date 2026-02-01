@@ -11,9 +11,14 @@ class PushToTalkMonitor: ObservableObject {
     private var flagsMonitor: Any?
     private let settings = AppSettings.shared
 
-    private init() {}
+    private init() {
+    }
 
     func start() {
+
+        // Skip initialization in Xcode Previews
+        guard ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] != "1" else { return }
+
         stop()  // Ensure no duplicate monitors
 
         // Monitor flags changed events (modifier keys)
