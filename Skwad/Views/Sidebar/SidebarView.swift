@@ -49,6 +49,7 @@ struct SidebarView: View {
     @State private var forkPrefill: AgentPrefill?
     @State private var showBroadcastSheet = false
     @State private var broadcastMessage = ""
+    @State private var showRestartAllConfirmation = false
     @State private var showCloseAllConfirmation = false
 
     var body: some View {
@@ -200,6 +201,13 @@ struct SidebarView: View {
                 }
                 
                 Button {
+                    showRestartAllConfirmation = true
+                } label: {
+                    Label("Restart All", systemImage: "arrow.clockwise")
+                }
+                .disabled(agentManager.agents.isEmpty)
+                
+                Button {
                     showCloseAllConfirmation = true
                 } label: {
                     Label("Close All", systemImage: "xmark.circle")
@@ -278,6 +286,14 @@ struct SidebarView: View {
                 sendBroadcast(message)
             }
         }
+        .alert("Restart All Agents", isPresented: $showRestartAllConfirmation) {
+            Button("Cancel", role: .cancel) {}
+            Button("Restart All", role: .destructive) {
+                restartAllAgents()
+            }
+        } message: {
+            Text("Are you sure you want to restart all \(agentManager.agents.count) agent(s)?")
+        }
         .alert("Close All Agents", isPresented: $showCloseAllConfirmation) {
             Button("Cancel", role: .cancel) {}
             Button("Close All", role: .destructive) {
@@ -300,6 +316,16 @@ struct SidebarView: View {
         // Inject message into all agents
         for agent in agentManager.agents {
             agentManager.injectText(trimmed, for: agent.id)
+        }
+    }
+    
+    // MARK: - Restart All
+    
+    private func restartAllAgents() {
+        // Restart all agents
+        let agentsToRestart = agentManager.agents
+        for agent in agentsToRestart {
+            agentManager.restartAgent(agent)
         }
     }
     
