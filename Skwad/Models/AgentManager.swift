@@ -350,7 +350,9 @@ class AgentManager: ObservableObject {
         guard !agents.isEmpty else { return }
         let currentId = activeAgentId
         guard let currentIndex = agents.firstIndex(where: { $0.id == currentId }) else {
-            activeAgentIds = [agents.last!.id]
+            if let lastAgent = agents.last {
+                activeAgentIds = [lastAgent.id]
+            }
             return
         }
 

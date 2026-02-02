@@ -46,6 +46,7 @@ struct AgentTerminalView: View {
     @EnvironmentObject var agentManager: AgentManager
     @ObservedObject private var settings = AppSettings.shared
     let agent: Agent
+    let paneIndex: Int
     @Binding var sidebarVisible: Bool
     let onGitStatsTap: () -> Void
     let onPaneTap: () -> Void
@@ -62,7 +63,7 @@ struct AgentTerminalView: View {
             if sidebarVisible {
                 AgentFullHeader(agent: agent, isFocused: isActive, onGitStatsTap: onGitStatsTap, onPaneTap: onPaneTap)
             } else {
-                AgentCompactHeader(agent: agent, onShowSidebar: {
+              AgentCompactHeader(agent: agent, paneIndex: paneIndex, onShowSidebar: {
                     withAnimation(.easeInOut(duration: 0.25)) {
                         sidebarVisible = true
                     }
@@ -221,21 +222,25 @@ struct AgentFullHeader: View {
 
 struct AgentCompactHeader: View {
     let agent: Agent
+    let paneIndex: Int
     let onShowSidebar: () -> Void
 
     @ObservedObject private var settings = AppSettings.shared
 
     var body: some View {
         HStack(spacing: 10) {
+          
+          if (paneIndex == 0) {
             Button {
-                onShowSidebar()
+              onShowSidebar()
             } label: {
-                Image(systemName: "sidebar.right")
-                    .font(.system(size: 12))
-                    .foregroundColor(Theme.secondaryText)
+              Image(systemName: "sidebar.right")
+                .font(.system(size: 12))
+                .foregroundColor(Theme.secondaryText)
             }
             .buttonStyle(.plain)
             .help("Show sidebar")
+          }
 
             AvatarView(avatar: agent.avatar, size: 16, font: .title3)
 
@@ -284,7 +289,7 @@ struct AgentCompactHeader: View {
                     .foregroundColor(Theme.secondaryText)
             }
         }
-        .padding(.leading, 82)
+        .padding(.leading, paneIndex == 0 ? 82 : 16)
         .padding(.trailing, 16)
         .padding(.vertical, 6)
         .frame(maxWidth: .infinity)
@@ -336,11 +341,11 @@ private func previewAgent(_ name: String, _ avatar: String, _ folder: String, st
 
 #Preview("Compact Header") {
     VStack(spacing: 0) {
-        AgentCompactHeader(agent: previewAgent("skwad", "🐱", "/Users/nbonamy/src/skwad", status: .running, title: "Editing ContentView.swift"), onShowSidebar: {})
+      AgentCompactHeader(agent: previewAgent("skwad", "🐱", "/Users/nbonamy/src/skwad", status: .running, title: "Editing ContentView.swift"), paneIndex: 0, onShowSidebar: {})
         Divider()
-        AgentCompactHeader(agent: previewAgent("witsy", "🤖", "/Users/nbonamy/src/witsy", status: .idle), onShowSidebar: {})
+      AgentCompactHeader(agent: previewAgent("witsy", "🤖", "/Users/nbonamy/src/witsy", status: .idle), paneIndex: 1, onShowSidebar: {})
         Divider()
-        AgentCompactHeader(agent: previewAgent("broken", "🦊", "/Users/nbonamy/src/broken", status: .error), onShowSidebar: {})
+      AgentCompactHeader(agent: previewAgent("broken", "🦊", "/Users/nbonamy/src/broken", status: .error), paneIndex: 1, onShowSidebar: {})
     }
     .frame(width: 600)
 }

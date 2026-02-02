@@ -58,11 +58,15 @@ struct ContentView: View {
         ZStack(alignment: .topLeading) {
           // Keep all terminals alive, show/hide via frame+offset per pane
           ForEach(agentManager.agents) { agent in
+            
             let rect = paneRect(for: agent.id, in: geo.size)
             let visible = agentManager.activeAgentIds.contains(agent.id)
 
+            let paneIdx = agentManager.paneIndex(for: agent.id) ?? 0
+
             AgentTerminalView(
               agent: agent,
+              paneIndex: paneIdx,
               sidebarVisible: $sidebarVisible,
               onGitStatsTap: {
                 if GitWorktreeManager.shared.isGitRepo(agent.folder) {
@@ -164,7 +168,7 @@ struct ContentView: View {
               Spacer()
               layoutToggleButton
             }
-            .padding(.top, 76)
+            .padding(.top, sidebarVisible ? 76 : 36)
             .padding(.trailing, 12)
           }
 
