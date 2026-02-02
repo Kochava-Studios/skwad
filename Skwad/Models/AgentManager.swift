@@ -322,6 +322,38 @@ class AgentManager: ObservableObject {
 
     // MARK: - Agent Navigation
 
+    /// Navigate to next pane (multi-pane mode) or next agent (single-pane mode)
+    func selectNextPaneOrAgent() {
+        if layoutMode == .single {
+            selectNextAgent()
+        } else {
+            selectNextPane()
+        }
+    }
+
+    /// Navigate to previous pane (multi-pane mode) or previous agent (single-pane mode)
+    func selectPreviousPaneOrAgent() {
+        if layoutMode == .single {
+            selectPreviousAgent()
+        } else {
+            selectPreviousPane()
+        }
+    }
+
+    /// Focus next pane in multi-pane mode
+    func selectNextPane() {
+        guard layoutMode != .single else { return }
+        let paneCount = activeAgentIds.count
+        focusedPaneIndex = (focusedPaneIndex + 1) % paneCount
+    }
+
+    /// Focus previous pane in multi-pane mode
+    func selectPreviousPane() {
+        guard layoutMode != .single else { return }
+        let paneCount = activeAgentIds.count
+        focusedPaneIndex = (focusedPaneIndex - 1 + paneCount) % paneCount
+    }
+
     func selectNextAgent() {
         guard !agents.isEmpty else { return }
         let currentId = activeAgentId

@@ -10,8 +10,12 @@ struct ContentView: View {
   @State private var sidebarWidth: CGFloat = 250
   @State private var showVoiceOverlay = false
   @State private var escapeMonitor: Any?
-  @State private var showNewAgentSheet = false
   @State private var sidebarVisible = true
+
+  // Bindings from SkwadApp for menu commands
+  @Binding var showNewAgentSheet: Bool
+  @Binding var toggleGitPanel: Bool
+  @Binding var toggleSidebar: Bool
 
   private let minSidebarWidth: CGFloat = 200
   private let maxSidebarWidth: CGFloat = 400
@@ -287,6 +291,18 @@ struct ContentView: View {
     .sheet(isPresented: $showNewAgentSheet) {
       AgentSheet()
         .environmentObject(agentManager)
+    }
+    .onChange(of: toggleGitPanel) { _, _ in
+      if canShowGitPanel {
+        withAnimation(.easeInOut(duration: 0.2)) {
+          showGitPanel.toggle()
+        }
+      }
+    }
+    .onChange(of: toggleSidebar) { _, _ in
+      withAnimation(.easeInOut(duration: 0.25)) {
+        sidebarVisible.toggle()
+      }
     }
   }
 
@@ -621,7 +637,15 @@ struct ContentView: View {
 }
 
 #Preview {
-  ContentView()
+  @Previewable @State var showNewAgentSheet = false
+  @Previewable @State var toggleGitPanel = false
+  @Previewable @State var toggleSidebar = false
+
+  ContentView(
+    showNewAgentSheet: $showNewAgentSheet,
+    toggleGitPanel: $toggleGitPanel,
+    toggleSidebar: $toggleSidebar
+  )
     .environmentObject(AgentManager())
 }
 

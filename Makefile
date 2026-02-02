@@ -1,4 +1,4 @@
-.PHONY: help build clean archive export notarize dmg release upload
+.PHONY: help build clean archive export notarize dmg release install upload all
 
 # Load .env file if it exists
 -include .env
@@ -35,7 +35,9 @@ help:
 	@echo "  make zip          - Create a notarization-ready ZIP (requires export)"
 	@echo "  make notarize     - Submit ZIP for notarization and staple"
 	@echo "  make release      - Full release pipeline (archive + export + dmg + notarize)"
+	@echo "  make install      - Copy notarized app to /Applications"
 	@echo "  make upload       - Upload ZIP to bonamy.fr:/swap (requires notarize)"
+	@echo "  make all          - Complete pipeline (release + install + upload)"
 	@echo "  make clean        - Clean build artifacts"
 	@echo ""
 	@echo "Environment variables (can be set in .env file):"
@@ -176,6 +178,18 @@ release: notarize
 	@echo "   Distribution package: $(DMG_PATH)"
 	@ls -lh $(DMG_PATH)
 
+install:
+	@echo "Installing $(APP_NAME).app to /Applications..."
+	@if [ ! -d "$(EXPORT_PATH)/$(APP_NAME).app" ]; then \
+		echo "Error: Notarized app not found. Run 'make notarize' first."; \
+		exit 1; \
+	fi
+	@echo "Removing existing installation..."
+	@sudo rm -rf /Applications/$(APP_NAME).app
+	@echo "Copying notarized app..."
+	@sudo cp -R "$(EXPORT_PATH)/$(APP_NAME).app" /Applications/
+	@echo "✅ $(APP_NAME).app installed to /Applications"
+
 upload:
 	@if [ -n "$(SFTP_HOST)" ] && [ -n "$(SFTP_PATH)" ] && [ -n "$(SFTP_USER)" ]; then \
 		echo "Uploading $(ZIP_PATH) to $(SFTP_HOST)$(SFTP_PATH)..."; \
@@ -190,3 +204,10 @@ upload:
 		echo "Error: Upload not configured. Set SFTP_HOST, SFTP_PATH, SFTP_USER in .env file"; \
 		exit 1; \
 	fi
+
+all: release install upload
+	@echo ""
+	@echo "🚀 Complete pipeline finished!"
+	@echo "   ✅ Release built and notarized"
+	@echo "   ✅ Installed to /Applications"
+	@echo "   ✅ Uploaded to $(SFTP_HOST)$(SFTP_PATH)"

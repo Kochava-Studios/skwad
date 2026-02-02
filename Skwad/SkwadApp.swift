@@ -15,6 +15,9 @@ struct SkwadApp: App {
     @State private var broadcastMessage = ""
     @State private var showCloseConfirmation = false
     @State private var agentToClose: Agent?
+    @State private var showNewAgentSheet = false
+    @State private var toggleGitPanel = false
+    @State private var toggleSidebar = false
 
     private var settings: AppSettings { AppSettings.shared }
 
@@ -42,7 +45,11 @@ struct SkwadApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ContentView(
+                showNewAgentSheet: $showNewAgentSheet,
+                toggleGitPanel: $toggleGitPanel,
+                toggleSidebar: $toggleSidebar
+            )
                 .environmentObject(agentManager)
                 .alert("Folder Not Found", isPresented: $showAlert) {
                     Button("OK", role: .cancel) {}
@@ -100,8 +107,15 @@ struct SkwadApp: App {
         .windowStyle(.hiddenTitleBar)
         .defaultSize(width: 1200, height: 800)
         .commands {
-            // Recent agents in File menu
+            // File menu - agent creation and management
             CommandGroup(after: .newItem) {
+                Button("New Agent...") {
+                    showNewAgentSheet = true
+                }
+                .keyboardShortcut("t", modifiers: .command)
+
+                Divider()
+
                 recentAgentsMenu
 
                 Divider()
@@ -113,19 +127,34 @@ struct SkwadApp: App {
                 .keyboardShortcut("b", modifiers: [.command, .shift])
                 .disabled(agentManager.agents.isEmpty)
             }
-            
-            // Clear terminal in Edit menu
+
+            // Edit menu - text and terminal operations
             CommandGroup(after: .textEditing) {
+                Divider()
+
                 Button("Clear Agent") {
                     if let activeId = agentManager.activeAgentId {
                         agentManager.injectText("/clear", for: activeId)
                     }
                 }
-                .keyboardShortcut("c", modifiers: [.command, .shift])
+                .keyboardShortcut("k", modifiers: .command)
                 .disabled(agentManager.activeAgentId == nil)
             }
 
-            // Agent cycling with Ctrl+Tab / Ctrl+Shift+Tab
+            // View menu - UI toggles
+            CommandGroup(after: .sidebar) {
+                Button("Toggle Git Panel") {
+                    toggleGitPanel.toggle()
+                }
+                .keyboardShortcut("/", modifiers: .command)
+
+                Button("Toggle Sidebar") {
+                    toggleSidebar.toggle()
+                }
+                .keyboardShortcut("b", modifiers: [.command, .option])
+            }
+
+            // Window menu - agent navigation and management
             CommandGroup(after: .windowArrangement) {
                 Button("Next Agent") {
                     agentManager.selectNextAgent()
@@ -136,17 +165,42 @@ struct SkwadApp: App {
                     agentManager.selectPreviousAgent()
                 }
                 .keyboardShortcut(KeyEquivalent.tab, modifiers: [.control, .shift])
-                
+
                 Divider()
-                
-                Button("Close Current Agent") {
+
+                Button(agentManager.layoutMode == .single ? "Next Agent" : "Next Pane") {
+                    agentManager.selectNextPaneOrAgent()
+                }
+                .keyboardShortcut("]", modifiers: .command)
+
+                Button(agentManager.layoutMode == .single ? "Previous Agent" : "Previous Pane") {
+                    agentManager.selectPreviousPaneOrAgent()
+                }
+                .keyboardShortcut("[", modifiers: .command)
+
+                Divider()
+
+                Button("Restart Current Agent") {
                     if let agent = agentManager.agents.first(where: { $0.id == agentManager.activeAgentId }) {
-                        agentToClose = agent
-                        showCloseConfirmation = true
+                        agentManager.restartAgent(agent)
                     }
                 }
-                .keyboardShortcut(.delete, modifiers: .command)
+                .keyboardShortcut("r", modifiers: .command)
                 .disabled(agentManager.activeAgentId == nil)
+
+                Divider()
+
+                Button("Close Current Agent") {
+                    closeCurrentAgent()
+                }
+                .keyboardShortcut("w", modifiers: .command)
+                .disabled(agentManager.activeAgentId == nil)
+
+                Button("Close All Agents") {
+                    closeAllAgents()
+                }
+                .keyboardShortcut("w", modifiers: [.command, .shift])
+                .disabled(agentManager.agents.isEmpty)
 
                 // Cmd+1-9 to select agents (only show for existing agents)
                 if !agentManager.agents.isEmpty {
@@ -214,6 +268,31 @@ struct SkwadApp: App {
         for agent in agentManager.agents {
             agentManager.injectText(message, for: agent.id)
         }
+    }
+
+    private func closeCurrentAgent() {
+        guard let agent = agentManager.agents.first(where: { $0.id == agentManager.activeAgentId }) else {
+            return
+        }
+
+        // Remove the agent without confirmation
+        agentManager.removeAgent(agent)
+
+        // If no agents remain, close the window
+        if agentManager.agents.isEmpty {
+            NSApplication.shared.keyWindow?.close()
+        }
+    }
+
+    private func closeAllAgents() {
+        // Remove all agents
+        let allAgents = agentManager.agents
+        for agent in allAgents {
+            agentManager.removeAgent(agent)
+        }
+
+        // Close the window
+        NSApplication.shared.keyWindow?.close()
     }
 }
 
