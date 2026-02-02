@@ -14,6 +14,9 @@
 		48E4A7F10E3C047EF657C139 /* OpenWithAppPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAB09CF01B6F4CD118B448A6 /* OpenWithAppPicker.swift */; };
 		491170A3B86B4F821B4A1417 /* NewWorktreeSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B074ACAD44D9FA064E28A16 /* NewWorktreeSheet.swift */; };
 		49BE1929AE038865BFCD543D /* GitTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADCF18167D88BA578DBF2B2E /* GitTypes.swift */; };
+		8D2673C92F31592C0043E3A6 /* VoiceInputManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D2673C72F31592C0043E3A6 /* VoiceInputManager.swift */; };
+		8D2673CA2F31592C0043E3A6 /* VoiceInputOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D2673C82F31592C0043E3A6 /* VoiceInputOverlay.swift */; };
+		8D2673CB2F31592C0043E3A6 /* PushToTalkMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D2673C62F31592C0043E3A6 /* PushToTalkMonitor.swift */; };
 		8D3F44C72F30EB2000407F17 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = SP000002 /* Sparkle */; };
 		8D6B97222F2DC17900CE877E /* MCPMessageStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6B97212F2DC17900CE877E /* MCPMessageStore.swift */; };
 		8D6B97252F2DC47300CE877E /* AsyncDelay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6B97232F2DC47300CE877E /* AsyncDelay.swift */; };
@@ -110,9 +113,11 @@
 /* Begin PBXFileReference section */
 		137C060CFAE6151E52210D1A /* GitRepository.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GitRepository.swift; sourceTree = "<group>"; };
 		241FF0F3B6265925356C1479 /* GitFileWatcher.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GitFileWatcher.swift; sourceTree = "<group>"; };
-		429BC5DA0748D2B8EA6EC043 /* VoiceInputOverlay.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VoiceInputOverlay.swift; sourceTree = "<group>"; };
 		52D95A7EFF9B22BB564BAFA4 /* GitWorktreeManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GitWorktreeManager.swift; sourceTree = "<group>"; };
 		5B074ACAD44D9FA064E28A16 /* NewWorktreeSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NewWorktreeSheet.swift; sourceTree = "<group>"; };
+		8D2673C62F31592C0043E3A6 /* PushToTalkMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushToTalkMonitor.swift; sourceTree = "<group>"; };
+		8D2673C72F31592C0043E3A6 /* VoiceInputManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceInputManager.swift; sourceTree = "<group>"; };
+		8D2673C82F31592C0043E3A6 /* VoiceInputOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceInputOverlay.swift; sourceTree = "<group>"; };
 		8D6B97212F2DC17900CE877E /* MCPMessageStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPMessageStore.swift; sourceTree = "<group>"; };
 		8D6B97232F2DC47300CE877E /* AsyncDelay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsyncDelay.swift; sourceTree = "<group>"; };
 		8D6B97242F2DC47300CE877E /* TimingConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimingConstants.swift; sourceTree = "<group>"; };
@@ -127,7 +132,6 @@
 		8D7622AD2F2C67CE006B6280 /* MCPTransport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPTransport.swift; sourceTree = "<group>"; };
 		8D7622AE2F2C67CE006B6280 /* MCPTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPTypes.swift; sourceTree = "<group>"; };
 		8DD8074C2F2E52E900D7A935 /* AgentSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentSheet.swift; sourceTree = "<group>"; };
-		9895A27293EEDAA78A2585E8 /* VoiceInputManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VoiceInputManager.swift; sourceTree = "<group>"; };
 		A486F6A72822BE9094B02DA7 /* CommitSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CommitSheet.swift; sourceTree = "<group>"; };
 		ADCF18167D88BA578DBF2B2E /* GitTypes.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GitTypes.swift; sourceTree = "<group>"; };
 		AS100001 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -151,7 +155,6 @@
 		F8000200 /* Skwad.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Skwad.entitlements; sourceTree = "<group>"; };
 		FBECFB308DA186BC15E6AE50 /* GitPanelView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GitPanelView.swift; sourceTree = "<group>"; };
 		FCD187651343B17CF0D9CCCF /* GitCLI.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GitCLI.swift; sourceTree = "<group>"; };
-		FE289D29B40A64B7399FFAFC /* PushToTalkMonitor.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PushToTalkMonitor.swift; sourceTree = "<group>"; };
 		GH100001 /* Ghostty.Action.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ghostty.Action.swift; sourceTree = "<group>"; };
 		GH100002 /* Ghostty.App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ghostty.App.swift; sourceTree = "<group>"; };
 		GH100003 /* Ghostty.Input.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ghostty.Input.swift; sourceTree = "<group>"; };
@@ -246,9 +249,9 @@
 		77680A9680BE89ECA55216DA /* Voice */ = {
 			isa = PBXGroup;
 			children = (
-				9895A27293EEDAA78A2585E8 /* VoiceInputManager.swift */,
-				FE289D29B40A64B7399FFAFC /* PushToTalkMonitor.swift */,
-				429BC5DA0748D2B8EA6EC043 /* VoiceInputOverlay.swift */,
+				8D2673C62F31592C0043E3A6 /* PushToTalkMonitor.swift */,
+				8D2673C72F31592C0043E3A6 /* VoiceInputManager.swift */,
+				8D2673C82F31592C0043E3A6 /* VoiceInputOverlay.swift */,
 			);
 			path = Voice;
 			sourceTree = "<group>";
@@ -648,6 +651,9 @@
 				F8001008 /* AgentTerminalView.swift in Sources */,
 				F8001010 /* AppSettings.swift in Sources */,
 				F8001011 /* SettingsView.swift in Sources */,
+				8D2673C92F31592C0043E3A6 /* VoiceInputManager.swift in Sources */,
+				8D2673CA2F31592C0043E3A6 /* VoiceInputOverlay.swift in Sources */,
+				8D2673CB2F31592C0043E3A6 /* PushToTalkMonitor.swift in Sources */,
 				8D7622AF2F2C67CE006B6280 /* MCPServer.swift in Sources */,
 				8D7622B02F2C67CE006B6280 /* MCPTransport.swift in Sources */,
 				8DD8074D2F2E52E900D7A935 /* AgentSheet.swift in Sources */,
@@ -863,7 +869,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 7;
-				DEVELOPMENT_TEAM = TP8BYQ64C4;
+				DEVELOPMENT_TEAM = S3Y2KVL7H7;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Skwad/Info.plist;
@@ -877,7 +883,7 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
 				MARKETING_VERSION = 1.0.0;
-				PRODUCT_BUNDLE_IDENTIFIER = fr.bonamy.skwad;
+				PRODUCT_BUNDLE_IDENTIFIER = com.kochava.skwad;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "Skwad/ghostty-bridging-header.h";
@@ -895,7 +901,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 7;
-				DEVELOPMENT_TEAM = TP8BYQ64C4;
+				DEVELOPMENT_TEAM = S3Y2KVL7H7;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Skwad/Info.plist;
@@ -909,7 +915,7 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
 				MARKETING_VERSION = 1.0.0;
-				PRODUCT_BUNDLE_IDENTIFIER = fr.bonamy.skwad;
+				PRODUCT_BUNDLE_IDENTIFIER = com.kochava.skwad;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "Skwad/ghostty-bridging-header.h";

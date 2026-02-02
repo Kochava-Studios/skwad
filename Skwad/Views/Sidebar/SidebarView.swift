@@ -281,7 +281,8 @@ struct SidebarView: View {
             // New agent button
             Button(action: { showingNewAgentSheet = true }) {
                 Text("New Agent")
-                    .font(.headline)
+                    .font(.title3)
+                    .fontWeight(.semibold)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 8)
             }
