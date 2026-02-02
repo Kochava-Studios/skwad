@@ -95,7 +95,25 @@ class AppSettings: ObservableObject {
         guard !sourceBaseFolderInitialized else { return }
         sourceBaseFolderInitialized = true
 
-        let candidates = ["~/src", "~/source", "~/sources"]
+        let candidates = [
+            // Tier 1 - Most common
+            "~/src",
+            "~/dev",
+            "~/code",
+            "~/projects",
+            "~/repos",
+            // Tier 2 - Also common
+            "~/source",
+            "~/sources",
+            "~/workspace",
+            "~/workspaces",
+            "~/git",
+            "~/github",
+            "~/Development",
+            // Tier 3 - Less common but valid
+            "~/work",
+            "~/coding",
+        ]
         for candidate in candidates {
             let expanded = NSString(string: candidate).expandingTildeInPath
             var isDirectory: ObjCBool = false
