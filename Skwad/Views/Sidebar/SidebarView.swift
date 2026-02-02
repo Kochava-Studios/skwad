@@ -40,6 +40,80 @@ struct IconLabel: View {
     }
 }
 
+/// Reusable agent context menu builder
+struct AgentContextMenu<Content: View>: View {
+    let agent: Agent
+    let onEdit: () -> Void
+    let onFork: () -> Void
+    @ViewBuilder let content: Content
+
+    @EnvironmentObject var agentManager: AgentManager
+
+    var body: some View {
+        content.contextMenu {
+            Button {
+                onEdit()
+            } label: {
+                Label("Edit Agent...", systemImage: "pencil")
+            }
+
+            Button {
+                onFork()
+            } label: {
+                Label("Fork Agent", systemImage: "arrow.triangle.branch")
+            }
+
+            Button {
+                agentManager.duplicateAgent(agent)
+            } label: {
+                Label("Duplicate Agent", systemImage: "plus.square.on.square")
+            }
+
+            Divider()
+
+            Menu {
+                Button {
+                    openInIDE(agent.folder, ide: "vscode")
+                } label: {
+                    IconLabel("VS Code", icon: "vscode")
+                }
+                Button {
+                    openInIDE(agent.folder, ide: "xcode")
+                } label: {
+                    IconLabel("Xcode", icon: "xcode")
+                }
+                Divider()
+                Button {
+                    openInFinder(agent.folder)
+                } label: {
+                    IconLabel("Finder", icon: "finder", fallback: "folder")
+                }
+                Button {
+                    openInTerminal(agent.folder)
+                } label: {
+                    IconLabel("Terminal", icon: "ghostty", fallback: "terminal")
+                }
+            } label: {
+                Label("Open In...", systemImage: "arrow.up.forward.app")
+            }
+
+            Divider()
+
+            Button {
+                agentManager.restartAgent(agent)
+            } label: {
+                Label("Restart Agent", systemImage: "arrow.clockwise")
+            }
+
+            Button(role: .destructive) {
+                agentManager.removeAgent(agent)
+            } label: {
+                Label("Close Agent", systemImage: "xmark.circle")
+            }
+        }
+    }
+}
+
 struct SidebarView: View {
     @EnvironmentObject var agentManager: AgentManager
     @ObservedObject private var settings = AppSettings.shared
@@ -95,77 +169,24 @@ struct SidebarView: View {
             ScrollView {
                 LazyVStack(spacing: 4) {
                     ForEach(agentManager.agents) { agent in
-                        AgentRowView(agent: agent, isSelected: agent.id == agentManager.activeAgentId)
-                            .onTapGesture {
-                                agentManager.selectAgent(agent.id)
+                        AgentContextMenu(
+                            agent: agent,
+                            onEdit: { agentToEdit = agent },
+                            onFork: {
+                                forkPrefill = AgentPrefill(
+                                    name: agent.name + " (fork)",
+                                    avatar: agent.avatar,
+                                    folder: agent.folder,
+                                    agentType: agent.agentType,
+                                    insertAfterId: agent.id
+                                )
                             }
-                            .contextMenu {
-                                Button {
-                                    agentToEdit = agent
-                                } label: {
-                                    Label("Edit Agent...", systemImage: "pencil")
+                        ) {
+                            AgentRowView(agent: agent, isSelected: agent.id == agentManager.activeAgentId)
+                                .onTapGesture {
+                                    agentManager.selectAgent(agent.id)
                                 }
-
-                                Button {
-                                    forkPrefill = AgentPrefill(
-                                        name: agent.name + " (fork)",
-                                        avatar: agent.avatar,
-                                        folder: agent.folder,
-                                        agentType: agent.agentType,
-                                        insertAfterId: agent.id
-                                    )
-                                } label: {
-                                    Label("Fork Agent", systemImage: "arrow.triangle.branch")
-                                }
-
-                                Button {
-                                    agentManager.duplicateAgent(agent)
-                                } label: {
-                                    Label("Duplicate Agent", systemImage: "plus.square.on.square")
-                                }
-
-                                Divider()
-
-                                Menu {
-                                    Button {
-                                        openInIDE(agent.folder, ide: "vscode")
-                                    } label: {
-                                        IconLabel("VS Code", icon: "vscode")
-                                    }
-                                    Button {
-                                        openInIDE(agent.folder, ide: "xcode")
-                                    } label: {
-                                        IconLabel("Xcode", icon: "xcode")
-                                    }
-                                    Divider()
-                                    Button {
-                                        openInFinder(agent.folder)
-                                    } label: {
-                                        IconLabel("Finder", icon: "finder", fallback: "folder")
-                                    }
-                                    Button {
-                                        openInTerminal(agent.folder)
-                                    } label: {
-                                        IconLabel("Terminal", icon: "ghostty", fallback: "terminal")
-                                    }
-                                } label: {
-                                    Label("Open In...", systemImage: "arrow.up.forward.app")
-                                }
-
-                                Divider()
-
-                                Button {
-                                    agentManager.restartAgent(agent)
-                                } label: {
-                                    Label("Restart Agent", systemImage: "arrow.clockwise")
-                                }
-
-                                Button(role: .destructive) {
-                                    agentManager.removeAgent(agent)
-                                } label: {
-                                    Label("Close Agent", systemImage: "xmark.circle")
-                                }
-                            }
+                        }
                             .draggable(agent.id.uuidString) {
                                 AgentRowView(agent: agent, isSelected: true)
                                     .frame(width: 200)
@@ -353,56 +374,59 @@ struct SidebarView: View {
 
     // MARK: - Open In IDE
 
-    private func openInIDE(_ folder: String, ide: String) {
-        switch ide {
-        case "vscode":
-            let process = Process()
-            process.executableURL = URL(fileURLWithPath: "/usr/bin/open")
-            process.arguments = ["-b", "com.microsoft.VSCode", folder]
-            try? process.run()
+}
 
-        case "xcode":
-            let process = Process()
-            process.executableURL = URL(fileURLWithPath: "/usr/bin/open")
-            process.arguments = ["-a", "Xcode", folder]
-            try? process.run()
+// MARK: - Global Helper Functions
 
-        default:
-            break
-        }
+private func openInIDE(_ folder: String, ide: String) {
+    switch ide {
+    case "vscode":
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/open")
+        process.arguments = ["-b", "com.microsoft.VSCode", folder]
+        try? process.run()
+
+    case "xcode":
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/open")
+        process.arguments = ["-a", "Xcode", folder]
+        try? process.run()
+
+    default:
+        break
     }
+}
 
-    private func openInFinder(_ folder: String) {
-        NSWorkspace.shared.selectFile(nil, inFileViewerRootedAtPath: folder)
-    }
+private func openInFinder(_ folder: String) {
+    NSWorkspace.shared.selectFile(nil, inFileViewerRootedAtPath: folder)
+}
 
-    private func openInTerminal(_ folder: String) {
-        // Try Ghostty first, fall back to Terminal.app
-        let ghosttyBundleId = "com.mitchellh.ghostty"
-        let terminalBundleId = "com.apple.Terminal"
+private func openInTerminal(_ folder: String) {
+    // Try Ghostty first, fall back to Terminal.app
+    let ghosttyBundleId = "com.mitchellh.ghostty"
+    let terminalBundleId = "com.apple.Terminal"
 
-        let bundleId = NSWorkspace.shared.urlForApplication(withBundleIdentifier: ghosttyBundleId) != nil
-            ? ghosttyBundleId
-            : terminalBundleId
+    let bundleId = NSWorkspace.shared.urlForApplication(withBundleIdentifier: ghosttyBundleId) != nil
+        ? ghosttyBundleId
+        : terminalBundleId
 
-        if bundleId == ghosttyBundleId {
-            // Ghostty: just open the folder, it will start a shell there
-            let process = Process()
-            process.executableURL = URL(fileURLWithPath: "/usr/bin/open")
-            process.arguments = ["-b", ghosttyBundleId, folder]
-            try? process.run()
-        } else {
-            // Terminal.app: use AppleScript to cd into folder
-            let script = """
-            tell application "Terminal"
-                activate
-                do script "cd '\(folder)'"
-            end tell
-            """
-            if let appleScript = NSAppleScript(source: script) {
-                var error: NSDictionary?
-                appleScript.executeAndReturnError(&error)
-            }
+    if bundleId == ghosttyBundleId {
+        // Ghostty: just open the folder, it will start a shell there
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/open")
+        process.arguments = ["-b", ghosttyBundleId, folder]
+        try? process.run()
+    } else {
+        // Terminal.app: use AppleScript to cd into folder
+        let script = """
+        tell application "Terminal"
+            activate
+            do script "cd '\(folder)'"
+        end tell
+        """
+        if let appleScript = NSAppleScript(source: script) {
+            var error: NSDictionary?
+            appleScript.executeAndReturnError(&error)
         }
     }
 }

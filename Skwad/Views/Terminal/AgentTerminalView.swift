@@ -53,6 +53,8 @@ struct AgentTerminalView: View {
 
     @State private var isWindowResizing = false
     @State private var controller: TerminalSessionController?
+    @State private var agentToEdit: Agent?
+    @State private var forkPrefill: AgentPrefill?
 
     private var isActive: Bool {
         agentManager.activeAgentId == agent.id
@@ -61,7 +63,21 @@ struct AgentTerminalView: View {
     var body: some View {
         VStack(spacing: 0) {
             if sidebarVisible {
-                AgentFullHeader(agent: agent, isFocused: isActive, onGitStatsTap: onGitStatsTap, onPaneTap: onPaneTap)
+                AgentContextMenu(
+                    agent: agent,
+                    onEdit: { agentToEdit = agent },
+                    onFork: {
+                        forkPrefill = AgentPrefill(
+                            name: agent.name + " (fork)",
+                            avatar: agent.avatar,
+                            folder: agent.folder,
+                            agentType: agent.agentType,
+                            insertAfterId: agent.id
+                        )
+                    }
+                ) {
+                    AgentFullHeader(agent: agent, isFocused: isActive, onGitStatsTap: onGitStatsTap, onPaneTap: onPaneTap)
+                }
             } else {
               AgentCompactHeader(agent: agent, paneIndex: paneIndex, onShowSidebar: {
                     withAnimation(.easeInOut(duration: 0.25)) {
@@ -102,6 +118,14 @@ struct AgentTerminalView: View {
         .onAppear {
             // Create controller when view appears
             controller = agentManager.createController(for: agent)
+        }
+        .sheet(item: $agentToEdit) { agent in
+            AgentSheet(editing: agent)
+                .environmentObject(agentManager)
+        }
+        .sheet(item: $forkPrefill) { prefill in
+            AgentSheet(prefill: prefill)
+                .environmentObject(agentManager)
         }
     }
 
