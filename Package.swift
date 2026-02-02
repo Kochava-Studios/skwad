@@ -12,6 +12,7 @@ let package = Package(
         .package(url: "https://github.com/hummingbird-project/hummingbird.git", from: "2.0.0"),
         .package(url: "https://github.com/apple/swift-log.git", from: "1.6.0"),
         .package(url: "https://github.com/sparkle-project/Sparkle", from: "2.6.0"),
+        .package(url: "https://github.com/nalexn/ViewInspector.git", from: "0.10.0"),
     ],
     targets: [
         .executableTarget(
@@ -24,6 +25,14 @@ let package = Package(
                 .product(name: "Sparkle", package: "Sparkle"),
             ],
             path: "Skwad"
+        ),
+        .testTarget(
+            name: "SkwadTests",
+            dependencies: [
+                "Skwad",
+                "ViewInspector",
+            ],
+            path: "SkwadTests"
         )
     ]
 )

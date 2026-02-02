@@ -8,6 +8,10 @@
 
 /* Begin PBXBuildFile section */
 		01716FCA29A8F9522A2F8A9A /* GitFileWatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 241FF0F3B6265925356C1479 /* GitFileWatcher.swift */; };
+		TS000001 /* GitOutputParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100001 /* GitOutputParserTests.swift */; };
+		TS000002 /* GitOutputFixtures.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100002 /* GitOutputFixtures.swift */; };
+		TS000003 /* CommitSheetTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100003 /* CommitSheetTests.swift */; };
+		TS000004 /* ViewInspector in Frameworks */ = {isa = PBXBuildFile; productRef = TS200001 /* ViewInspector */; };
 		0327FDF2A2ECDCE0DF53BE02 /* DiffView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA63472ED8A96242C89019C1 /* DiffView.swift */; };
 		05DDBA7B3DCF7C65CF6A9FFF /* GitWorktreeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D95A7EFF9B22BB564BAFA4 /* GitWorktreeManager.swift */; };
 		3FFD4CA0073309E4B34E6B66 /* CommitSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A486F6A72822BE9094B02DA7 /* CommitSheet.swift */; };
@@ -98,6 +102,10 @@
 
 /* Begin PBXFileReference section */
 		03CE69DC7C60F2847F9B8C2E /* VoiceInputManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = VoiceInputManager.swift; path = Skwad/Voice/VoiceInputManager.swift; sourceTree = "<group>"; };
+		TS100001 /* GitOutputParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitOutputParserTests.swift; sourceTree = "<group>"; };
+		TS100002 /* GitOutputFixtures.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitOutputFixtures.swift; sourceTree = "<group>"; };
+		TS100003 /* CommitSheetTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommitSheetTests.swift; sourceTree = "<group>"; };
+		TS100100 /* SkwadTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SkwadTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		137C060CFAE6151E52210D1A /* GitRepository.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GitRepository.swift; sourceTree = "<group>"; };
 		241FF0F3B6265925356C1479 /* GitFileWatcher.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GitFileWatcher.swift; sourceTree = "<group>"; };
 		337FE74E7DEB7971FDBEE143 /* PushToTalkMonitor.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PushToTalkMonitor.swift; path = Skwad/Voice/PushToTalkMonitor.swift; sourceTree = "<group>"; };
@@ -185,7 +193,33 @@
 		WS100003 /* WorkspaceSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkspaceSheet.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXContainerItemProxy section */
+		TS300001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F80000F8 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F80000FF;
+			remoteInfo = Skwad;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXTargetDependency section */
+		TS600002 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F80000FF /* Skwad */;
+			targetProxy = TS300001 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin PBXFrameworksBuildPhase section */
+		TS400001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				TS000004 /* ViewInspector in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		F80000FD /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -371,6 +405,7 @@
 			isa = PBXGroup;
 			children = (
 				F8000010 /* Skwad */,
+				TS500000 /* SkwadTests */,
 				SF200000 /* Frameworks */,
 				F8000101 /* Products */,
 				8D7D26722F2D3E2D0077AADE /* Recovered References */,
@@ -381,8 +416,51 @@
 			isa = PBXGroup;
 			children = (
 				F8000100 /* Skwad.app */,
+				TS100100 /* SkwadTests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		TS500000 /* SkwadTests */ = {
+			isa = PBXGroup;
+			children = (
+				TS500001 /* Git */,
+				TS500002 /* Views */,
+			);
+			path = SkwadTests;
+			sourceTree = "<group>";
+		};
+		TS500001 /* Git */ = {
+			isa = PBXGroup;
+			children = (
+				TS500003 /* Fixtures */,
+				TS100001 /* GitOutputParserTests.swift */,
+			);
+			path = Git;
+			sourceTree = "<group>";
+		};
+		TS500002 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				TS500004 /* Git */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		TS500003 /* Fixtures */ = {
+			isa = PBXGroup;
+			children = (
+				TS100002 /* GitOutputFixtures.swift */,
+			);
+			path = Fixtures;
+			sourceTree = "<group>";
+		};
+		TS500004 /* Git */ = {
+			isa = PBXGroup;
+			children = (
+				TS100003 /* CommitSheetTests.swift */,
+			);
+			path = Git;
 			sourceTree = "<group>";
 		};
 		GH200000 /* GhosttyTerminal */ = {
@@ -494,6 +572,26 @@
 			productReference = F8000100 /* Skwad.app */;
 			productType = "com.apple.product-type.application";
 		};
+		TS600000 /* SkwadTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = TS700000 /* Build configuration list for PBXNativeTarget "SkwadTests" */;
+			buildPhases = (
+				TS600001 /* Sources */,
+				TS400001 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				TS600002 /* PBXTargetDependency */,
+			);
+			name = SkwadTests;
+			packageProductDependencies = (
+				TS200001 /* ViewInspector */,
+			);
+			productName = SkwadTests;
+			productReference = TS100100 /* SkwadTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -506,6 +604,10 @@
 				TargetAttributes = {
 					F80000FF = {
 						CreatedOnToolsVersion = 15.0;
+					};
+					TS600000 = {
+						CreatedOnToolsVersion = 15.0;
+						TestTargetID = F80000FF;
 					};
 				};
 			};
@@ -524,12 +626,14 @@
 				8D7622912F2C652D006B6280 /* XCRemoteSwiftPackageReference "hummingbird" */,
 				8D7622962F2C6536006B6280 /* XCRemoteSwiftPackageReference "swift-log" */,
 				SP000001 /* XCRemoteSwiftPackageReference "Sparkle" */,
+				TS800000 /* XCRemoteSwiftPackageReference "ViewInspector" */,
 			);
 			productRefGroup = F8000101 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
 				F80000FF /* Skwad */,
+				TS600000 /* SkwadTests */,
 			);
 		};
 /* End PBXProject section */
@@ -619,6 +723,16 @@
 				F4AB26B99E3CC3D579D72293 /* OpenWithProvider.swift in Sources */,
 				48E4A7F10E3C047EF657C139 /* OpenWithAppPicker.swift in Sources */,
 				UP000001 /* UpdaterManager.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		TS600001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				TS000001 /* GitOutputParserTests.swift in Sources */,
+				TS000002 /* GitOutputFixtures.swift in Sources */,
+				TS000003 /* CommitSheetTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -823,6 +937,42 @@
 			};
 			name = Release;
 		};
+		TS700001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = TP8BYQ64C4;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = fr.bonamy.skwad.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Skwad.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Skwad";
+			};
+			name = Debug;
+		};
+		TS700002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = TP8BYQ64C4;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = fr.bonamy.skwad.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Skwad.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Skwad";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -840,6 +990,15 @@
 			buildConfigurations = (
 				F800010A /* Debug */,
 				F800010B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		TS700000 /* Build configuration list for PBXNativeTarget "SkwadTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				TS700001 /* Debug */,
+				TS700002 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -887,9 +1046,22 @@
 				minimumVersion = 2.6.0;
 			};
 		};
+		TS800000 /* XCRemoteSwiftPackageReference "ViewInspector" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/nalexn/ViewInspector.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.10.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		TS200001 /* ViewInspector */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = TS800000 /* XCRemoteSwiftPackageReference "ViewInspector" */;
+			productName = ViewInspector;
+		};
 		8D76228F2F2C6506006B6280 /* MCP */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 8D76228E2F2C6506006B6280 /* XCRemoteSwiftPackageReference "swift-sdk" */;
