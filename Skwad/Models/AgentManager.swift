@@ -471,6 +471,28 @@ class AgentManager: ObservableObject {
         saveWorkspaces()
     }
 
+    func moveAgentToWorkspace(_ agent: Agent, to targetWorkspaceId: UUID) {
+        guard let sourceWorkspaceId = currentWorkspaceId,
+              sourceWorkspaceId != targetWorkspaceId,
+              let sourceIndex = workspaces.firstIndex(where: { $0.id == sourceWorkspaceId }),
+              let targetIndex = workspaces.firstIndex(where: { $0.id == targetWorkspaceId }) else { return }
+
+        // Remove from source workspace
+        workspaces[sourceIndex].agentIds.removeAll { $0 == agent.id }
+        workspaces[sourceIndex].activeAgentIds.removeAll { $0 == agent.id }
+
+        // Add to target workspace
+        workspaces[targetIndex].agentIds.append(agent.id)
+
+        // Update selection in source workspace if needed
+        let sourceAgents = workspaces[sourceIndex].agentIds
+        if workspaces[sourceIndex].activeAgentIds.isEmpty && !sourceAgents.isEmpty {
+            workspaces[sourceIndex].activeAgentIds = [sourceAgents[0]]
+        }
+
+        saveWorkspaces()
+    }
+
     private func saveAgents() {
         settings.saveAgents(agents)
     }

@@ -69,6 +69,21 @@ struct AgentContextMenu<Content: View>: View {
                 Label("Duplicate Agent", systemImage: "plus.square.on.square")
             }
 
+            // Move to Workspace submenu (only show if there are other workspaces)
+            if agentManager.workspaces.count > 1 {
+                Menu {
+                    ForEach(agentManager.workspaces.filter { $0.id != agentManager.currentWorkspaceId }) { workspace in
+                        Button {
+                            agentManager.moveAgentToWorkspace(agent, to: workspace.id)
+                        } label: {
+                            Label(workspace.name, systemImage: "square.stack")
+                        }
+                    }
+                } label: {
+                    Label("Move to Workspace", systemImage: "arrow.right.square")
+                }
+            }
+
             Divider()
 
             Menu {
