@@ -10,4 +10,8 @@ enum Theme {
     // Selection - purple accent works in both modes
     static let selectionBackground = Color(hex: "#4A90E2")!.opacity(0.25)
     static let selectionBorder = Color(hex: "#4A90E2")!
+
+    // Split pane: unfocused pane dimming
+    static let unfocusedOverlayOpacity: Double = 0.1
+    static let unfocusedHeaderOpacity: Double = 0.7
 }

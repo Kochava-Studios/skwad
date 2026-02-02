@@ -1,23 +1,40 @@
 import SwiftUI
 import AppKit
 
-// NSView that enables window dragging
+// NSView that enables window dragging and fires an onTap callback on single click
 struct WindowDragView: NSViewRepresentable {
+    let onTap: (() -> Void)?
+
+    init(onTap: (() -> Void)? = nil) {
+        self.onTap = onTap
+    }
+
     func makeNSView(context: Context) -> NSView {
         let view = WindowDragNSView()
         view.wantsLayer = true
+        view.onTap = context.coordinator.onTap
         return view
     }
 
-    func updateNSView(_ nsView: NSView, context: Context) {}
+    func updateNSView(_ nsView: NSView, context: Context) {
+        (nsView as? WindowDragNSView)?.onTap = context.coordinator.onTap
+    }
+
+    func makeCoordinator() -> Coordinator { Coordinator(onTap: onTap) }
+
+    class Coordinator {
+        let onTap: (() -> Void)?
+        init(onTap: (() -> Void)?) { self.onTap = onTap }
+    }
 }
 
 class WindowDragNSView: NSView {
+    var onTap: (() -> Void)?
     override var mouseDownCanMoveWindow: Bool { true }
 
     override func mouseDown(with event: NSEvent) {
+        onTap?()
         if event.clickCount == 2 {
-            // Double-click to zoom/maximize
             window?.zoom(nil)
         } else {
             window?.performDrag(with: event)
@@ -31,18 +48,19 @@ struct AgentTerminalView: View {
     let agent: Agent
     @Binding var sidebarVisible: Bool
     let onGitStatsTap: () -> Void
+    let onPaneTap: () -> Void
 
     @State private var isWindowResizing = false
     @State private var controller: TerminalSessionController?
 
     private var isActive: Bool {
-        agentManager.selectedAgentId == agent.id
+        agentManager.activeAgentId == agent.id
     }
 
     var body: some View {
         VStack(spacing: 0) {
             if sidebarVisible {
-                AgentFullHeader(agent: agent, onGitStatsTap: onGitStatsTap)
+                AgentFullHeader(agent: agent, isFocused: isActive, onGitStatsTap: onGitStatsTap, onPaneTap: onPaneTap)
             } else {
                 AgentCompactHeader(agent: agent, onShowSidebar: {
                     withAnimation(.easeInOut(duration: 0.25)) {
@@ -59,12 +77,14 @@ struct AgentTerminalView: View {
                         isActive: isActive,
                         onTerminalCreated: { terminal in
                             agentManager.registerTerminal(terminal, for: agent.id)
-                        }
+                        },
+                        onPaneTap: onPaneTap
                     )
                 } else {
                     SwiftTermTerminalWrapperView(
                         controller: controller,
-                        isActive: isActive
+                        isActive: isActive,
+                        onPaneTap: onPaneTap
                     )
                 }
             }
@@ -90,9 +110,16 @@ struct AgentTerminalView: View {
 
 struct AgentFullHeader: View {
     let agent: Agent
+    let isFocused: Bool
     let onGitStatsTap: () -> Void
+    let onPaneTap: () -> Void
 
+    @EnvironmentObject var agentManager: AgentManager
     @ObservedObject private var settings = AppSettings.shared
+
+    private var isUnfocusedInSplit: Bool {
+        agentManager.layoutMode != .single && !isFocused
+    }
 
     var body: some View {
         HStack(spacing: 12) {
@@ -104,8 +131,7 @@ struct AgentFullHeader: View {
                 }
                 Spacer()
             }
-            .contentShape(Rectangle())
-            .gesture(WindowDragGesture())
+            .background(WindowDragView(onTap: onPaneTap))
 
             VStack(alignment: .trailing, spacing: 2) {
                 HStack(spacing: 8) {
@@ -143,6 +169,7 @@ struct AgentFullHeader: View {
                         .lineLimit(1)
                 }
             }
+            .opacity(isUnfocusedInSplit ? Theme.unfocusedHeaderOpacity : 1.0)
             .contentShape(Rectangle())
             .onTapGesture {
                 onGitStatsTap()
@@ -157,12 +184,14 @@ struct AgentFullHeader: View {
     private func leftVariant(showTitle: Bool, showFolder: Bool) -> some View {
         HStack(spacing: 12) {
             AvatarView(avatar: agent.avatar, size: 36, font: .largeTitle)
+                .opacity(isUnfocusedInSplit ? Theme.unfocusedHeaderOpacity : 1.0)
 
             Text(agent.name)
                 .font(.title2)
                 .fontWeight(.semibold)
                 .foregroundColor(Theme.primaryText)
                 .lineLimit(1)
+                .opacity(isUnfocusedInSplit ? Theme.unfocusedHeaderOpacity : 1.0)
 
             if showFolder {
                 Text(shortenPath(agent.folder))
@@ -170,6 +199,7 @@ struct AgentFullHeader: View {
                     .foregroundColor(Theme.secondaryText)
                     .lineLimit(1)
                     .truncationMode(.middle)
+                    .opacity(isUnfocusedInSplit ? Theme.unfocusedHeaderOpacity : 1.0)
             }
 
             if showTitle, !agent.displayTitle.isEmpty {
@@ -181,6 +211,7 @@ struct AgentFullHeader: View {
                     .foregroundColor(Theme.secondaryText)
                     .lineLimit(1)
                     .truncationMode(.tail)
+                .opacity(isUnfocusedInSplit ? Theme.unfocusedHeaderOpacity : 1.0)
             }
         }
     }
@@ -279,15 +310,28 @@ private func previewAgent(_ name: String, _ avatar: String, _ folder: String, st
     return agent
 }
 
+@MainActor private func previewAgentManager() -> AgentManager {
+    let skwad = previewAgent("skwad", "🐱", "/Users/nbonamy/src/skwad", status: .running, title: "Editing ContentView.swift", stats: .init(insertions: 42, deletions: 7, files: 3))
+    let witsy = previewAgent("witsy", "🤖", "/Users/nbonamy/src/witsy", status: .idle, stats: .init(insertions: 0, deletions: 0, files: 0))
+    let broken = previewAgent("broken", "🦊", "/Users/nbonamy/src/broken", status: .error)
+    let m = AgentManager()
+    m.agents = [skwad, witsy, broken]
+    m.activeAgentIds = [skwad.id, witsy.id]
+    m.layoutMode = .splitVertical
+    return m
+}
+
 #Preview("Full Header") {
+    let manager = previewAgentManager()
     VStack(spacing: 0) {
-        AgentFullHeader(agent: previewAgent("skwad", "🐱", "/Users/nbonamy/src/skwad", status: .running, title: "Editing ContentView.swift", stats: .init(insertions: 42, deletions: 7, files: 3)), onGitStatsTap: {})
+        AgentFullHeader(agent: manager.agents[0], isFocused: true, onGitStatsTap: {}, onPaneTap: {})
         Divider()
-        AgentFullHeader(agent: previewAgent("witsy", "🤖", "/Users/nbonamy/src/witsy", status: .idle, stats: .init(insertions: 0, deletions: 0, files: 0)), onGitStatsTap: {})
+        AgentFullHeader(agent: manager.agents[1], isFocused: false, onGitStatsTap: {}, onPaneTap: {})
         Divider()
-        AgentFullHeader(agent: previewAgent("broken", "🦊", "/Users/nbonamy/src/broken", status: .error), onGitStatsTap: {})
+        AgentFullHeader(agent: manager.agents[2], isFocused: false, onGitStatsTap: {}, onPaneTap: {})
     }
     .frame(width: 600)
+    .environmentObject(manager)
 }
 
 #Preview("Compact Header") {
@@ -308,6 +352,7 @@ struct GhosttyTerminalWrapperView: View {
     let controller: TerminalSessionController
     let isActive: Bool
     let onTerminalCreated: (GhosttyTerminalView) -> Void
+    let onPaneTap: (() -> Void)?
 
     var body: some View {
         GeometryReader { proxy in
@@ -315,7 +360,8 @@ struct GhosttyTerminalWrapperView: View {
                 controller: controller,
                 size: proxy.size,
                 isActive: isActive,
-                onTerminalCreated: onTerminalCreated
+                onTerminalCreated: onTerminalCreated,
+                onPaneTap: onPaneTap
             )
         }
     }
@@ -328,11 +374,13 @@ struct SwiftTermTerminalWrapperView: View {
     @ObservedObject private var settings = AppSettings.shared
     let controller: TerminalSessionController
     let isActive: Bool
+    let onPaneTap: (() -> Void)?
 
     var body: some View {
         TerminalHostView(
             controller: controller,
-            isActive: isActive
+            isActive: isActive,
+            onPaneTap: onPaneTap
         )
         .padding(12)
         .background(settings.terminalBackgroundColor)

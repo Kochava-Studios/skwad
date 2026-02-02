@@ -95,9 +95,9 @@ struct SidebarView: View {
             ScrollView {
                 LazyVStack(spacing: 4) {
                     ForEach(agentManager.agents) { agent in
-                        AgentRowView(agent: agent, isSelected: agentManager.selectedAgentId == agent.id)
+                        AgentRowView(agent: agent, isSelected: agent.id == agentManager.activeAgentId)
                             .onTapGesture {
-                                agentManager.selectedAgentId = agent.id
+                                agentManager.assignAgentToFocusedPane(agent.id)
                             }
                             .contextMenu {
                                 Button {
@@ -475,7 +475,7 @@ private func previewAgent(_ name: String, _ avatar: String, _ folder: String, st
     let a1 = previewAgent("skwad", "🐱", "/Users/nbonamy/src/skwad", status: .running, title: "Editing ContentView.swift")
     let a2 = previewAgent("witsy", "🤖", "/Users/nbonamy/src/witsy")
     m.agents = [a1, a2]
-    m.selectedAgentId = a1.id
+    m.activeAgentIds = [a1.id]
     return m
 }
 

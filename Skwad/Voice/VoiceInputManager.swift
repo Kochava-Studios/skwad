@@ -290,7 +290,7 @@ class VoiceInputManager: ObservableObject {
 
     func injectText(_ text: String, into agentManager: AgentManager, submit: Bool = false) {
         guard !text.isEmpty else { return }
-        guard let agentId = agentManager.selectedAgentId else { return }
+        guard let agentId = agentManager.activeAgentId else { return }
 
         if submit {
             agentManager.injectText(text, for: agentId)

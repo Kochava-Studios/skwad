@@ -1,6 +1,13 @@
 import Foundation
 import SwiftUI
 
+enum LayoutMode {
+    case single
+    case splitVertical   // left | right
+    case splitHorizontal // top / bottom
+    case gridFourPane    // 4-pane grid (up to 4 agents)
+}
+
 // Weak wrapper for terminal references to avoid retain cycles
 private class WeakTerminalRef {
     weak var terminal: GhosttyTerminalView?
@@ -12,7 +19,10 @@ private class WeakTerminalRef {
 @MainActor
 class AgentManager: ObservableObject {
     @Published var agents: [Agent] = []
-    @Published var selectedAgentId: UUID?
+    @Published var layoutMode: LayoutMode = .single
+    @Published var activeAgentIds: [UUID] = []   // count matches pane count: 1 for single, 2 for split
+    @Published var focusedPaneIndex: Int = 0
+    @Published var splitRatio: CGFloat = 0.5
 
     private let settings = AppSettings.shared
 
@@ -27,8 +37,33 @@ class AgentManager: ObservableObject {
         guard ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] != "1" else { return }
         if settings.restoreLayoutOnLaunch {
             agents = settings.loadSavedAgents()
-            selectedAgentId = agents.first?.id
+            if let first = agents.first {
+                activeAgentIds = [first.id]
+            }
         }
+    }
+
+    // MARK: - Derived state
+
+    /// The agent in the focused pane (used for git panel, voice, keyboard shortcuts)
+    var activeAgentId: UUID? {
+        guard focusedPaneIndex < activeAgentIds.count else { return activeAgentIds.first }
+        return activeAgentIds[focusedPaneIndex]
+    }
+
+    /// The agent currently shown in single mode / pane 0 (kept for convenience)
+    var selectedAgentId: UUID? {
+        activeAgentIds.first
+    }
+
+    var selectedAgent: Agent? {
+        guard let id = selectedAgentId else { return nil }
+        return agents.first { $0.id == id }
+    }
+
+    /// Which pane index an agent occupies, or nil if not in any pane
+    func paneIndex(for agentId: UUID) -> Int? {
+        activeAgentIds.firstIndex(of: agentId)
     }
 
     // MARK: - Controller Management
@@ -103,7 +138,7 @@ class AgentManager: ObservableObject {
         controllers[agentId]?.injectText(text)
     }
 
-    
+
     /// Notify terminal to resize (e.g., when git panel toggles)
     func notifyTerminalResize(for agentId: UUID) {
         controllers[agentId]?.notifyResize()
@@ -121,10 +156,7 @@ class AgentManager: ObservableObject {
         agents.first { $0.id == agentId }?.isRegistered ?? false
     }
 
-    var selectedAgent: Agent? {
-        guard let id = selectedAgentId else { return nil }
-        return agents.first { $0.id == id }
-    }
+    // MARK: - Agent CRUD
 
     func addAgent(
         folder: String,
@@ -145,7 +177,9 @@ class AgentManager: ObservableObject {
         } else {
             agents.append(agent)
         }
-        selectedAgentId = agent.id
+        if activeAgentIds.isEmpty {
+            activeAgentIds = [agent.id]
+        }
         saveAgents()
 
         // Add to recent agents
@@ -159,13 +193,31 @@ class AgentManager: ObservableObject {
                 await MCPService.shared.unregisterAgent(agentId: agent.id.uuidString)
             }
         }
-        
+
         removeController(for: agent.id)
         unregisterTerminal(for: agent.id)
         agents.removeAll { $0.id == agent.id }
-        if selectedAgentId == agent.id {
-            selectedAgentId = agents.first?.id
+
+        if activeAgentIds.contains(agent.id) {
+            // For 4-pane grid, just remove the agent from activeAgentIds but stay in grid mode
+            if layoutMode == .gridFourPane {
+                activeAgentIds.removeAll { $0 == agent.id }
+                // If we have less than 2 agents remaining in the grid, exit to single
+                if activeAgentIds.count < 2 {
+                    exitSplit(selecting: activeAgentIds.first ?? agents.first?.id)
+                } else if focusedPaneIndex >= activeAgentIds.count {
+                    focusedPaneIndex = activeAgentIds.count - 1
+                }
+            } else {
+                // For other split modes, collapse to single with surviving pane agent
+                let surviving = activeAgentIds.first(where: { id in id != agent.id && agents.contains(where: { $0.id == id }) })
+                exitSplit(selecting: surviving ?? agents.first?.id)
+            }
+        } else if layoutMode == .single && (activeAgentIds.isEmpty || !agents.contains(where: { $0.id == activeAgentIds[0] })) {
+            // Single mode, selected agent gone → pick first
+            activeAgentIds = agents.first.map { [$0.id] } ?? []
         }
+
         saveAgents()
     }
 
@@ -174,7 +226,6 @@ class AgentManager: ObservableObject {
         var newAgent = Agent(folder: agent.folder, avatar: agent.avatar, agentType: agent.agentType)
         newAgent.name = agent.name + nameSuffix
         agents.append(newAgent)
-        selectedAgentId = newAgent.id
         saveAgents()
         return newAgent
     }
@@ -230,43 +281,113 @@ class AgentManager: ObservableObject {
         }
     }
 
+    // MARK: - Layout / Split Pane
+
+    func enterSplit(_ mode: LayoutMode) {
+        guard agents.count >= 2 else { return }
+        guard let currentId = activeAgentIds.first,
+              let currentIndex = agents.firstIndex(where: { $0.id == currentId }) else { return }
+        let nextIndex = (currentIndex + 1) % agents.count
+        activeAgentIds = [currentId, agents[nextIndex].id]
+        layoutMode = mode
+        focusedPaneIndex = 0
+    }
+
+    private func exitSplit(selecting id: UUID? = nil) {
+        let keepId = id ?? (focusedPaneIndex < activeAgentIds.count ? activeAgentIds[focusedPaneIndex] : nil)
+        activeAgentIds = keepId.map { [$0] } ?? (agents.first.map { [$0.id] } ?? [])
+        layoutMode = .single
+        focusedPaneIndex = 0
+    }
+
+    func focusPane(_ index: Int) {
+        guard layoutMode != .single, index < activeAgentIds.count else { return }
+        focusedPaneIndex = index
+    }
+
+    func assignAgentToFocusedPane(_ agentId: UUID) {
+        if layoutMode == .single {
+            activeAgentIds = [agentId]
+            return
+        }
+
+        // Agent is already in the other pane → swap
+        if let otherIndex = activeAgentIds.indices.first(where: { $0 != focusedPaneIndex && activeAgentIds[$0] == agentId }) {
+            activeAgentIds.swapAt(focusedPaneIndex, otherIndex)
+        } else {
+            activeAgentIds[focusedPaneIndex] = agentId
+        }
+    }
+
+    // MARK: - Agent Navigation
+
     func select(_ agent: Agent) {
-        selectedAgentId = agent.id
+        assignAgentToFocusedPane(agent.id)
     }
 
     func selectNextAgent() {
         guard !agents.isEmpty else { return }
-        guard let currentId = selectedAgentId,
-              let currentIndex = agents.firstIndex(where: { $0.id == currentId }) else {
-            selectedAgentId = agents.first?.id
+        let currentId = activeAgentId
+        guard let currentIndex = agents.firstIndex(where: { $0.id == currentId }) else {
+            activeAgentIds = [agents[0].id]
             return
         }
-        let nextIndex = (currentIndex + 1) % agents.count
-        selectedAgentId = agents[nextIndex].id
+
+        if layoutMode != .single {
+            // Cycle into focused pane, skip agents in other panes
+            var next = (currentIndex + 1) % agents.count
+            while activeAgentIds.contains(agents[next].id) && agents[next].id != currentId {
+                next = (next + 1) % agents.count
+            }
+            activeAgentIds[focusedPaneIndex] = agents[next].id
+        } else {
+            let nextIndex = (currentIndex + 1) % agents.count
+            activeAgentIds = [agents[nextIndex].id]
+        }
     }
 
     func selectPreviousAgent() {
         guard !agents.isEmpty else { return }
-        guard let currentId = selectedAgentId,
-              let currentIndex = agents.firstIndex(where: { $0.id == currentId }) else {
-            selectedAgentId = agents.last?.id
+        let currentId = activeAgentId
+        guard let currentIndex = agents.firstIndex(where: { $0.id == currentId }) else {
+            activeAgentIds = [agents.last!.id]
             return
         }
-        let previousIndex = (currentIndex - 1 + agents.count) % agents.count
-        selectedAgentId = agents[previousIndex].id
+
+        if layoutMode != .single {
+            var prev = (currentIndex - 1 + agents.count) % agents.count
+            while activeAgentIds.contains(agents[prev].id) && agents[prev].id != currentId {
+                prev = (prev - 1 + agents.count) % agents.count
+            }
+            activeAgentIds[focusedPaneIndex] = agents[prev].id
+        } else {
+            let previousIndex = (currentIndex - 1 + agents.count) % agents.count
+            activeAgentIds = [agents[previousIndex].id]
+        }
     }
 
     func selectAgentAtIndex(_ index: Int) {
         guard index >= 0 && index < agents.count else { return }
-        selectedAgentId = agents[index].id
+        let agentId = agents[index].id
+
+        if layoutMode != .single {
+            // If agent is already in a pane, focus that pane
+            if let pane = paneIndex(for: agentId) {
+                focusedPaneIndex = pane
+            } else {
+                assignAgentToFocusedPane(agentId)
+            }
+        } else {
+            activeAgentIds = [agentId]
+        }
     }
+
+    // MARK: - Git Stats
 
     func refreshGitStats(forFolder folder: String) {
         guard let agent = agents.first(where: { $0.folder == folder }) else { return }
         refreshGitStats(for: agent.id)
     }
-
-    // MARK: - Git Stats
 
     private func refreshGitStats(for agentId: UUID) {
         guard let agent = agents.first(where: { $0.id == agentId }) else { return }

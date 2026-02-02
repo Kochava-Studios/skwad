@@ -117,12 +117,12 @@ struct SkwadApp: App {
             // Clear terminal in Edit menu
             CommandGroup(after: .textEditing) {
                 Button("Clear Agent") {
-                    if let selectedId = agentManager.selectedAgentId {
-                        agentManager.injectText("/clear", for: selectedId)
+                    if let activeId = agentManager.activeAgentId {
+                        agentManager.injectText("/clear", for: activeId)
                     }
                 }
                 .keyboardShortcut("c", modifiers: [.command, .shift])
-                .disabled(agentManager.selectedAgentId == nil)
+                .disabled(agentManager.activeAgentId == nil)
             }
 
             // Agent cycling with Ctrl+Tab / Ctrl+Shift+Tab
@@ -140,13 +140,13 @@ struct SkwadApp: App {
                 Divider()
                 
                 Button("Close Current Agent") {
-                    if let selectedAgent = agentManager.agents.first(where: { $0.id == agentManager.selectedAgentId }) {
-                        agentToClose = selectedAgent
+                    if let agent = agentManager.agents.first(where: { $0.id == agentManager.activeAgentId }) {
+                        agentToClose = agent
                         showCloseConfirmation = true
                     }
                 }
                 .keyboardShortcut(.delete, modifiers: .command)
-                .disabled(agentManager.selectedAgentId == nil)
+                .disabled(agentManager.activeAgentId == nil)
 
                 // Cmd+1-9 to select agents (only show for existing agents)
                 if !agentManager.agents.isEmpty {

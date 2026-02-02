@@ -15,16 +15,17 @@ struct ContentView: View {
 
   private let minSidebarWidth: CGFloat = 200
   private let maxSidebarWidth: CGFloat = 400
-  
-  private var selectedAgent: Agent? {
-    agentManager.agents.first { $0.id == agentManager.selectedAgentId }
+
+  private var activeAgent: Agent? {
+    guard let id = agentManager.activeAgentId else { return nil }
+    return agentManager.agents.first { $0.id == id }
   }
-  
+
   private var canShowGitPanel: Bool {
-    guard let agent = selectedAgent else { return false }
+    guard let agent = activeAgent else { return false }
     return GitWorktreeManager.shared.isGitRepo(agent.folder)
   }
-  
+
   var body: some View {
     HStack(spacing: 0) {
       if !agentManager.agents.isEmpty && sidebarVisible {
@@ -52,108 +53,161 @@ struct ContentView: View {
               }
           )
       }
-      
-      ZStack {
-        // Keep all terminals alive, show/hide based on selection
-        // Use restartToken in id() to force terminal recreation on restart
-        ForEach(agentManager.agents) { agent in
-          AgentTerminalView(agent: agent, sidebarVisible: $sidebarVisible) {
-            if GitWorktreeManager.shared.isGitRepo(agent.folder) {
-              withAnimation(.easeInOut(duration: 0.2)) {
-                showGitPanel.toggle()
-              }
-            }
-          }
-            .id("\(agent.id)-\(agent.restartToken)")
-            .opacity(agentManager.selectedAgentId == agent.id ? 1 : 0)
-            .allowsHitTesting(agentManager.selectedAgentId == agent.id)
-        }
-        
-        // Empty state
-        if agentManager.agents.isEmpty {
-          VStack(spacing: 16) {
-            
-            Image(nsImage: NSApplication.shared.applicationIconImage)
-              .resizable()
-              .frame(width: 128, height: 128)
-              .shadow(color: .black.opacity(0.2), radius: 8, y: 4)
-            
-            VStack(spacing: 0) {
-              Text("Welcome to Skwad!")
-                .font(.system(size: 36, weight: .semibold))
-                .foregroundColor(.primary)
-              
-              Text("Start assembling your skwad by creating your first agent")
-                .font(.title)
-                .foregroundColor(.secondary)
-            }
 
-            VStack(spacing: 32) {
-              
-              Button {
-                showNewAgentSheet = true
-              } label: {
-                Label("Create New Agent", systemImage: "plus")
-                  .font(.title2.weight(.semibold))
-              }
-              .buttonStyle(.borderedProminent)
-              
-              HStack(spacing: 8) {
-                ForEach(settings.recentAgents.prefix(5)) { savedAgent in
-                  Button {
-                    agentManager.addAgent(folder: savedAgent.folder, name: savedAgent.name, avatar: savedAgent.avatar, agentType: savedAgent.agentType)
-                  } label: {
-                    HStack(spacing: 6) {
-                      AvatarView(avatar: savedAgent.avatar, size: 20, font: .caption)
-                      Text(savedAgent.name)
-                        .font(.caption)
-                        .lineLimit(1)
-                    }
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(Color.gray.opacity(0.2))
-                    .cornerRadius(12)
+      GeometryReader { geo in
+        ZStack(alignment: .topLeading) {
+          // Keep all terminals alive, show/hide via frame+offset per pane
+          ForEach(agentManager.agents) { agent in
+            let rect = paneRect(for: agent.id, in: geo.size)
+            let visible = agentManager.activeAgentIds.contains(agent.id)
+
+            AgentTerminalView(
+              agent: agent,
+              sidebarVisible: $sidebarVisible,
+              onGitStatsTap: {
+                if GitWorktreeManager.shared.isGitRepo(agent.folder) {
+                  // Focus this agent's pane first so git panel opens for it
+                  if let pane = agentManager.paneIndex(for: agent.id) {
+                    agentManager.focusPane(pane)
                   }
-                  .buttonStyle(.plain)
+                  withAnimation(.easeInOut(duration: 0.2)) {
+                    showGitPanel.toggle()
+                  }
+                }
+              },
+              onPaneTap: {
+                if let pane = agentManager.paneIndex(for: agent.id) {
+                  agentManager.focusPane(pane)
                 }
               }
-              
-            }.padding(.vertical, 32)
-
-            VStack(spacing: 12) {
-
-              Text("Install Skwad MCP Server to enable agent‑to‑agent communication")
-                .font(.title2)
-                .foregroundColor(.secondary)
-              
-              MCPCommandView(
-                serverURL: settings.mcpServerURL,
-                fontSize: .title3,
-                backgroundColor: Color.black.opacity(0.08),
-                iconSize: 20
-              )
-              .frame(maxWidth: 820)
-            }
+            )
+              .id("\(agent.id)-\(agent.restartToken)")
+              .frame(width: rect.width, height: rect.height)
+              .offset(x: rect.minX, y: rect.minY)
+              .opacity(visible ? 1 : 0)
+              .allowsHitTesting(visible)
           }
-          .frame(maxWidth: .infinity, maxHeight: .infinity)
-          .background(settings.effectiveBackgroundColor)
-        }
-        
-        // Git toggle button
-        if canShowGitPanel {
-          VStack {
-            Spacer()
+
+          // Empty state
+          if agentManager.agents.isEmpty {
+            VStack(spacing: 16) {
+
+              Image(nsImage: NSApplication.shared.applicationIconImage)
+                .resizable()
+                .frame(width: 128, height: 128)
+                .shadow(color: .black.opacity(0.2), radius: 8, y: 4)
+
+              VStack(spacing: 0) {
+                Text("Welcome to Skwad!")
+                  .font(.system(size: 36, weight: .semibold))
+                  .foregroundColor(.primary)
+
+                Text("Start assembling your skwad by creating your first agent")
+                  .font(.title)
+                  .foregroundColor(.secondary)
+              }
+
+              VStack(spacing: 32) {
+
+                Button {
+                  showNewAgentSheet = true
+                } label: {
+                  Label("Create New Agent", systemImage: "plus")
+                    .font(.title2.weight(.semibold))
+                }
+                .buttonStyle(.borderedProminent)
+
+                HStack(spacing: 8) {
+                  ForEach(settings.recentAgents.prefix(5)) { savedAgent in
+                    Button {
+                      agentManager.addAgent(folder: savedAgent.folder, name: savedAgent.name, avatar: savedAgent.avatar, agentType: savedAgent.agentType)
+                    } label: {
+                      HStack(spacing: 6) {
+                        AvatarView(avatar: savedAgent.avatar, size: 20, font: .caption)
+                        Text(savedAgent.name)
+                          .font(.caption)
+                          .lineLimit(1)
+                      }
+                      .padding(.horizontal, 8)
+                      .padding(.vertical, 4)
+                      .background(Color.gray.opacity(0.2))
+                      .cornerRadius(12)
+                    }
+                    .buttonStyle(.plain)
+                  }
+                }
+
+              }.padding(.vertical, 32)
+
+              VStack(spacing: 12) {
+
+                Text("Install Skwad MCP Server to enable agent‑to‑agent communication")
+                  .font(.title2)
+                  .foregroundColor(.secondary)
+
+                MCPCommandView(
+                  serverURL: settings.mcpServerURL,
+                  fontSize: .title3,
+                  backgroundColor: Color.black.opacity(0.08),
+                  iconSize: 20
+                )
+                .frame(maxWidth: 820)
+              }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(settings.effectiveBackgroundColor)
+          }
+
+          // Layout toggle button — positioned in top-right corner
+          if agentManager.agents.count >= 2 {
             HStack {
               Spacer()
-              gitToggleButton
-                .padding(16)
+              layoutToggleButton
+            }
+            .padding(.top, 76)
+            .padding(.trailing, 12)
+          }
+
+          // Git toggle button — positioned in bottom-right of active pane
+          if canShowGitPanel {
+            let activeRect = computePaneRect(agentManager.focusedPaneIndex, in: geo.size)
+            VStack {
+              Spacer()
+              HStack {
+                Spacer()
+                gitToggleButton
+                  .padding(16)
+              }
+            }
+            .frame(width: activeRect.width, height: activeRect.height)
+            .offset(x: activeRect.minX, y: activeRect.minY)
+          }
+
+          // Split mode overlays
+          if agentManager.layoutMode != .single {
+            // Dim the unfocused panes
+            ForEach(0..<(agentManager.layoutMode == .gridFourPane ? 4 : 2), id: \.self) { pane in
+              if pane != agentManager.focusedPaneIndex {
+                let rect = computePaneRect(pane, in: geo.size)
+                Rectangle()
+                  .fill(Color.black.opacity(Theme.unfocusedOverlayOpacity))
+                  .frame(width: rect.width, height: rect.height)
+                  .offset(x: rect.minX, y: rect.minY)
+                  .allowsHitTesting(false)
+              }
+            }
+
+            if agentManager.layoutMode != .gridFourPane {
+              splitDivider(in: geo.size)
+            } else {
+              gridFourPaneDividers(in: geo.size)
             }
           }
         }
       }
-      
+
       // Git panel (sliding from right)
-      if showGitPanel, let agent = selectedAgent {
+      if showGitPanel, let agent = activeAgent {
         GitPanelView(folder: agent.folder) {
           withAnimation(.easeInOut(duration: 0.2)) {
             showGitPanel = false
@@ -172,25 +226,24 @@ struct ContentView: View {
         voiceOverlay
       }
     }
-    .onChange(of: agentManager.selectedAgentId) { _, _ in
-      // Close git panel when switching agents
-      if showGitPanel {
-        showGitPanel = false
-      }
+    .onChange(of: agentManager.activeAgentIds) { _, _ in
+      if showGitPanel { showGitPanel = false }
+    }
+    .onChange(of: agentManager.focusedPaneIndex) { _, _ in
+      if showGitPanel { showGitPanel = false }
     }
     .onChange(of: showGitPanel) { _, _ in
       // Notify terminal to resize when git panel toggles
-      // Add small delay to ensure animation completes and layout stabilizes
       DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
-        if let selectedId = agentManager.selectedAgentId {
-          agentManager.notifyTerminalResize(for: selectedId)
+        if let activeId = agentManager.activeAgentId {
+          agentManager.notifyTerminalResize(for: activeId)
         }
       }
     }
     .onChange(of: sidebarVisible) { _, _ in
       DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
-        if let selectedId = agentManager.selectedAgentId {
-          agentManager.notifyTerminalResize(for: selectedId)
+        for id in agentManager.activeAgentIds {
+          agentManager.notifyTerminalResize(for: id)
         }
       }
     }
@@ -232,9 +285,115 @@ struct ContentView: View {
         .environmentObject(agentManager)
     }
   }
-  
+
+  // MARK: - Split Pane Layout Helpers
+
+  /// Compute the rect for an agent based on its pane assignment
+  private func paneRect(for agentId: UUID, in size: CGSize) -> CGRect {
+    if agentManager.layoutMode == .single {
+      return CGRect(origin: .zero, size: size)
+    }
+    let pane = agentManager.paneIndex(for: agentId) ?? 0
+    return computePaneRect(pane, in: size)
+  }
+
+  /// Compute rect for a pane index given layout mode and split ratio
+  private func computePaneRect(_ pane: Int, in size: CGSize) -> CGRect {
+    let ratio = agentManager.splitRatio
+    switch agentManager.layoutMode {
+    case .single:
+      return CGRect(origin: .zero, size: size)
+    case .splitVertical:  // left | right
+      let w0 = size.width * ratio
+      let w1 = size.width - w0
+      return pane == 0
+        ? CGRect(x: 0, y: 0, width: w0, height: size.height)
+        : CGRect(x: w0, y: 0, width: w1, height: size.height)
+    case .splitHorizontal:  // top / bottom
+      let h0 = size.height * ratio
+      let h1 = size.height - h0
+      return pane == 0
+        ? CGRect(x: 0, y: 0, width: size.width, height: h0)
+        : CGRect(x: 0, y: h0, width: size.width, height: h1)
+    case .gridFourPane:  // 4-pane grid
+      let w = size.width / 2
+      let h = size.height / 2
+      switch pane {
+      case 0: return CGRect(x: 0, y: 0, width: w, height: h)        // top-left
+      case 1: return CGRect(x: w, y: 0, width: w, height: h)        // top-right
+      case 2: return CGRect(x: 0, y: h, width: w, height: h)        // bottom-left
+      case 3: return CGRect(x: w, y: h, width: w, height: h)        // bottom-right
+      default: return CGRect(origin: .zero, size: size)
+      }
+    }
+  }
+
+  /// Draggable split divider
+  private func splitDivider(in size: CGSize) -> some View {
+    let isVertical = agentManager.layoutMode == .splitVertical
+    let pos = isVertical ? size.width * agentManager.splitRatio : size.height * agentManager.splitRatio
+
+    return Rectangle()
+      .fill(Color.clear)
+      .frame(
+        width: isVertical ? 6 : size.width,
+        height: isVertical ? size.height : 6
+      )
+      .overlay(
+        Rectangle()
+          .fill(Color.primary.opacity(0.15))
+          .frame(
+            width: isVertical ? 1 : size.width,
+            height: isVertical ? size.height : 1
+          )
+      )
+      .offset(
+        x: isVertical ? pos - 3 : 0,
+        y: isVertical ? 0 : pos - 3
+      )
+      .contentShape(Rectangle())
+      .onHover { hovering in
+        if hovering {
+          (isVertical ? NSCursor.resizeLeftRight : NSCursor.resizeUpDown).push()
+        } else {
+          NSCursor.pop()
+        }
+      }
+      .gesture(
+        DragGesture()
+          .onChanged { value in
+            let newRatio: CGFloat
+            if isVertical {
+              newRatio = (pos + value.translation.width) / size.width
+            } else {
+              newRatio = (pos + value.translation.height) / size.height
+            }
+            agentManager.splitRatio = max(0.25, min(0.75, newRatio))
+          }
+      )
+  }
+
+  /// Grid dividers for 4-pane layout
+  private func gridFourPaneDividers(in size: CGSize) -> some View {
+    Group {
+      // Vertical divider (middle)
+      Rectangle()
+        .fill(Color.primary.opacity(0.15))
+        .frame(width: 1, height: size.height)
+        .offset(x: size.width / 2 - 0.5)
+      
+      // Horizontal divider (middle)
+      Rectangle()
+        .fill(Color.primary.opacity(0.15))
+        .frame(width: size.width, height: 1)
+        .offset(y: size.height / 2 - 0.5)
+    }
+  }
+
+
+
   // MARK: - Voice Input
-  
+
   @ViewBuilder
   private var voiceOverlay: some View {
     ZStack {
@@ -243,7 +402,7 @@ struct ContentView: View {
         .onTapGesture {
           dismissVoiceOverlay()
         }
-      
+
       VStack(spacing: 20) {
         // Header with close button
         HStack(spacing: 16) {
@@ -251,11 +410,11 @@ struct ContentView: View {
             .font(.system(size: 32))
             .foregroundColor(voiceManager.isListening ? .red : .secondary)
             .symbolEffect(.pulse, isActive: voiceManager.isListening)
-          
+
           VStack(alignment: .leading, spacing: 6) {
             Text(voiceManager.isListening ? "Listening..." : "Voice Input")
               .font(.title2.bold())
-            
+
             if let error = voiceManager.error {
               Text(error)
                 .font(.body)
@@ -267,9 +426,9 @@ struct ContentView: View {
                 .foregroundColor(.secondary)
             }
           }
-          
+
           Spacer()
-          
+
           Button {
             dismissVoiceOverlay()
           } label: {
@@ -280,20 +439,20 @@ struct ContentView: View {
           .buttonStyle(.plain)
           .keyboardShortcut(.escape, modifiers: [])
         }
-        
+
         // Audio waveform visualization
         if voiceManager.isListening {
           AudioWaveformView(samples: voiceManager.waveformSamples)
             .frame(height: 32)
         }
-        
+
         // Transcribed text
         if !voiceManager.transcribedText.isEmpty {
           VStack(alignment: .leading, spacing: 10) {
             Text("Transcription:")
               .font(.body)
               .foregroundColor(.secondary)
-            
+
             Text(voiceManager.transcribedText)
               .font(.title3)
               .padding(14)
@@ -301,7 +460,7 @@ struct ContentView: View {
               .background(Color.black.opacity(0.2))
               .cornerRadius(8)
           }
-          
+
           // Action buttons (only if not auto-insert)
           if !settings.voiceAutoInsert && !voiceManager.isListening {
             HStack {
@@ -309,9 +468,9 @@ struct ContentView: View {
                 dismissVoiceOverlay()
               }
               .font(.body)
-              
+
               Spacer()
-              
+
               Button("Insert") {
                 insertVoiceText()
               }
@@ -333,10 +492,10 @@ struct ContentView: View {
       return .handled
     }
   }
-  
+
   private func handleVoiceKeyStateChange(isDown: Bool) {
     guard settings.voiceEnabled else { return }
-    
+
     if isDown {
       // Key pressed - start recording
       showVoiceOverlay = true
@@ -346,10 +505,10 @@ struct ContentView: View {
     } else {
       // Key released - only inject if overlay wasn't cancelled
       guard showVoiceOverlay else { return }
-      
+
       let finalText = voiceManager.transcribedText
       voiceManager.stopListening()
-      
+
       // Always insert text if we have it
       if !finalText.isEmpty {
         voiceManager.injectText(finalText, into: agentManager, submit: settings.voiceAutoInsert)
@@ -357,20 +516,87 @@ struct ContentView: View {
       dismissVoiceOverlay()
     }
   }
-  
+
   private func insertVoiceText() {
     guard !voiceManager.transcribedText.isEmpty else { return }
     voiceManager.injectText(voiceManager.transcribedText, into: agentManager, submit: settings.voiceAutoInsert)
     dismissVoiceOverlay()
   }
-  
+
   private func dismissVoiceOverlay() {
     voiceManager.stopListening()
     voiceManager.transcribedText = ""
     voiceManager.error = nil
     showVoiceOverlay = false
   }
-  
+
+  private var layoutToggleButton: some View {
+    Menu {
+      Button {
+        agentManager.layoutMode = .single
+        if agentManager.activeAgentIds.count > 1 {
+          agentManager.activeAgentIds = [agentManager.activeAgentIds[agentManager.focusedPaneIndex]]
+        }
+      } label: {
+        Label("Single Pane", systemImage: "square")
+      }
+      
+      Button {
+        agentManager.layoutMode = .splitVertical
+        if agentManager.activeAgentIds.count == 1, agentManager.agents.count >= 2 {
+          let currentId = agentManager.activeAgentIds[0]
+          let otherAgent = agentManager.agents.first { $0.id != currentId }
+          if let otherId = otherAgent?.id {
+            agentManager.activeAgentIds = [currentId, otherId]
+          }
+        } else if agentManager.activeAgentIds.count > 2 {
+          agentManager.activeAgentIds = Array(agentManager.activeAgentIds.prefix(2))
+        }
+      } label: {
+        Label("Split Vertical", systemImage: "square.split.2x1")
+      }
+      
+      Button {
+        agentManager.layoutMode = .splitHorizontal
+        if agentManager.activeAgentIds.count == 1, agentManager.agents.count >= 2 {
+          let currentId = agentManager.activeAgentIds[0]
+          let otherAgent = agentManager.agents.first { $0.id != currentId }
+          if let otherId = otherAgent?.id {
+            agentManager.activeAgentIds = [currentId, otherId]
+          }
+        } else if agentManager.activeAgentIds.count > 2 {
+          agentManager.activeAgentIds = Array(agentManager.activeAgentIds.prefix(2))
+        }
+      } label: {
+        Label("Split Horizontal", systemImage: "square.split.1x2")
+      }
+      
+      if agentManager.agents.count >= 3 {
+        Button {
+          agentManager.layoutMode = .gridFourPane
+          if agentManager.activeAgentIds.count < 3 {
+            // Fill up to 4 agents (or however many we have)
+            var newIds = agentManager.activeAgentIds
+            let availableAgents = agentManager.agents.filter { !newIds.contains($0.id) }
+            for agent in availableAgents.prefix(4 - newIds.count) {
+              newIds.append(agent.id)
+            }
+            agentManager.activeAgentIds = newIds
+          }
+        } label: {
+          Label("4-Pane Split", systemImage: "square.grid.2x2")
+        }
+      }
+    } label: {
+      Image(systemName: "menubar.rectangle")
+        .font(.system(size: 16, weight: .medium))
+        .foregroundColor(Theme.secondaryText)
+    }
+    .menuStyle(.borderlessButton)
+    .menuIndicator(.hidden)
+    .help("Layout options")
+  }
+
   private var gitToggleButton: some View {
     Button {
       withAnimation(.easeInOut(duration: 0.2)) {
@@ -395,6 +621,92 @@ struct ContentView: View {
     .environmentObject(AgentManager())
 }
 
+// MARK: - Split Pane Preview
+
+private struct SplitPanePreview: View {
+  @StateObject private var manager = previewSplitManager()
+  @State private var focusedPane = 0
+
+  var body: some View {
+    GeometryReader { geo in
+      ZStack(alignment: .topLeading) {
+        ForEach(0..<2) { pane in
+          let rect = computeRect(pane, in: geo.size)
+          let agent = manager.agents[pane]
+          let isFocused = pane == focusedPane
+
+          VStack(spacing: 0) {
+            AgentFullHeader(agent: agent, isFocused: isFocused, onGitStatsTap: {}, onPaneTap: {
+              focusedPane = pane
+            })
+            // Placeholder terminal body
+            Rectangle()
+              .fill(pane == 0 ? Color.blue.opacity(0.08) : Color.green.opacity(0.08))
+              .frame(maxWidth: .infinity, maxHeight: .infinity)
+              .overlay(
+                Text("Pane \(pane + 1) — \(agent.name)")
+                  .font(.title3)
+                  .foregroundColor(.secondary)
+              )
+          }
+          .frame(width: rect.width, height: rect.height)
+          .offset(x: rect.minX, y: rect.minY)
+        }
+
+        // Dim unfocused pane
+        let unfocusedRect = computeRect(1 - focusedPane, in: geo.size)
+        Rectangle()
+          .fill(Color.black.opacity(Theme.unfocusedOverlayOpacity))
+          .frame(width: unfocusedRect.width, height: unfocusedRect.height)
+          .offset(x: unfocusedRect.minX, y: unfocusedRect.minY)
+          .allowsHitTesting(false)
+
+        // Divider
+        let pos = geo.size.width * manager.splitRatio
+        Rectangle()
+          .fill(Color.clear)
+          .frame(width: 6, height: geo.size.height)
+          .overlay(
+            Rectangle()
+              .fill(Color.primary.opacity(0.15))
+              .frame(width: 1, height: geo.size.height)
+          )
+          .offset(x: pos - 3)
+      }
+    }
+    .environmentObject(manager)
+    .frame(width: 900, height: 600)
+  }
+
+  private func computeRect(_ pane: Int, in size: CGSize) -> CGRect {
+    let w0 = size.width * manager.splitRatio
+    return pane == 0
+      ? CGRect(x: 0, y: 0, width: w0, height: size.height)
+      : CGRect(x: w0, y: 0, width: size.width - w0, height: size.height)
+  }
+}
+
+@MainActor private func previewSplitManager() -> AgentManager {
+  var a1 = Agent(name: "skwad", avatar: "🐱", folder: "/Users/nbonamy/src/skwad")
+  a1.status = .running
+  a1.terminalTitle = "Editing ContentView.swift"
+  a1.gitStats = .init(insertions: 42, deletions: 7, files: 3)
+
+  var a2 = Agent(name: "witsy", avatar: "🤖", folder: "/Users/nbonamy/src/witsy")
+  a2.status = .idle
+  a2.gitStats = .init(insertions: 0, deletions: 0, files: 0)
+
+  let m = AgentManager()
+  m.agents = [a1, a2]
+  m.activeAgentIds = [a1.id, a2.id]
+  m.layoutMode = .splitVertical
+  return m
+}
+
+#Preview("Split Pane") {
+  SplitPanePreview()
+}
+
 // MARK: - Audio Waveform Visualization (Dictation style)
 
 struct AudioWaveformView: View {
@@ -402,7 +714,7 @@ struct AudioWaveformView: View {
   private let barCount = 64
   private let barWidth: CGFloat = 2
   private let spacing: CGFloat = 1.5
-  
+
   var body: some View {
     TimelineView(.animation(minimumInterval: 1/60)) { _ in
       Canvas { context, size in
@@ -410,15 +722,15 @@ struct AudioWaveformView: View {
         let startX = (size.width - totalWidth) / 2
         let midY = size.height / 2
         let maxHeight = size.height * 0.9
-        
+
         for i in 0..<barCount {
           // Map bar index to sample index
           let sampleIndex = samples.count > 0 ? i * samples.count / barCount : 0
           let sample = sampleIndex < samples.count ? samples[sampleIndex] : 0
-          
+
           // Minimum bar height of 2 for visibility
           let height = max(2, CGFloat(sample) * maxHeight)
-          
+
           let x = startX + CGFloat(i) * (barWidth + spacing)
           let rect = CGRect(
             x: x,
@@ -426,7 +738,7 @@ struct AudioWaveformView: View {
             width: barWidth,
             height: height
           )
-          
+
           context.fill(
             Path(roundedRect: rect, cornerRadius: 1),
             with: .color(.white.opacity(0.85))

@@ -14,6 +14,7 @@ struct GhosttyHostView: NSViewRepresentable {
     let size: CGSize
     let isActive: Bool
     let onTerminalCreated: (GhosttyTerminalView) -> Void
+    let onPaneTap: (() -> Void)?
 
     func makeNSView(context: Context) -> TerminalScrollView {
         // Initialize Ghostty if not already done
@@ -44,6 +45,8 @@ struct GhosttyHostView: NSViewRepresentable {
 
         // Store terminal reference in context for focus management
         context.coordinator.terminal = terminal
+
+        terminal.onMouseDown = onPaneTap
 
         // Notify parent that terminal is created
         DispatchQueue.main.async {

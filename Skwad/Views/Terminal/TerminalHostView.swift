@@ -13,13 +13,27 @@ class ActivityDetectingTerminalView: LocalProcessTerminalView {
     }
 }
 
+/// Transparent wrapper that intercepts mouseDown to notify the pane, then forwards to the terminal
+class TerminalContainerView: NSView {
+    var onMouseDown: (() -> Void)?
+    weak var terminal: ActivityDetectingTerminalView?
+
+    override func mouseDown(with event: NSEvent) {
+        onMouseDown?()
+        terminal?.mouseDown(with: event)
+    }
+
+    override var acceptsFirstResponder: Bool { false }
+}
+
 struct TerminalHostView: NSViewRepresentable {
     let controller: TerminalSessionController
     let isActive: Bool
+    let onPaneTap: (() -> Void)?
 
     @ObservedObject private var settings = AppSettings.shared
 
-    func makeNSView(context: Context) -> ActivityDetectingTerminalView {
+    func makeNSView(context: Context) -> TerminalContainerView {
         let terminal = ActivityDetectingTerminalView(frame: .zero)
 
         // Configure terminal appearance from settings
@@ -51,17 +65,29 @@ struct TerminalHostView: NSViewRepresentable {
             adapter.notifyReady()
         }
 
-        return terminal
+        // Wrap terminal in container that intercepts mouseDown for pane focus
+        let container = TerminalContainerView(frame: .zero)
+        container.onMouseDown = onPaneTap
+        container.terminal = terminal
+        container.addSubview(terminal)
+        context.coordinator.container = container
+
+        return container
     }
 
-    func updateNSView(_ nsView: ActivityDetectingTerminalView, context: Context) {
+    func updateNSView(_ nsView: TerminalContainerView, context: Context) {
+        guard let terminal = nsView.terminal else { return }
+
+        // Keep terminal filling the container
+        terminal.frame = nsView.bounds
+
         // Apply settings (in case they changed)
-        applySettings(to: nsView)
+        applySettings(to: terminal)
 
         // Focus terminal when active
         if isActive {
             DispatchQueue.main.async {
-                nsView.window?.makeFirstResponder(nsView)
+                nsView.window?.makeFirstResponder(terminal)
             }
         }
     }
@@ -81,6 +107,7 @@ struct TerminalHostView: NSViewRepresentable {
     @MainActor
     class Coordinator: NSObject, LocalProcessTerminalViewDelegate {
         var adapter: SwiftTermAdapter?
+        var container: TerminalContainerView?
 
         func processTerminated(source: TerminalView, exitCode: Int32?) {
             adapter?.notifyProcessExit(exitCode: exitCode)

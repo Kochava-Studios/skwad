@@ -290,7 +290,11 @@ class GhosttyTerminalView: NSView {
 
     // MARK: - Mouse Input
 
+    /// Called before Ghostty processes the mouse event — used to focus the pane
+    var onMouseDown: (() -> Void)?
+
     override func mouseDown(with event: NSEvent) {
+        onMouseDown?()
         inputHandler.handleMouseDown(with: event)
     }
 
