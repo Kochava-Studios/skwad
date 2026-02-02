@@ -8,16 +8,11 @@
 
 /* Begin PBXBuildFile section */
 		01716FCA29A8F9522A2F8A9A /* GitFileWatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 241FF0F3B6265925356C1479 /* GitFileWatcher.swift */; };
-		TS000001 /* GitOutputParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100001 /* GitOutputParserTests.swift */; };
-		TS000002 /* GitOutputFixtures.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100002 /* GitOutputFixtures.swift */; };
-		TS000003 /* CommitSheetTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100003 /* CommitSheetTests.swift */; };
-		TS000004 /* ViewInspector in Frameworks */ = {isa = PBXBuildFile; productRef = TS200001 /* ViewInspector */; };
 		0327FDF2A2ECDCE0DF53BE02 /* DiffView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA63472ED8A96242C89019C1 /* DiffView.swift */; };
 		05DDBA7B3DCF7C65CF6A9FFF /* GitWorktreeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D95A7EFF9B22BB564BAFA4 /* GitWorktreeManager.swift */; };
 		3FFD4CA0073309E4B34E6B66 /* CommitSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A486F6A72822BE9094B02DA7 /* CommitSheet.swift */; };
 		48E4A7F10E3C047EF657C139 /* OpenWithAppPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAB09CF01B6F4CD118B448A6 /* OpenWithAppPicker.swift */; };
 		491170A3B86B4F821B4A1417 /* NewWorktreeSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B074ACAD44D9FA064E28A16 /* NewWorktreeSheet.swift */; };
-		49401D3D3F6B5D076AF44DD4 /* VoiceInputOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3DBC302D03CA10E1AEEE3BC /* VoiceInputOverlay.swift */; };
 		49BE1929AE038865BFCD543D /* GitTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADCF18167D88BA578DBF2B2E /* GitTypes.swift */; };
 		8D3F44C72F30EB2000407F17 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = SP000002 /* Sparkle */; };
 		8D6B97222F2DC17900CE877E /* MCPMessageStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6B97212F2DC17900CE877E /* MCPMessageStore.swift */; };
@@ -43,8 +38,6 @@
 		A0622F92A9748B402B7D8403 /* MenuItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = B85319AD6169FDBF46AAE73E /* MenuItem.swift */; };
 		A1789C06B8425D64920E2446 /* GitCLI.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCD187651343B17CF0D9CCCF /* GitCLI.swift */; };
 		AS000001 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AS100001 /* Assets.xcassets */; };
-		B8654D4E2D19AA01B9A6072A /* VoiceInputManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03CE69DC7C60F2847F9B8C2E /* VoiceInputManager.swift */; };
-		C6616FBD9C1D86E51B5D6B0E /* PushToTalkMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 337FE74E7DEB7971FDBEE143 /* PushToTalkMonitor.swift */; };
 		EC4663850678FAF77C0F1381 /* GitRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 137C060CFAE6151E52210D1A /* GitRepository.swift */; };
 		F4AB26B99E3CC3D579D72293 /* OpenWithProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = E032A72A15B3456546418CF7 /* OpenWithProvider.swift */; };
 		F8001001 /* SkwadApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8000001 /* SkwadApp.swift */; };
@@ -90,6 +83,10 @@
 		SR000004 /* TerminalCommandBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = SR100004 /* TerminalCommandBuilder.swift */; };
 		SR000006 /* TerminalSessionController.swift in Sources */ = {isa = PBXBuildFile; fileRef = SR100006 /* TerminalSessionController.swift */; };
 		SR000007 /* TerminalAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = SR100007 /* TerminalAdapter.swift */; };
+		TS000001 /* GitOutputParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100001 /* GitOutputParserTests.swift */; };
+		TS000002 /* GitOutputFixtures.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100002 /* GitOutputFixtures.swift */; };
+		TS000003 /* CommitSheetTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100003 /* CommitSheetTests.swift */; };
+		TS000004 /* ViewInspector in Frameworks */ = {isa = PBXBuildFile; productRef = TS200001 /* ViewInspector */; };
 		UP000001 /* UpdaterManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = UP100001 /* UpdaterManager.swift */; };
 		UT000001 /* Clipboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = UT100001 /* Clipboard.swift */; };
 		UT000002 /* TerminalTextCleaner.swift in Sources */ = {isa = PBXBuildFile; fileRef = UT100002 /* TerminalTextCleaner.swift */; };
@@ -100,15 +97,19 @@
 		WS000003 /* WorkspaceSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = WS100003 /* WorkspaceSheet.swift */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		TS300001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F80000F8 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F80000FF;
+			remoteInfo = Skwad;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
-		03CE69DC7C60F2847F9B8C2E /* VoiceInputManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = VoiceInputManager.swift; path = Skwad/Voice/VoiceInputManager.swift; sourceTree = "<group>"; };
-		TS100001 /* GitOutputParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitOutputParserTests.swift; sourceTree = "<group>"; };
-		TS100002 /* GitOutputFixtures.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitOutputFixtures.swift; sourceTree = "<group>"; };
-		TS100003 /* CommitSheetTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommitSheetTests.swift; sourceTree = "<group>"; };
-		TS100100 /* SkwadTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SkwadTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		137C060CFAE6151E52210D1A /* GitRepository.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GitRepository.swift; sourceTree = "<group>"; };
 		241FF0F3B6265925356C1479 /* GitFileWatcher.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GitFileWatcher.swift; sourceTree = "<group>"; };
-		337FE74E7DEB7971FDBEE143 /* PushToTalkMonitor.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PushToTalkMonitor.swift; path = Skwad/Voice/PushToTalkMonitor.swift; sourceTree = "<group>"; };
 		429BC5DA0748D2B8EA6EC043 /* VoiceInputOverlay.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VoiceInputOverlay.swift; sourceTree = "<group>"; };
 		52D95A7EFF9B22BB564BAFA4 /* GitWorktreeManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GitWorktreeManager.swift; sourceTree = "<group>"; };
 		5B074ACAD44D9FA064E28A16 /* NewWorktreeSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NewWorktreeSheet.swift; sourceTree = "<group>"; };
@@ -131,7 +132,6 @@
 		ADCF18167D88BA578DBF2B2E /* GitTypes.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GitTypes.swift; sourceTree = "<group>"; };
 		AS100001 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B85319AD6169FDBF46AAE73E /* MenuItem.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MenuItem.swift; sourceTree = "<group>"; };
-		C3DBC302D03CA10E1AEEE3BC /* VoiceInputOverlay.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = VoiceInputOverlay.swift; path = Skwad/Voice/VoiceInputOverlay.swift; sourceTree = "<group>"; };
 		CAB09CF01B6F4CD118B448A6 /* OpenWithAppPicker.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OpenWithAppPicker.swift; sourceTree = "<group>"; };
 		E032A72A15B3456546418CF7 /* OpenWithProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OpenWithProvider.swift; sourceTree = "<group>"; };
 		EA63472ED8A96242C89019C1 /* DiffView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DiffView.swift; sourceTree = "<group>"; };
@@ -183,6 +183,10 @@
 		SR100004 /* TerminalCommandBuilder.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TerminalCommandBuilder.swift; sourceTree = "<group>"; };
 		SR100006 /* TerminalSessionController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TerminalSessionController.swift; sourceTree = "<group>"; };
 		SR100007 /* TerminalAdapter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TerminalAdapter.swift; sourceTree = "<group>"; };
+		TS100001 /* GitOutputParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitOutputParserTests.swift; sourceTree = "<group>"; };
+		TS100002 /* GitOutputFixtures.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitOutputFixtures.swift; sourceTree = "<group>"; };
+		TS100003 /* CommitSheetTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommitSheetTests.swift; sourceTree = "<group>"; };
+		TS100100 /* SkwadTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SkwadTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		UP100001 /* UpdaterManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdaterManager.swift; sourceTree = "<group>"; };
 		UT100001 /* Clipboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Clipboard.swift; sourceTree = "<group>"; };
 		UT100002 /* TerminalTextCleaner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalTextCleaner.swift; sourceTree = "<group>"; };
@@ -193,33 +197,7 @@
 		WS100003 /* WorkspaceSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkspaceSheet.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
-/* Begin PBXContainerItemProxy section */
-		TS300001 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = F80000F8 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = F80000FF;
-			remoteInfo = Skwad;
-		};
-/* End PBXContainerItemProxy section */
-
-/* Begin PBXTargetDependency section */
-		TS600002 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = F80000FF /* Skwad */;
-			targetProxy = TS300001 /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
-
 /* Begin PBXFrameworksBuildPhase section */
-		TS400001 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				TS000004 /* ViewInspector in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		F80000FD /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -241,6 +219,14 @@
 				SF000007 /* IOSurface.framework in Frameworks */,
 				SF000008 /* CoreFoundation.framework in Frameworks */,
 				SF000009 /* CoreVideo.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		TS400001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				TS000004 /* ViewInspector in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -291,16 +277,6 @@
 				8D7622AE2F2C67CE006B6280 /* MCPTypes.swift */,
 			);
 			path = MCP;
-			sourceTree = "<group>";
-		};
-		8D7D26722F2D3E2D0077AADE /* Recovered References */ = {
-			isa = PBXGroup;
-			children = (
-				03CE69DC7C60F2847F9B8C2E /* VoiceInputManager.swift */,
-				337FE74E7DEB7971FDBEE143 /* PushToTalkMonitor.swift */,
-				C3DBC302D03CA10E1AEEE3BC /* VoiceInputOverlay.swift */,
-			);
-			name = "Recovered References";
 			sourceTree = "<group>";
 		};
 		AS200000 /* Resources */ = {
@@ -408,7 +384,6 @@
 				TS500000 /* SkwadTests */,
 				SF200000 /* Frameworks */,
 				F8000101 /* Products */,
-				8D7D26722F2D3E2D0077AADE /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
@@ -419,48 +394,6 @@
 				TS100100 /* SkwadTests.xctest */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		TS500000 /* SkwadTests */ = {
-			isa = PBXGroup;
-			children = (
-				TS500001 /* Git */,
-				TS500002 /* Views */,
-			);
-			path = SkwadTests;
-			sourceTree = "<group>";
-		};
-		TS500001 /* Git */ = {
-			isa = PBXGroup;
-			children = (
-				TS500003 /* Fixtures */,
-				TS100001 /* GitOutputParserTests.swift */,
-			);
-			path = Git;
-			sourceTree = "<group>";
-		};
-		TS500002 /* Views */ = {
-			isa = PBXGroup;
-			children = (
-				TS500004 /* Git */,
-			);
-			path = Views;
-			sourceTree = "<group>";
-		};
-		TS500003 /* Fixtures */ = {
-			isa = PBXGroup;
-			children = (
-				TS100002 /* GitOutputFixtures.swift */,
-			);
-			path = Fixtures;
-			sourceTree = "<group>";
-		};
-		TS500004 /* Git */ = {
-			isa = PBXGroup;
-			children = (
-				TS100003 /* CommitSheetTests.swift */,
-			);
-			path = Git;
 			sourceTree = "<group>";
 		};
 		GH200000 /* GhosttyTerminal */ = {
@@ -510,6 +443,48 @@
 				SR100006 /* TerminalSessionController.swift */,
 			);
 			path = Services;
+			sourceTree = "<group>";
+		};
+		TS500000 /* SkwadTests */ = {
+			isa = PBXGroup;
+			children = (
+				TS500001 /* Git */,
+				TS500002 /* Views */,
+			);
+			path = SkwadTests;
+			sourceTree = "<group>";
+		};
+		TS500001 /* Git */ = {
+			isa = PBXGroup;
+			children = (
+				TS500003 /* Fixtures */,
+				TS100001 /* GitOutputParserTests.swift */,
+			);
+			path = Git;
+			sourceTree = "<group>";
+		};
+		TS500002 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				TS500004 /* Git */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		TS500003 /* Fixtures */ = {
+			isa = PBXGroup;
+			children = (
+				TS100002 /* GitOutputFixtures.swift */,
+			);
+			path = Fixtures;
+			sourceTree = "<group>";
+		};
+		TS500004 /* Git */ = {
+			isa = PBXGroup;
+			children = (
+				TS100003 /* CommitSheetTests.swift */,
+			);
+			path = Git;
 			sourceTree = "<group>";
 		};
 		UP200000 /* Updater */ = {
@@ -716,9 +691,6 @@
 				3FFD4CA0073309E4B34E6B66 /* CommitSheet.swift in Sources */,
 				8D6B97252F2DC47300CE877E /* AsyncDelay.swift in Sources */,
 				8D6B97262F2DC47300CE877E /* TimingConstants.swift in Sources */,
-				B8654D4E2D19AA01B9A6072A /* VoiceInputManager.swift in Sources */,
-				C6616FBD9C1D86E51B5D6B0E /* PushToTalkMonitor.swift in Sources */,
-				49401D3D3F6B5D076AF44DD4 /* VoiceInputOverlay.swift in Sources */,
 				A0622F92A9748B402B7D8403 /* MenuItem.swift in Sources */,
 				F4AB26B99E3CC3D579D72293 /* OpenWithProvider.swift in Sources */,
 				48E4A7F10E3C047EF657C139 /* OpenWithAppPicker.swift in Sources */,
@@ -737,6 +709,14 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		TS600002 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F80000FF /* Skwad */;
+			targetProxy = TS300001 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		F8000107 /* Debug */ = {
@@ -1057,11 +1037,6 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		TS200001 /* ViewInspector */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = TS800000 /* XCRemoteSwiftPackageReference "ViewInspector" */;
-			productName = ViewInspector;
-		};
 		8D76228F2F2C6506006B6280 /* MCP */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 8D76228E2F2C6506006B6280 /* XCRemoteSwiftPackageReference "swift-sdk" */;
@@ -1096,6 +1071,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = SP000001 /* XCRemoteSwiftPackageReference "Sparkle" */;
 			productName = Sparkle;
+		};
+		TS200001 /* ViewInspector */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = TS800000 /* XCRemoteSwiftPackageReference "ViewInspector" */;
+			productName = ViewInspector;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
