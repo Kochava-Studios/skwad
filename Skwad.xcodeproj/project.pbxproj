@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		UP000001 /* UpdaterManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = UP100001 /* UpdaterManager.swift */; };
 		01716FCA29A8F9522A2F8A9A /* GitFileWatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 241FF0F3B6265925356C1479 /* GitFileWatcher.swift */; };
 		0327FDF2A2ECDCE0DF53BE02 /* DiffView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA63472ED8A96242C89019C1 /* DiffView.swift */; };
 		05DDBA7B3DCF7C65CF6A9FFF /* GitWorktreeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D95A7EFF9B22BB564BAFA4 /* GitWorktreeManager.swift */; };
@@ -16,6 +15,7 @@
 		491170A3B86B4F821B4A1417 /* NewWorktreeSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B074ACAD44D9FA064E28A16 /* NewWorktreeSheet.swift */; };
 		49401D3D3F6B5D076AF44DD4 /* VoiceInputOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3DBC302D03CA10E1AEEE3BC /* VoiceInputOverlay.swift */; };
 		49BE1929AE038865BFCD543D /* GitTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADCF18167D88BA578DBF2B2E /* GitTypes.swift */; };
+		8D3F44C72F30EB2000407F17 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = SP000002 /* Sparkle */; };
 		8D6B97222F2DC17900CE877E /* MCPMessageStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6B97212F2DC17900CE877E /* MCPMessageStore.swift */; };
 		8D6B97252F2DC47300CE877E /* AsyncDelay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6B97232F2DC47300CE877E /* AsyncDelay.swift */; };
 		8D6B97262F2DC47300CE877E /* TimingConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6B97242F2DC47300CE877E /* TimingConstants.swift */; };
@@ -86,10 +86,14 @@
 		SR000004 /* TerminalCommandBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = SR100004 /* TerminalCommandBuilder.swift */; };
 		SR000006 /* TerminalSessionController.swift in Sources */ = {isa = PBXBuildFile; fileRef = SR100006 /* TerminalSessionController.swift */; };
 		SR000007 /* TerminalAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = SR100007 /* TerminalAdapter.swift */; };
+		UP000001 /* UpdaterManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = UP100001 /* UpdaterManager.swift */; };
 		UT000001 /* Clipboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = UT100001 /* Clipboard.swift */; };
 		UT000002 /* TerminalTextCleaner.swift in Sources */ = {isa = PBXBuildFile; fileRef = UT100002 /* TerminalTextCleaner.swift */; };
 		UT000003 /* WindowResizeObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = UT100003 /* WindowResizeObserver.swift */; };
 		UT000004 /* ManagedTimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = UT100004 /* ManagedTimer.swift */; };
+		WS000001 /* Workspace.swift in Sources */ = {isa = PBXBuildFile; fileRef = WS100001 /* Workspace.swift */; };
+		WS000002 /* WorkspaceBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = WS100002 /* WorkspaceBarView.swift */; };
+		WS000003 /* WorkspaceSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = WS100003 /* WorkspaceSheet.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -154,6 +158,7 @@
 		GH100012 /* GhosttyRenderingSetup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GhosttyRenderingSetup.swift; sourceTree = "<group>"; };
 		GH100013 /* GhosttyTerminalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GhosttyTerminalView.swift; sourceTree = "<group>"; };
 		GH100014 /* TerminalScrollView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalScrollView.swift; sourceTree = "<group>"; };
+		IP100001 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		LG100001 /* libghostty.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libghostty.a; path = Vendor/libghostty/lib/libghostty.a; sourceTree = "<group>"; };
 		SF100001 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
 		SF100002 /* MetalKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalKit.framework; path = System/Library/Frameworks/MetalKit.framework; sourceTree = SDKROOT; };
@@ -170,12 +175,14 @@
 		SR100004 /* TerminalCommandBuilder.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TerminalCommandBuilder.swift; sourceTree = "<group>"; };
 		SR100006 /* TerminalSessionController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TerminalSessionController.swift; sourceTree = "<group>"; };
 		SR100007 /* TerminalAdapter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TerminalAdapter.swift; sourceTree = "<group>"; };
+		UP100001 /* UpdaterManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdaterManager.swift; sourceTree = "<group>"; };
 		UT100001 /* Clipboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Clipboard.swift; sourceTree = "<group>"; };
 		UT100002 /* TerminalTextCleaner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalTextCleaner.swift; sourceTree = "<group>"; };
 		UT100003 /* WindowResizeObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowResizeObserver.swift; sourceTree = "<group>"; };
 		UT100004 /* ManagedTimer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManagedTimer.swift; sourceTree = "<group>"; };
-		UP100001 /* UpdaterManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdaterManager.swift; sourceTree = "<group>"; };
-		IP100001 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		WS100001 /* Workspace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Workspace.swift; sourceTree = "<group>"; };
+		WS100002 /* WorkspaceBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkspaceBarView.swift; sourceTree = "<group>"; };
+		WS100003 /* WorkspaceSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkspaceSheet.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -183,6 +190,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8D3F44C72F30EB2000407F17 /* Sparkle in Frameworks */,
 				8D76229A2F2C6536006B6280 /* Logging in Frameworks */,
 				8D7622932F2C652D006B6280 /* Hummingbird in Frameworks */,
 				8D7622982F2C6536006B6280 /* InMemoryLogging in Frameworks */,
@@ -300,6 +308,7 @@
 				52D95A7EFF9B22BB564BAFA4 /* GitWorktreeManager.swift */,
 				B85319AD6169FDBF46AAE73E /* MenuItem.swift */,
 				E032A72A15B3456546418CF7 /* OpenWithProvider.swift */,
+				WS100001 /* Workspace.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -312,6 +321,7 @@
 				F8000016 /* Settings */,
 				F8000017 /* Components */,
 				2EB8108896BD1402E4BDA10F /* Git */,
+				WS200001 /* Workspace */,
 				F8000002 /* ContentView.swift */,
 			);
 			path = Views;
@@ -424,6 +434,14 @@
 			path = Services;
 			sourceTree = "<group>";
 		};
+		UP200000 /* Updater */ = {
+			isa = PBXGroup;
+			children = (
+				UP100001 /* UpdaterManager.swift */,
+			);
+			path = Updater;
+			sourceTree = "<group>";
+		};
 		UT200000 /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
@@ -438,12 +456,13 @@
 			path = Utilities;
 			sourceTree = "<group>";
 		};
-		UP200000 /* Updater */ = {
+		WS200001 /* Workspace */ = {
 			isa = PBXGroup;
 			children = (
-				UP100001 /* UpdaterManager.swift */,
+				WS100002 /* WorkspaceBarView.swift */,
+				WS100003 /* WorkspaceSheet.swift */,
 			);
-			path = Updater;
+			path = Workspace;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -540,6 +559,9 @@
 				F8001001 /* SkwadApp.swift in Sources */,
 				F8001002 /* ContentView.swift in Sources */,
 				F8001003 /* Agent.swift in Sources */,
+				WS000001 /* Workspace.swift in Sources */,
+				WS000002 /* WorkspaceBarView.swift in Sources */,
+				WS000003 /* WorkspaceSheet.swift in Sources */,
 				F8001004 /* AgentManager.swift in Sources */,
 				F8001005 /* SidebarView.swift in Sources */,
 				F8001007 /* TerminalHostView.swift in Sources */,
@@ -825,14 +847,6 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		SP000001 /* XCRemoteSwiftPackageReference "Sparkle" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/sparkle-project/Sparkle";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 2.6.0;
-			};
-		};
 		8D76228E2F2C6506006B6280 /* XCRemoteSwiftPackageReference "swift-sdk" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/modelcontextprotocol/swift-sdk";
@@ -865,14 +879,17 @@
 				minimumVersion = 1.2.0;
 			};
 		};
+		SP000001 /* XCRemoteSwiftPackageReference "Sparkle" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sparkle-project/Sparkle";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.6.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		SP000002 /* Sparkle */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = SP000001 /* XCRemoteSwiftPackageReference "Sparkle" */;
-			productName = Sparkle;
-		};
 		8D76228F2F2C6506006B6280 /* MCP */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 8D76228E2F2C6506006B6280 /* XCRemoteSwiftPackageReference "swift-sdk" */;
@@ -902,6 +919,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = F8002000 /* XCRemoteSwiftPackageReference "SwiftTerm" */;
 			productName = SwiftTerm;
+		};
+		SP000002 /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = SP000001 /* XCRemoteSwiftPackageReference "Sparkle" */;
+			productName = Sparkle;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

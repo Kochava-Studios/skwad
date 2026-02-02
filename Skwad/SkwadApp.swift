@@ -18,6 +18,7 @@ struct SkwadApp: App {
     @State private var showCloseConfirmation = false
     @State private var agentToClose: Agent?
     @State private var showNewAgentSheet = false
+    @State private var showNewWorkspaceSheet = false
     @State private var toggleGitPanel = false
     @State private var toggleSidebar = false
 
@@ -76,6 +77,10 @@ struct SkwadApp: App {
                 } message: { agent in
                     Text("Are you sure you want to close \"\(agent.name)\"?")
                 }
+                .sheet(isPresented: $showNewWorkspaceSheet) {
+                    WorkspaceSheet()
+                        .environmentObject(agentManager)
+                }
                 .onAppear {
 
                     // Skip initialization in previews
@@ -114,8 +119,13 @@ struct SkwadApp: App {
         .windowStyle(.hiddenTitleBar)
         .defaultSize(width: 1200, height: 800)
         .commands {
-            // File menu - agent creation and management
+            // File menu - workspace and agent creation
             CommandGroup(after: .newItem) {
+                Button("New Workspace...") {
+                    showNewWorkspaceSheet = true
+                }
+                .keyboardShortcut("n", modifiers: .command)
+
                 Button("New Agent...") {
                     showNewAgentSheet = true
                 }
@@ -132,7 +142,7 @@ struct SkwadApp: App {
                     showBroadcastSheet = true
                 }
                 .keyboardShortcut("b", modifiers: [.command, .shift])
-                .disabled(agentManager.agents.isEmpty)
+                .disabled(agentManager.currentWorkspaceAgents.isEmpty)
 
                 if let appName = defaultOpenWithAppName {
                     Divider()
@@ -213,21 +223,33 @@ struct SkwadApp: App {
                 .keyboardShortcut("w", modifiers: .command)
                 .disabled(agentManager.activeAgentId == nil)
 
-                Button("Close All Agents") {
-                    closeAllAgents()
+                Button("Close Workspace") {
+                    closeCurrentWorkspace()
                 }
                 .keyboardShortcut("w", modifiers: [.command, .shift])
-                .disabled(agentManager.agents.isEmpty)
+                .disabled(agentManager.currentWorkspace == nil)
 
-                // Cmd+1-9 to select agents (only show for existing agents)
-                if !agentManager.agents.isEmpty {
+                // Cmd+1-9 to switch workspaces
+                if !agentManager.workspaces.isEmpty {
                     Divider()
 
-                    ForEach(Array(agentManager.agents.enumerated().prefix(9)), id: \.element.id) { index, agent in
+                    ForEach(Array(agentManager.workspaces.enumerated().prefix(9)), id: \.element.id) { index, workspace in
+                        Button(workspace.name) {
+                            agentManager.switchToWorkspace(workspace.id)
+                        }
+                        .keyboardShortcut(KeyEquivalent(Character("\(index + 1)")), modifiers: .command)
+                    }
+                }
+
+                // Ctrl+1-9 to select agents within workspace
+                if !agentManager.currentWorkspaceAgents.isEmpty {
+                    Divider()
+
+                    ForEach(Array(agentManager.currentWorkspaceAgents.enumerated().prefix(9)), id: \.element.id) { index, agent in
                         Button(agent.name) {
                             agentManager.selectAgentAtIndex(index)
                         }
-                        .keyboardShortcut(KeyEquivalent(Character("\(index + 1)")), modifiers: .command)
+                        .keyboardShortcut(KeyEquivalent(Character("\(index + 1)")), modifiers: .control)
                     }
                 }
             }
@@ -286,8 +308,8 @@ struct SkwadApp: App {
     private func broadcastToAllAgents(_ message: String) {
         guard !message.isEmpty else { return }
 
-        // Inject message into all agents (injectText includes return)
-        for agent in agentManager.agents {
+        // Inject message into all agents in current workspace (injectText includes return)
+        for agent in agentManager.currentWorkspaceAgents {
             agentManager.injectText(message, for: agent.id)
         }
     }
@@ -299,22 +321,11 @@ struct SkwadApp: App {
 
         // Remove the agent without confirmation
         agentManager.removeAgent(agent)
-
-        // If no agents remain, close the window
-        if agentManager.agents.isEmpty {
-            NSApplication.shared.keyWindow?.close()
-        }
     }
 
-    private func closeAllAgents() {
-        // Remove all agents
-        let allAgents = agentManager.agents
-        for agent in allAgents {
-            agentManager.removeAgent(agent)
-        }
-
-        // Close the window
-        NSApplication.shared.keyWindow?.close()
+    private func closeCurrentWorkspace() {
+        guard let workspace = agentManager.currentWorkspace else { return }
+        agentManager.removeWorkspace(workspace)
     }
 
     private func openActiveAgentInDefaultApp() {

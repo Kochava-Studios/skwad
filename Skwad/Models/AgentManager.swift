@@ -1,7 +1,7 @@
 import Foundation
 import SwiftUI
 
-enum LayoutMode {
+enum LayoutMode: String, Codable {
     case single
     case splitVertical   // left | right
     case splitHorizontal // top / bottom
@@ -18,11 +18,12 @@ private class WeakTerminalRef {
 
 @MainActor
 class AgentManager: ObservableObject {
+    // All agents across all workspaces
     @Published var agents: [Agent] = []
-    @Published var layoutMode: LayoutMode = .single
-    @Published var activeAgentIds: [UUID] = []   // count matches pane count: 1 for single, 2 for split
-    @Published var focusedPaneIndex: Int = 0
-    @Published var splitRatio: CGFloat = 0.5
+
+    // Workspaces
+    @Published var workspaces: [Workspace] = []
+    @Published var currentWorkspaceId: UUID?
 
     private let settings = AppSettings.shared
 
@@ -37,10 +38,149 @@ class AgentManager: ObservableObject {
         guard ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] != "1" else { return }
         if settings.restoreLayoutOnLaunch {
             agents = settings.loadSavedAgents()
-            if let first = agents.first {
-                activeAgentIds = [first.id]
+            workspaces = settings.loadWorkspaces()
+
+            // Migration: if we have agents but no workspaces, create default "Skwad" workspace
+            if !agents.isEmpty && workspaces.isEmpty {
+                let defaultWorkspace = Workspace.createDefault(withAgentIds: agents.map { $0.id })
+                workspaces = [defaultWorkspace]
+                currentWorkspaceId = defaultWorkspace.id
+                saveWorkspaces()
+            } else if let savedCurrentId = settings.currentWorkspaceId,
+                      workspaces.contains(where: { $0.id == savedCurrentId }) {
+                currentWorkspaceId = savedCurrentId
+            } else {
+                currentWorkspaceId = workspaces.first?.id
             }
         }
+    }
+
+    // MARK: - Current Workspace
+
+    var currentWorkspace: Workspace? {
+        get {
+            guard let id = currentWorkspaceId else { return nil }
+            return workspaces.first { $0.id == id }
+        }
+        set {
+            guard let workspace = newValue,
+                  let index = workspaces.firstIndex(where: { $0.id == workspace.id }) else { return }
+            workspaces[index] = workspace
+            saveWorkspaces()
+        }
+    }
+
+    /// Agents in the current workspace
+    var currentWorkspaceAgents: [Agent] {
+        guard let workspace = currentWorkspace else { return [] }
+        return workspace.agentIds.compactMap { id in agents.first { $0.id == id } }
+    }
+
+    // MARK: - Layout (workspace-scoped)
+
+    var layoutMode: LayoutMode {
+        get { currentWorkspace?.layoutMode ?? .single }
+        set { updateCurrentWorkspace { $0.layoutMode = newValue } }
+    }
+
+    var activeAgentIds: [UUID] {
+        get { currentWorkspace?.activeAgentIds ?? [] }
+        set { updateCurrentWorkspace { $0.activeAgentIds = newValue } }
+    }
+
+    var focusedPaneIndex: Int {
+        get { currentWorkspace?.focusedPaneIndex ?? 0 }
+        set { updateCurrentWorkspace { $0.focusedPaneIndex = newValue } }
+    }
+
+    var splitRatio: CGFloat {
+        get { currentWorkspace?.splitRatio ?? 0.5 }
+        set { updateCurrentWorkspace { $0.splitRatio = newValue } }
+    }
+
+    private func updateCurrentWorkspace(_ update: (inout Workspace) -> Void) {
+        guard let id = currentWorkspaceId,
+              var workspace = workspaces.first(where: { $0.id == id }),
+              let index = workspaces.firstIndex(where: { $0.id == id }) else { return }
+        update(&workspace)
+        workspaces[index] = workspace
+        // Note: Don't save on every layout change for performance
+        // Layout is saved when switching workspaces or on explicit save
+    }
+
+    // MARK: - Workspace CRUD
+
+    func addWorkspace(name: String, color: WorkspaceColor = .blue) -> Workspace {
+        let workspace = Workspace(name: name, colorHex: color.rawValue)
+        workspaces.append(workspace)
+        currentWorkspaceId = workspace.id
+        settings.currentWorkspaceId = workspace.id
+        saveWorkspaces()
+        return workspace
+    }
+
+    func removeWorkspace(_ workspace: Workspace) {
+        // Close all agents in this workspace
+        let agentsToRemove = workspace.agentIds.compactMap { id in agents.first { $0.id == id } }
+        for agent in agentsToRemove {
+            removeAgentFromAllWorkspaces(agent)
+        }
+
+        workspaces.removeAll { $0.id == workspace.id }
+
+        // If this was the current workspace, switch to another or clear
+        if currentWorkspaceId == workspace.id {
+            currentWorkspaceId = workspaces.first?.id
+            settings.currentWorkspaceId = currentWorkspaceId
+        }
+
+        saveWorkspaces()
+    }
+
+    func updateWorkspace(id: UUID, name: String, colorHex: String) {
+        guard let index = workspaces.firstIndex(where: { $0.id == id }) else { return }
+        workspaces[index].name = name
+        workspaces[index].colorHex = colorHex
+        saveWorkspaces()
+    }
+
+    func switchToWorkspace(_ workspaceId: UUID) {
+        guard workspaces.contains(where: { $0.id == workspaceId }) else { return }
+        // Save current workspace layout before switching
+        saveWorkspaces()
+        currentWorkspaceId = workspaceId
+        settings.currentWorkspaceId = workspaceId
+    }
+
+    func moveWorkspace(from source: IndexSet, to destination: Int) {
+        workspaces.move(fromOffsets: source, toOffset: destination)
+        saveWorkspaces()
+    }
+
+    /// Check if any agent in a workspace is working
+    func isWorkspaceActive(_ workspace: Workspace) -> Bool {
+        workspace.agentIds.contains { agentId in
+            agents.first { $0.id == agentId }?.status == .running
+        }
+    }
+
+    private func saveWorkspaces() {
+        settings.saveWorkspaces(workspaces)
+    }
+
+    /// Create default "Skwad" workspace when first agent is added and no workspaces exist
+    private func ensureWorkspaceExists() -> UUID {
+        if let currentId = currentWorkspaceId {
+            return currentId
+        }
+
+        // No workspace exists, create default "Skwad" workspace
+        let workspace = Workspace.createDefault()
+        workspaces = [workspace]
+        currentWorkspaceId = workspace.id
+        settings.currentWorkspaceId = workspace.id
+        saveWorkspaces()
+        return workspace.id
     }
 
     // MARK: - Derived state
@@ -170,6 +310,7 @@ class AgentManager: ObservableObject {
             agent.name = name
         }
 
+        // Add to master agent list
         if let insertAfterId = insertAfterId,
            let index = agents.firstIndex(where: { $0.id == insertAfterId }) {
             let insertIndex = agents.index(after: index)
@@ -177,10 +318,27 @@ class AgentManager: ObservableObject {
         } else {
             agents.append(agent)
         }
-        if activeAgentIds.isEmpty {
-            activeAgentIds = [agent.id]
+
+        // Ensure we have a workspace (creates "Skwad" if needed)
+        let workspaceId = ensureWorkspaceExists()
+
+        // Add agent to current workspace
+        if let index = workspaces.firstIndex(where: { $0.id == workspaceId }) {
+            if let insertAfterId = insertAfterId,
+               let insertAfterIndex = workspaces[index].agentIds.firstIndex(of: insertAfterId) {
+                workspaces[index].agentIds.insert(agent.id, at: insertAfterIndex + 1)
+            } else {
+                workspaces[index].agentIds.append(agent.id)
+            }
+
+            // Set as active if no active agents
+            if workspaces[index].activeAgentIds.isEmpty {
+                workspaces[index].activeAgentIds = [agent.id]
+            }
         }
+
         saveAgents()
+        saveWorkspaces()
 
         // Add to recent agents
         settings.addRecentAgent(agent)
@@ -196,7 +354,15 @@ class AgentManager: ObservableObject {
 
         removeController(for: agent.id)
         unregisterTerminal(for: agent.id)
+
+        // Remove from current workspace
+        removeAgentFromCurrentWorkspace(agent.id)
+
+        // Remove from master list
         agents.removeAll { $0.id == agent.id }
+
+        // Get workspace agents after removal for selection logic
+        let workspaceAgents = currentWorkspaceAgents
 
         if activeAgentIds.contains(agent.id) {
             // For 4-pane grid, just remove the agent from activeAgentIds but stay in grid mode
@@ -204,20 +370,52 @@ class AgentManager: ObservableObject {
                 activeAgentIds.removeAll { $0 == agent.id }
                 // If we have less than 2 agents remaining in the grid, exit to single
                 if activeAgentIds.count < 2 {
-                    exitSplit(selecting: activeAgentIds.first ?? agents.first?.id)
+                    exitSplit(selecting: activeAgentIds.first ?? workspaceAgents.first?.id)
                 } else if focusedPaneIndex >= activeAgentIds.count {
                     focusedPaneIndex = activeAgentIds.count - 1
                 }
             } else {
                 // For other split modes, collapse to single with surviving pane agent
-                let surviving = activeAgentIds.first(where: { id in id != agent.id && agents.contains(where: { $0.id == id }) })
-                exitSplit(selecting: surviving ?? agents.first?.id)
+                let surviving = activeAgentIds.first(where: { id in id != agent.id && workspaceAgents.contains(where: { $0.id == id }) })
+                exitSplit(selecting: surviving ?? workspaceAgents.first?.id)
             }
-        } else if layoutMode == .single && (activeAgentIds.isEmpty || !agents.contains(where: { $0.id == activeAgentIds[0] })) {
+        } else if layoutMode == .single && (activeAgentIds.isEmpty || !workspaceAgents.contains(where: { $0.id == activeAgentIds[0] })) {
             // Single mode, selected agent gone → pick first
-            activeAgentIds = agents.first.map { [$0.id] } ?? []
+            activeAgentIds = workspaceAgents.first.map { [$0.id] } ?? []
         }
 
+        saveAgents()
+        saveWorkspaces()
+    }
+
+    /// Remove agent from current workspace only (agent remains in master list)
+    private func removeAgentFromCurrentWorkspace(_ agentId: UUID) {
+        guard let workspaceId = currentWorkspaceId,
+              let index = workspaces.firstIndex(where: { $0.id == workspaceId }) else { return }
+        workspaces[index].agentIds.removeAll { $0 == agentId }
+        workspaces[index].activeAgentIds.removeAll { $0 == agentId }
+    }
+
+    /// Remove agent from all workspaces and master list (used when closing a workspace)
+    private func removeAgentFromAllWorkspaces(_ agent: Agent) {
+        // Unregister from MCP if registered
+        if agent.isRegistered {
+            Task {
+                await MCPService.shared.unregisterAgent(agentId: agent.id.uuidString)
+            }
+        }
+
+        removeController(for: agent.id)
+        unregisterTerminal(for: agent.id)
+
+        // Remove from all workspaces
+        for i in workspaces.indices {
+            workspaces[i].agentIds.removeAll { $0 == agent.id }
+            workspaces[i].activeAgentIds.removeAll { $0 == agent.id }
+        }
+
+        // Remove from master list
+        agents.removeAll { $0.id == agent.id }
         saveAgents()
     }
 
@@ -225,8 +423,18 @@ class AgentManager: ObservableObject {
     func createDuplicateAgent(_ agent: Agent, nameSuffix: String = " (copy)") -> Agent {
         var newAgent = Agent(folder: agent.folder, avatar: agent.avatar, agentType: agent.agentType)
         newAgent.name = agent.name + nameSuffix
+
+        // Add to master list
         agents.append(newAgent)
+
+        // Add to current workspace
+        if let workspaceId = currentWorkspaceId,
+           let index = workspaces.firstIndex(where: { $0.id == workspaceId }) {
+            workspaces[index].agentIds.append(newAgent.id)
+        }
+
         saveAgents()
+        saveWorkspaces()
         return newAgent
     }
 
@@ -256,8 +464,11 @@ class AgentManager: ObservableObject {
     }
 
     func moveAgent(from source: IndexSet, to destination: Int) {
-        agents.move(fromOffsets: source, toOffset: destination)
-        saveAgents()
+        // Move within current workspace's agent list
+        guard let workspaceId = currentWorkspaceId,
+              let index = workspaces.firstIndex(where: { $0.id == workspaceId }) else { return }
+        workspaces[index].agentIds.move(fromOffsets: source, toOffset: destination)
+        saveWorkspaces()
     }
 
     private func saveAgents() {
@@ -284,18 +495,20 @@ class AgentManager: ObservableObject {
     // MARK: - Layout / Split Pane
 
     func enterSplit(_ mode: LayoutMode) {
-        guard agents.count >= 2 else { return }
+        let workspaceAgents = currentWorkspaceAgents
+        guard workspaceAgents.count >= 2 else { return }
         guard let currentId = activeAgentIds.first,
-              let currentIndex = agents.firstIndex(where: { $0.id == currentId }) else { return }
-        let nextIndex = (currentIndex + 1) % agents.count
-        activeAgentIds = [currentId, agents[nextIndex].id]
+              let currentIndex = workspaceAgents.firstIndex(where: { $0.id == currentId }) else { return }
+        let nextIndex = (currentIndex + 1) % workspaceAgents.count
+        activeAgentIds = [currentId, workspaceAgents[nextIndex].id]
         layoutMode = mode
         focusedPaneIndex = 0
     }
 
     private func exitSplit(selecting id: UUID? = nil) {
+        let workspaceAgents = currentWorkspaceAgents
         let keepId = id ?? (focusedPaneIndex < activeAgentIds.count ? activeAgentIds[focusedPaneIndex] : nil)
-        activeAgentIds = keepId.map { [$0] } ?? (agents.first.map { [$0.id] } ?? [])
+        activeAgentIds = keepId.map { [$0] } ?? (workspaceAgents.first.map { [$0.id] } ?? [])
         layoutMode = .single
         focusedPaneIndex = 0
     }
@@ -355,51 +568,54 @@ class AgentManager: ObservableObject {
     }
 
     func selectNextAgent() {
-        guard !agents.isEmpty else { return }
+        let workspaceAgents = currentWorkspaceAgents
+        guard !workspaceAgents.isEmpty else { return }
         let currentId = activeAgentId
-        guard let currentIndex = agents.firstIndex(where: { $0.id == currentId }) else {
-            activeAgentIds = [agents[0].id]
+        guard let currentIndex = workspaceAgents.firstIndex(where: { $0.id == currentId }) else {
+            activeAgentIds = [workspaceAgents[0].id]
             return
         }
 
         if layoutMode != .single {
             // Cycle into focused pane, skip agents in other panes
-            var next = (currentIndex + 1) % agents.count
-            while activeAgentIds.contains(agents[next].id) && agents[next].id != currentId {
-                next = (next + 1) % agents.count
+            var next = (currentIndex + 1) % workspaceAgents.count
+            while activeAgentIds.contains(workspaceAgents[next].id) && workspaceAgents[next].id != currentId {
+                next = (next + 1) % workspaceAgents.count
             }
-            activeAgentIds[focusedPaneIndex] = agents[next].id
+            activeAgentIds[focusedPaneIndex] = workspaceAgents[next].id
         } else {
-            let nextIndex = (currentIndex + 1) % agents.count
-            activeAgentIds = [agents[nextIndex].id]
+            let nextIndex = (currentIndex + 1) % workspaceAgents.count
+            activeAgentIds = [workspaceAgents[nextIndex].id]
         }
     }
 
     func selectPreviousAgent() {
-        guard !agents.isEmpty else { return }
+        let workspaceAgents = currentWorkspaceAgents
+        guard !workspaceAgents.isEmpty else { return }
         let currentId = activeAgentId
-        guard let currentIndex = agents.firstIndex(where: { $0.id == currentId }) else {
-            if let lastAgent = agents.last {
+        guard let currentIndex = workspaceAgents.firstIndex(where: { $0.id == currentId }) else {
+            if let lastAgent = workspaceAgents.last {
                 activeAgentIds = [lastAgent.id]
             }
             return
         }
 
         if layoutMode != .single {
-            var prev = (currentIndex - 1 + agents.count) % agents.count
-            while activeAgentIds.contains(agents[prev].id) && agents[prev].id != currentId {
-                prev = (prev - 1 + agents.count) % agents.count
+            var prev = (currentIndex - 1 + workspaceAgents.count) % workspaceAgents.count
+            while activeAgentIds.contains(workspaceAgents[prev].id) && workspaceAgents[prev].id != currentId {
+                prev = (prev - 1 + workspaceAgents.count) % workspaceAgents.count
             }
-            activeAgentIds[focusedPaneIndex] = agents[prev].id
+            activeAgentIds[focusedPaneIndex] = workspaceAgents[prev].id
         } else {
-            let previousIndex = (currentIndex - 1 + agents.count) % agents.count
-            activeAgentIds = [agents[previousIndex].id]
+            let previousIndex = (currentIndex - 1 + workspaceAgents.count) % workspaceAgents.count
+            activeAgentIds = [workspaceAgents[previousIndex].id]
         }
     }
 
     func selectAgentAtIndex(_ index: Int) {
-        guard index >= 0 && index < agents.count else { return }
-        let agentId = agents[index].id
+        let workspaceAgents = currentWorkspaceAgents
+        guard index >= 0 && index < workspaceAgents.count else { return }
+        let agentId = workspaceAgents[index].id
 
         if layoutMode != .single {
             // If agent is already in a pane, focus that pane

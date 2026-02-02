@@ -32,7 +32,13 @@ struct ContentView: View {
 
   var body: some View {
     HStack(spacing: 0) {
-      if !agentManager.agents.isEmpty && sidebarVisible {
+      // Workspace bar (always visible when workspaces exist)
+      if !agentManager.workspaces.isEmpty {
+        WorkspaceBarView(sidebarVisible: $sidebarVisible)
+          .transition(.move(edge: .leading).combined(with: .opacity))
+      }
+
+      if !agentManager.currentWorkspaceAgents.isEmpty && sidebarVisible {
         SidebarView(sidebarVisible: $sidebarVisible)
           .frame(width: sidebarWidth)
           .transition(.move(edge: .leading).combined(with: .opacity))
@@ -96,8 +102,8 @@ struct ContentView: View {
               .allowsHitTesting(visible)
           }
 
-          // Empty state
-          if agentManager.agents.isEmpty {
+          // Empty state - no workspaces or empty workspace
+          if agentManager.workspaces.isEmpty || agentManager.currentWorkspaceAgents.isEmpty {
             VStack(spacing: 16) {
 
               Image(nsImage: NSApplication.shared.applicationIconImage)
@@ -110,7 +116,9 @@ struct ContentView: View {
                   .font(.system(size: 36, weight: .semibold))
                   .foregroundColor(.primary)
 
-                Text("Start assembling your skwad by creating your first agent")
+                Text(agentManager.workspaces.isEmpty
+                    ? "Start by creating your first workspace"
+                    : "Add an agent to your workspace")
                   .font(.title)
                   .foregroundColor(.secondary)
               }
@@ -167,7 +175,7 @@ struct ContentView: View {
           }
 
           // Layout toggle button — positioned in top-right corner
-          if agentManager.agents.count >= 2 {
+          if agentManager.currentWorkspaceAgents.count >= 2 {
             HStack {
               Spacer()
               layoutToggleButton
@@ -227,7 +235,8 @@ struct ContentView: View {
     .background(settings.sidebarBackgroundColor)
     .frame(minWidth: 900, minHeight: 600)
     .ignoresSafeArea()
-    .animation(.easeInOut(duration: 0.25), value: agentManager.agents.count)
+    .animation(.easeInOut(duration: 0.25), value: agentManager.currentWorkspaceAgents.count)
+    .animation(.easeInOut(duration: 0.25), value: agentManager.currentWorkspaceId)
     .overlay {
       // Voice input overlay
       if showVoiceOverlay {
@@ -563,9 +572,10 @@ struct ContentView: View {
       
       Button {
         agentManager.layoutMode = .splitVertical
-        if agentManager.activeAgentIds.count == 1, agentManager.agents.count >= 2 {
+        let workspaceAgents = agentManager.currentWorkspaceAgents
+        if agentManager.activeAgentIds.count == 1, workspaceAgents.count >= 2 {
           let currentId = agentManager.activeAgentIds[0]
-          let otherAgent = agentManager.agents.first { $0.id != currentId }
+          let otherAgent = workspaceAgents.first { $0.id != currentId }
           if let otherId = otherAgent?.id {
             agentManager.activeAgentIds = [currentId, otherId]
           }
@@ -575,12 +585,13 @@ struct ContentView: View {
       } label: {
         Label("Split Vertical", systemImage: "square.split.2x1")
       }
-      
+
       Button {
         agentManager.layoutMode = .splitHorizontal
-        if agentManager.activeAgentIds.count == 1, agentManager.agents.count >= 2 {
+        let workspaceAgents = agentManager.currentWorkspaceAgents
+        if agentManager.activeAgentIds.count == 1, workspaceAgents.count >= 2 {
           let currentId = agentManager.activeAgentIds[0]
-          let otherAgent = agentManager.agents.first { $0.id != currentId }
+          let otherAgent = workspaceAgents.first { $0.id != currentId }
           if let otherId = otherAgent?.id {
             agentManager.activeAgentIds = [currentId, otherId]
           }
@@ -590,14 +601,15 @@ struct ContentView: View {
       } label: {
         Label("Split Horizontal", systemImage: "square.split.1x2")
       }
-      
-      if agentManager.agents.count >= 3 {
+
+      if agentManager.currentWorkspaceAgents.count >= 3 {
         Button {
           agentManager.layoutMode = .gridFourPane
+          let workspaceAgents = agentManager.currentWorkspaceAgents
           if agentManager.activeAgentIds.count < 3 {
             // Fill up to 4 agents (or however many we have)
             var newIds = agentManager.activeAgentIds
-            let availableAgents = agentManager.agents.filter { !newIds.contains($0.id) }
+            let availableAgents = workspaceAgents.filter { !newIds.contains($0.id) }
             for agent in availableAgents.prefix(4 - newIds.count) {
               newIds.append(agent.id)
             }

@@ -143,13 +143,13 @@ struct SidebarView: View {
 
           VStack {
               HStack {
-                Text("SKWAD")
+                Text(agentManager.currentWorkspace?.name.uppercased() ?? "AGENTS")
                   .font(.callout)
                   .fontWeight(.semibold)
                   .foregroundColor(Theme.secondaryText)
-                
+
                 Spacer()
-                
+
               }
             }
             .padding(.horizontal, 16)
@@ -159,7 +159,7 @@ struct SidebarView: View {
             // Agent list
             ScrollView {
                 LazyVStack(spacing: 4) {
-                    ForEach(agentManager.agents) { agent in
+                    ForEach(agentManager.currentWorkspaceAgents) { agent in
                         AgentContextMenu(
                             agent: agent,
                             onEdit: { agentToEdit = agent },
@@ -184,10 +184,11 @@ struct SidebarView: View {
                                     .opacity(0.8)
                             }
                             .dropDestination(for: String.self) { items, _ in
+                                let workspaceAgents = agentManager.currentWorkspaceAgents
                                 guard let droppedId = items.first,
                                       let droppedUUID = UUID(uuidString: droppedId),
-                                      let fromIndex = agentManager.agents.firstIndex(where: { $0.id == droppedUUID }),
-                                      let toIndex = agentManager.agents.firstIndex(where: { $0.id == agent.id }) else {
+                                      let fromIndex = workspaceAgents.firstIndex(where: { $0.id == droppedUUID }),
+                                      let toIndex = workspaceAgents.firstIndex(where: { $0.id == agent.id }) else {
                                     return false
                                 }
                                 if fromIndex != toIndex {
@@ -217,24 +218,24 @@ struct SidebarView: View {
                 } label: {
                     Label("Restart All", systemImage: "arrow.clockwise")
                 }
-                .disabled(agentManager.agents.isEmpty)
-                
+                .disabled(agentManager.currentWorkspaceAgents.isEmpty)
+
                 Button {
                     showCloseAllConfirmation = true
                 } label: {
                     Label("Close All", systemImage: "xmark.circle")
                 }
-                .disabled(agentManager.agents.isEmpty)
-                
+                .disabled(agentManager.currentWorkspaceAgents.isEmpty)
+
                 Divider()
-                
+
                 Button {
                     broadcastMessage = ""
                     showBroadcastSheet = true
                 } label: {
                     Label("Broadcast to All Agents...", systemImage: "megaphone")
                 }
-                .disabled(agentManager.agents.isEmpty)
+                .disabled(agentManager.currentWorkspaceAgents.isEmpty)
                 
                 Divider()
                 
@@ -262,24 +263,17 @@ struct SidebarView: View {
                 }
             }
 
-            Divider()
-                .background(Theme.secondaryText.opacity(0.3))
-
             // New agent button
             Button(action: { showingNewAgentSheet = true }) {
-                HStack(spacing: 8) {
-                    Image(systemName: "plus.app")
-                        .font(.title2)
-                    Text("New Agent")
-                        .font(.title2)
-                        .fontWeight(.medium)
-                }
-                .foregroundColor(Theme.primaryText)
-                .frame(maxWidth: .infinity, alignment: .center)
-                .padding(.vertical, 20)
+                Text("New Agent")
+                    .font(.headline)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 8)
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.borderedProminent)
             .focusable(false)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 20)
         }
         .frame(minWidth: 200)
         .ignoresSafeArea()
@@ -304,7 +298,7 @@ struct SidebarView: View {
                 restartAllAgents()
             }
         } message: {
-            Text("Are you sure you want to restart all \(agentManager.agents.count) agent(s)?")
+            Text("Are you sure you want to restart all \(agentManager.currentWorkspaceAgents.count) agent(s)?")
         }
         .alert("Close All Agents", isPresented: $showCloseAllConfirmation) {
             Button("Cancel", role: .cancel) {}
@@ -312,7 +306,7 @@ struct SidebarView: View {
                 closeAllAgents()
             }
         } message: {
-            Text("Are you sure you want to close all \(agentManager.agents.count) agent(s)?")
+            Text("Are you sure you want to close all \(agentManager.currentWorkspaceAgents.count) agent(s)?")
         }
         .onReceive(NotificationCenter.default.publisher(for: .showNewAgentSheet)) { _ in
             showingNewAgentSheet = true
@@ -324,9 +318,9 @@ struct SidebarView: View {
     private func sendBroadcast(_ message: String) {
         let trimmed = message.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
-        
-        // Inject message into all agents
-        for agent in agentManager.agents {
+
+        // Inject message into all agents in current workspace
+        for agent in agentManager.currentWorkspaceAgents {
             agentManager.injectText(trimmed, for: agent.id)
         }
     }
@@ -334,18 +328,18 @@ struct SidebarView: View {
     // MARK: - Restart All
     
     private func restartAllAgents() {
-        // Restart all agents
-        let agentsToRestart = agentManager.agents
+        // Restart all agents in current workspace
+        let agentsToRestart = agentManager.currentWorkspaceAgents
         for agent in agentsToRestart {
             agentManager.restartAgent(agent)
         }
     }
-    
+
     // MARK: - Close All
-    
+
     private func closeAllAgents() {
-        // Remove all agents
-        let agentsToClose = agentManager.agents
+        // Remove all agents in current workspace
+        let agentsToClose = agentManager.currentWorkspaceAgents
         for agent in agentsToClose {
             agentManager.removeAgent(agent)
         }

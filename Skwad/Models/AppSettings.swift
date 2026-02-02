@@ -224,6 +224,38 @@ class AppSettings: ObservableObject {
         savedAgents.map { Agent(id: $0.id, name: $0.name, avatar: $0.avatar, folder: $0.folder, agentType: $0.agentType) }
     }
 
+    // MARK: - Workspaces
+
+    @AppStorage("savedWorkspacesData") private var savedWorkspacesData: Data = Data()
+    @AppStorage("currentWorkspaceId") private var currentWorkspaceIdString: String = ""
+
+    var savedWorkspaces: [Workspace] {
+        get {
+            (try? JSONDecoder().decode([Workspace].self, from: savedWorkspacesData)) ?? []
+        }
+        set {
+            savedWorkspacesData = (try? JSONEncoder().encode(newValue)) ?? Data()
+        }
+    }
+
+    var currentWorkspaceId: UUID? {
+        get {
+            guard !currentWorkspaceIdString.isEmpty else { return nil }
+            return UUID(uuidString: currentWorkspaceIdString)
+        }
+        set {
+            currentWorkspaceIdString = newValue?.uuidString ?? ""
+        }
+    }
+
+    func saveWorkspaces(_ workspaces: [Workspace]) {
+        savedWorkspaces = workspaces
+    }
+
+    func loadWorkspaces() -> [Workspace] {
+        savedWorkspaces
+    }
+
     // Coding - default open with app (Cmd+Shift+O)
     @AppStorage("defaultOpenWithApp") var defaultOpenWithApp: String = ""
 
@@ -455,5 +487,14 @@ extension Color {
         }
         let luminance = 0.299 * components[0] + 0.587 * components[1] + 0.114 * components[2]
         return luminance > 0.5
+    }
+
+    /// Adjust color to add contrast - darkens light colors, lightens dark colors
+    func withAddedContrast(by amount: Double) -> Color {
+        if isLight {
+            return darkened(by: amount)
+        } else {
+            return lightened(by: amount)
+        }
     }
 }

@@ -313,7 +313,7 @@ struct AgentCompactHeader: View {
                     .foregroundColor(Theme.secondaryText)
             }
         }
-        .padding(.leading, paneIndex == 0 ? 82 : 16)
+        .padding(.leading, paneIndex == 0 ? 32 : 16)
         .padding(.trailing, 16)
         .padding(.vertical, 6)
         .frame(maxWidth: .infinity)
