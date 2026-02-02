@@ -97,7 +97,7 @@ struct SidebarView: View {
                     ForEach(agentManager.agents) { agent in
                         AgentRowView(agent: agent, isSelected: agent.id == agentManager.activeAgentId)
                             .onTapGesture {
-                                agentManager.assignAgentToFocusedPane(agent.id)
+                                agentManager.selectAgent(agent.id)
                             }
                             .contextMenu {
                                 Button {

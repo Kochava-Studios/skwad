@@ -305,7 +305,7 @@ class AgentManager: ObservableObject {
         focusedPaneIndex = index
     }
 
-    func assignAgentToFocusedPane(_ agentId: UUID) {
+    func selectAgent(_ agentId: UUID) {
         if layoutMode == .single {
             activeAgentIds = [agentId]
             return
@@ -321,10 +321,6 @@ class AgentManager: ObservableObject {
     }
 
     // MARK: - Agent Navigation
-
-    func select(_ agent: Agent) {
-        assignAgentToFocusedPane(agent.id)
-    }
 
     func selectNextAgent() {
         guard !agents.isEmpty else { return }
@@ -378,7 +374,7 @@ class AgentManager: ObservableObject {
             if let pane = paneIndex(for: agentId) {
                 focusedPaneIndex = pane
             } else {
-                assignAgentToFocusedPane(agentId)
+                selectAgent(agentId)
             }
         } else {
             activeAgentIds = [agentId]
