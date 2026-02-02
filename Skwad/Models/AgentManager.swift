@@ -311,10 +311,11 @@ class AgentManager: ObservableObject {
             return
         }
 
-        // Agent is already in the other pane → swap
-        if let otherIndex = activeAgentIds.indices.first(where: { $0 != focusedPaneIndex && activeAgentIds[$0] == agentId }) {
-            activeAgentIds.swapAt(focusedPaneIndex, otherIndex)
+        // If agent is already in a pane, just focus that pane
+        if let paneIndex = activeAgentIds.firstIndex(of: agentId) {
+            focusedPaneIndex = paneIndex
         } else {
+            // Agent not in any pane → assign to focused pane
             activeAgentIds[focusedPaneIndex] = agentId
         }
     }
