@@ -23,3 +23,4 @@ Package.resolved
 
 # Build artifacts
 build/
+Vendor/libghostty/lib/libghostty.a
