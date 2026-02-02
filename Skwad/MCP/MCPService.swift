@@ -4,7 +4,7 @@ import Logging
 // MARK: - MCP Service Protocol
 
 protocol MCPServiceProtocol {
-    func listAgents() async -> [AgentInfo]
+    func listAgents(callerAgentId: String) async -> [AgentInfo]
     func registerAgent(agentId: String) async -> Bool
     func unregisterAgent(agentId: String) async -> Bool
     func sendMessage(from: String, to: String, content: String) async -> Bool
@@ -18,6 +18,7 @@ protocol MCPServiceProtocol {
 
 protocol AgentDataProvider: Sendable {
     func getAgents() async -> [Agent]
+    func getAgentsInSameWorkspace(as agentId: UUID) async -> [Agent]
     func setRegistered(for agentId: UUID, registered: Bool) async
     func injectText(_ text: String, for agentId: UUID) async
 }
@@ -51,13 +52,19 @@ actor MCPService: MCPServiceProtocol {
 
     // MARK: - Agent Operations
 
-    func listAgents() async -> [AgentInfo] {
+    func listAgents(callerAgentId: String) async -> [AgentInfo] {
+        guard let callerUUID = UUID(uuidString: callerAgentId) else {
+            logger.warning("[skwad] Invalid caller agent ID: \(callerAgentId)")
+            return []
+        }
+
         guard let provider = agentDataProvider else {
             logger.warning("[skwad] AgentDataProvider not available")
             return []
         }
 
-        let agents = await provider.getAgents()
+        // Only return agents in the same workspace as the caller
+        let agents = await provider.getAgentsInSameWorkspace(as: callerUUID)
         return agents.map { agent in
             AgentInfo(
                 id: agent.id.uuidString,
@@ -122,9 +129,24 @@ actor MCPService: MCPServiceProtocol {
         return true
     }
 
+    /// Find an agent by name or ID (global search, used for registration/unregistration)
     func findAgent(byNameOrId identifier: String) async -> Agent? {
         guard let provider = agentDataProvider else { return nil }
         let agents = await provider.getAgents()
+
+        // Try UUID first
+        if let uuid = UUID(uuidString: identifier) {
+            return agents.first { $0.id == uuid }
+        }
+
+        // Try name (case-insensitive)
+        return agents.first { $0.name.lowercased() == identifier.lowercased() }
+    }
+
+    /// Find an agent by name or ID, but only within the same workspace as the caller
+    func findAgentInSameWorkspace(callerAgentId: UUID, identifier: String) async -> Agent? {
+        guard let provider = agentDataProvider else { return nil }
+        let agents = await provider.getAgentsInSameWorkspace(as: callerAgentId)
 
         // Try UUID first
         if let uuid = UUID(uuidString: identifier) {
@@ -140,18 +162,18 @@ actor MCPService: MCPServiceProtocol {
     func sendMessage(from: String, to: String, content: String) async -> Bool {
         // Verify sender exists and is registered
         guard let sender = await findAgent(byNameOrId: from) else {
-            logger.warning("Sender not found: \(from)")
+            logger.warning("[skwad] Sender not found: \(from)")
             return false
         }
 
         guard sender.isRegistered else {
-            logger.warning("Sender not registered: \(from)")
+            logger.warning("[skwad] Sender not registered: \(from)")
             return false
         }
 
-        // Find recipient
-        guard let recipient = await findAgent(byNameOrId: to) else {
-            logger.warning("Recipient not found: \(to)")
+        // Find recipient - must be in same workspace as sender
+        guard let recipient = await findAgentInSameWorkspace(callerAgentId: sender.id, identifier: to) else {
+            logger.warning("[skwad] Recipient not found in same workspace: \(to)")
             return false
         }
 
@@ -204,7 +226,9 @@ actor MCPService: MCPServiceProtocol {
         }
 
         guard let provider = agentDataProvider else { return 0 }
-        let agents = await provider.getAgents()
+
+        // Only broadcast to agents in the same workspace
+        let agents = await provider.getAgentsInSameWorkspace(as: sender.id)
 
         var count = 0
         var recipients: [(Agent, UUID)] = []
@@ -285,6 +309,24 @@ final class AgentManagerWrapper: AgentDataProvider, @unchecked Sendable {
     func getAgents() async -> [Agent] {
         await MainActor.run {
             manager?.agents ?? []
+        }
+    }
+
+    func getAgentsInSameWorkspace(as agentId: UUID) async -> [Agent] {
+        await MainActor.run {
+            guard let manager = manager else { return [] }
+
+            // Find which workspace contains this agent
+            guard let workspace = manager.workspaces.first(where: {
+                $0.agentIds.contains(agentId)
+            }) else {
+                return []  // Agent not in any workspace
+            }
+
+            // Return all agents in that workspace
+            return workspace.agentIds.compactMap { id in
+                manager.agents.first { $0.id == id }
+            }
         }
     }
 

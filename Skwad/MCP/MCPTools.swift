@@ -26,7 +26,12 @@ actor MCPToolHandler {
             ToolDefinition(
                 name: MCPToolName.listAgents.rawValue,
                 description: "List all registered agents with their status (name, folder, working/idle)",
-                inputSchema: ToolInputSchema()
+                inputSchema: ToolInputSchema(
+                    properties: [
+                        "agentId": PropertySchema(type: "string", description: "Your agent ID")
+                    ],
+                    required: ["agentId"]
+                )
             ),
             ToolDefinition(
                 name: MCPToolName.sendMessage.rawValue,
@@ -76,7 +81,7 @@ actor MCPToolHandler {
         case .registerAgent:
             return await handleRegisterAgent(arguments)
         case .listAgents:
-            return await handleListAgents()
+            return await handleListAgents(arguments)
         case .sendMessage:
             return await handleSendMessage(arguments)
         case .checkMessages:
@@ -106,8 +111,12 @@ actor MCPToolHandler {
         }
     }
 
-    private func handleListAgents() async -> ToolCallResult {
-        let agents = await mcpService.listAgents()
+    private func handleListAgents(_ arguments: [String: Any]) async -> ToolCallResult {
+        guard let agentId = arguments["agentId"] as? String else {
+            return errorResult("Missing required parameter: agentId")
+        }
+
+        let agents = await mcpService.listAgents(callerAgentId: agentId)
         let response = ListAgentsResponse(agents: agents)
         return successResult(response)
     }
