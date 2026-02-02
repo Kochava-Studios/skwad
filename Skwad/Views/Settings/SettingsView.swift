@@ -52,11 +52,6 @@ struct GeneralSettingsView: View {
   private let updater = UpdaterManager.shared.updater
   @State private var automaticallyChecksForUpdates: Bool = true
 
-  private let terminalEngines = [
-    ("ghostty", "Ghostty (GPU-accelerated)"),
-    ("swiftterm", "SwiftTerm")
-  ]
-  
   private var appearanceFooter: String {
     switch AppearanceMode(rawValue: settings.appearanceMode) {
     case .auto:
@@ -89,49 +84,8 @@ struct GeneralSettingsView: View {
       
       Section {
         Toggle("Restore agents on launch", isOn: $settings.restoreLayoutOnLaunch)
-        
-        Picker("Terminal engine", selection: $settings.terminalEngine) {
-          ForEach(terminalEngines, id: \.0) { engine in
-            Text(engine.1).tag(engine.0)
-          }
-        }
       } header: {
         Text("Startup")
-      } footer: {
-        Text("Changing terminal engine requires restarting Skwad.")
-          .foregroundColor(.secondary)
-      }
-      
-      Section {
-        LabeledContent("Source folder") {
-          HStack {
-            Text(settings.sourceBaseFolder.isEmpty ? "Not configured" : settings.sourceBaseFolder)
-              .foregroundColor(settings.sourceBaseFolder.isEmpty ? .secondary : .primary)
-              .lineLimit(1)
-              .truncationMode(.middle)
-
-            Spacer()
-
-            if !settings.sourceBaseFolder.isEmpty {
-              Button {
-                settings.sourceBaseFolder = ""
-              } label: {
-                Image(systemName: "xmark.circle.fill")
-                  .foregroundColor(.secondary)
-              }
-              .buttonStyle(.plain)
-            }
-
-            Button("Choose...") {
-              selectSourceFolder()
-            }
-          }
-        }
-      } header: {
-        Text("Source Folder")
-      } footer: {
-        Text("Base folder containing your git repositories (e.g. ~/src). Enables quick repo and worktree selection when creating agents.")
-          .foregroundColor(.secondary)
       }
 
       Section {
@@ -149,34 +103,6 @@ struct GeneralSettingsView: View {
     .onAppear {
       automaticallyChecksForUpdates = updater.automaticallyChecksForUpdates
     }
-  }
-  
-  private func selectSourceFolder() {
-    let panel = NSOpenPanel()
-    panel.allowsMultipleSelection = false
-    panel.canChooseDirectories = true
-    panel.canChooseFiles = false
-    panel.canCreateDirectories = false
-    panel.message = "Select your source folder containing git repositories"
-    panel.prompt = "Select"
-    
-    // Start in current source folder if set, otherwise home
-    if settings.hasValidSourceBaseFolder {
-      panel.directoryURL = URL(fileURLWithPath: settings.expandedSourceBaseFolder)
-    } else {
-      panel.directoryURL = FileManager.default.homeDirectoryForCurrentUser
-    }
-    
-    if panel.runModal() == .OK, let url = panel.url {
-      settings.sourceBaseFolder = shortenPath(url.path)
-    }
-  }
-  
-  private func shortenPath(_ path: String) -> String {
-    if let home = ProcessInfo.processInfo.environment["HOME"], path.hasPrefix(home) {
-      return "~" + path.dropFirst(home.count)
-    }
-    return path
   }
 }
 
@@ -210,11 +136,11 @@ let availableAgents = [
 struct CodingSettingsView: View {
   @ObservedObject private var settings = AppSettings.shared
   @State private var selectedAgentType: String = "claude"
-  
+
   private var isCustomAgent: Bool {
     selectedAgentType == "custom1" || selectedAgentType == "custom2"
   }
-  
+
   private var commandBinding: Binding<String> {
     Binding(
       get: {
@@ -234,16 +160,48 @@ struct CodingSettingsView: View {
       }
     )
   }
-  
+
   private var optionsBinding: Binding<String> {
     Binding(
       get: { settings.getOptions(for: selectedAgentType) },
       set: { settings.setOptions($0, for: selectedAgentType) }
     )
   }
-  
+
   var body: some View {
     Form {
+      Section {
+        LabeledContent("Source folder") {
+          HStack {
+            Text(settings.sourceBaseFolder.isEmpty ? "Not configured" : settings.sourceBaseFolder)
+              .foregroundColor(settings.sourceBaseFolder.isEmpty ? .secondary : .primary)
+              .lineLimit(1)
+              .truncationMode(.middle)
+
+            Spacer()
+
+            if !settings.sourceBaseFolder.isEmpty {
+              Button {
+                settings.sourceBaseFolder = ""
+              } label: {
+                Image(systemName: "xmark.circle.fill")
+                  .foregroundColor(.secondary)
+              }
+              .buttonStyle(.plain)
+            }
+
+            Button("Choose...") {
+              selectSourceFolder()
+            }
+          }
+        }
+      } header: {
+        Text("Source Folder")
+      } footer: {
+        Text("Base folder containing your git repositories (e.g. ~/src). Enables quick repo and worktree selection when creating agents.")
+          .foregroundColor(.secondary)
+      }
+
       Section {
         AgentTypePicker(label: "Agent", selection: $selectedAgentType)
 
@@ -286,14 +244,47 @@ struct CodingSettingsView: View {
     .formStyle(.grouped)
     .padding()
   }
+
+  private func selectSourceFolder() {
+    let panel = NSOpenPanel()
+    panel.allowsMultipleSelection = false
+    panel.canChooseDirectories = true
+    panel.canChooseFiles = false
+    panel.canCreateDirectories = false
+    panel.message = "Select your source folder containing git repositories"
+    panel.prompt = "Select"
+
+    // Start in current source folder if set, otherwise home
+    if settings.hasValidSourceBaseFolder {
+      panel.directoryURL = URL(fileURLWithPath: settings.expandedSourceBaseFolder)
+    } else {
+      panel.directoryURL = FileManager.default.homeDirectoryForCurrentUser
+    }
+
+    if panel.runModal() == .OK, let url = panel.url {
+      settings.sourceBaseFolder = shortenPath(url.path)
+    }
+  }
+
+  private func shortenPath(_ path: String) -> String {
+    if let home = ProcessInfo.processInfo.environment["HOME"], path.hasPrefix(home) {
+      return "~" + path.dropFirst(home.count)
+    }
+    return path
+  }
 }
 
 struct TerminalSettingsView: View {
   @ObservedObject private var settings = AppSettings.shared
-  
+
   @State private var backgroundColor: Color
   @State private var foregroundColor: Color
-  
+
+  private let terminalEngines = [
+    ("ghostty", "Ghostty (GPU-accelerated)"),
+    ("swiftterm", "SwiftTerm")
+  ]
+
   private let monospaceFonts = [
     "SF Mono",
     "Menlo",
@@ -322,6 +313,19 @@ struct TerminalSettingsView: View {
   
   var body: some View {
     Form {
+      Section {
+        Picker("Engine", selection: $settings.terminalEngine) {
+          ForEach(terminalEngines, id: \.0) { engine in
+            Text(engine.1).tag(engine.0)
+          }
+        }
+      } header: {
+        Text("Terminal Engine")
+      } footer: {
+        Text("Changing terminal engine requires restarting Skwad.")
+          .foregroundColor(.secondary)
+      }
+
       if settings.terminalEngine == "ghostty" {
         ghosttySettings
       } else {
