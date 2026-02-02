@@ -132,9 +132,7 @@ zip: export
 	fi
 	@mkdir -p $(BUILD_DIR)
 	@rm -f $(ZIP_PATH)
-	ditto -c -k --keepParent \
-		"$(EXPORT_PATH)/$(APP_NAME).app" \
-		$(ZIP_PATH)
+	cd "$(EXPORT_PATH)" && zip -r -y "../$(APP_NAME).zip" "$(APP_NAME).app"
 	@echo "ZIP created at $(ZIP_PATH)"
 
 notarize: zip
@@ -157,14 +155,12 @@ notarize: zip
 		--team-id "$(TEAM_ID)" \
 		--password "$(APP_PASSWORD)" \
 		--wait
-	@echo "Stapling notarization ticket..."
+	@echo "Stapling notarization ticket to app..."
 	xcrun stapler staple "$(EXPORT_PATH)/$(APP_NAME).app"
-	@echo "Creating stapled ZIP..."
+	@echo "Creating ZIP with stapled app..."
 	@rm -f $(ZIP_PATH)
-	ditto -c -k --keepParent \
-		"$(EXPORT_PATH)/$(APP_NAME).app" \
-		$(ZIP_PATH)
-	@echo "Creating notarized DMG..."
+	cd "$(EXPORT_PATH)" && zip -r -y "../$(APP_NAME).zip" "$(APP_NAME).app"
+	@echo "Creating DMG with stapled app..."
 	@rm -f $(DMG_PATH)
 	hdiutil create -volname "$(APP_NAME)" \
 		-srcfolder "$(EXPORT_PATH)/$(APP_NAME).app" \
@@ -174,9 +170,9 @@ notarize: zip
 	@./scripts/generate-appcast.sh "$(ZIP_PATH)" "$(EXPORT_PATH)/$(APP_NAME).app" "$(APPCAST_PATH)" "$(DOWNLOAD_URL)"
 	@echo ""
 	@echo "✅ Notarization complete!"
-	@echo "   App: $(EXPORT_PATH)/$(APP_NAME).app"
-	@echo "   ZIP: $(ZIP_PATH) (stapled)"
-	@echo "   DMG: $(DMG_PATH)"
+	@echo "   App: $(EXPORT_PATH)/$(APP_NAME).app (stapled)"
+	@echo "   ZIP: $(ZIP_PATH) (contains stapled app)"
+	@echo "   DMG: $(DMG_PATH) (contains stapled app)"
 	@echo "   Appcast: $(APPCAST_PATH)"
 
 get-version:
