@@ -21,6 +21,10 @@ Package.resolved
 # Environment
 .env
 
+# Local settings
+.claude/settings.local.json
+
 # Build artifacts
 build/
 Vendor/libghostty/lib/libghostty.a
+Vendor/libghostty/VERSION
