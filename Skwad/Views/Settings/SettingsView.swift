@@ -1,4 +1,5 @@
 import SwiftUI
+import Sparkle
 
 enum SettingsTab: Int, CaseIterable {
   case general, coding, terminal, voice, mcp
@@ -48,7 +49,9 @@ struct SettingsView: View {
 
 struct GeneralSettingsView: View {
   @ObservedObject private var settings = AppSettings.shared
-  
+  private let updater = UpdaterManager.shared.updater
+  @State private var automaticallyChecksForUpdates: Bool = true
+
   private let terminalEngines = [
     ("ghostty", "Ghostty (GPU-accelerated)"),
     ("swiftterm", "SwiftTerm")
@@ -106,9 +109,9 @@ struct GeneralSettingsView: View {
               .foregroundColor(settings.sourceBaseFolder.isEmpty ? .secondary : .primary)
               .lineLimit(1)
               .truncationMode(.middle)
-            
+
             Spacer()
-            
+
             if !settings.sourceBaseFolder.isEmpty {
               Button {
                 settings.sourceBaseFolder = ""
@@ -118,7 +121,7 @@ struct GeneralSettingsView: View {
               }
               .buttonStyle(.plain)
             }
-            
+
             Button("Choose...") {
               selectSourceFolder()
             }
@@ -130,10 +133,22 @@ struct GeneralSettingsView: View {
         Text("Base folder containing your git repositories (e.g. ~/src). Enables quick repo and worktree selection when creating agents.")
           .foregroundColor(.secondary)
       }
-      
+
+      Section {
+        Toggle("Automatically check for updates", isOn: $automaticallyChecksForUpdates)
+          .onChange(of: automaticallyChecksForUpdates) { _, newValue in
+            updater.automaticallyChecksForUpdates = newValue
+          }
+      } header: {
+        Text("Updates")
+      }
+
     }
     .formStyle(.grouped)
     .padding()
+    .onAppear {
+      automaticallyChecksForUpdates = updater.automaticallyChecksForUpdates
+    }
   }
   
   private func selectSourceFolder() {

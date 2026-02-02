@@ -1,4 +1,4 @@
-.PHONY: help build clean archive export notarize dmg release install upload all
+.PHONY: help build clean archive export notarize dmg release install upload all increment-build appcast get-version set-version
 
 # Load .env file if it exists
 -include .env
@@ -12,6 +12,10 @@ ARCHIVE_PATH := $(BUILD_DIR)/$(APP_NAME).xcarchive
 EXPORT_PATH := $(BUILD_DIR)/export
 DMG_PATH := $(BUILD_DIR)/$(APP_NAME).dmg
 ZIP_PATH := $(BUILD_DIR)/$(APP_NAME).zip
+APPCAST_PATH := $(BUILD_DIR)/appcast.xml
+
+# Download URL for updates
+DOWNLOAD_URL ?= https://bonamy.fr/skwad/Skwad.zip
 
 # Apple Developer settings (override via environment variables)
 TEAM_ID ?= $(shell /usr/libexec/PlistBuddy -c "Print :TeamIdentifier:0" ~/Library/Preferences/com.apple.dt.Xcode.plist 2>/dev/null)
@@ -34,9 +38,9 @@ help:
 	@echo "  make dmg          - Create a DMG (requires export)"
 	@echo "  make zip          - Create a notarization-ready ZIP (requires export)"
 	@echo "  make notarize     - Submit ZIP for notarization and staple"
-	@echo "  make release      - Full release pipeline (archive + export + dmg + notarize)"
+	@echo "  make release      - Full release pipeline (increment build + notarize)"
 	@echo "  make install      - Copy notarized app to /Applications"
-	@echo "  make upload       - Upload ZIP to bonamy.fr:/swap (requires notarize)"
+	@echo "  make upload       - Upload ZIP and appcast.xml (requires notarize)"
 	@echo "  make all          - Complete pipeline (release + install + upload)"
 	@echo "  make clean        - Clean build artifacts"
 	@echo ""
@@ -166,13 +170,37 @@ notarize: zip
 		-srcfolder "$(EXPORT_PATH)/$(APP_NAME).app" \
 		-ov -format UDZO \
 		$(DMG_PATH)
+	@echo "Generating appcast..."
+	@./scripts/generate-appcast.sh "$(ZIP_PATH)" "$(EXPORT_PATH)/$(APP_NAME).app" "$(APPCAST_PATH)" "$(DOWNLOAD_URL)"
 	@echo ""
 	@echo "✅ Notarization complete!"
 	@echo "   App: $(EXPORT_PATH)/$(APP_NAME).app"
 	@echo "   ZIP: $(ZIP_PATH) (stapled)"
 	@echo "   DMG: $(DMG_PATH)"
+	@echo "   Appcast: $(APPCAST_PATH)"
 
-release: notarize
+get-version:
+	@VERSION=$$(grep -m1 "MARKETING_VERSION = " Skwad.xcodeproj/project.pbxproj | sed 's/.*= \(.*\);/\1/'); \
+	BUILD=$$(grep -m1 "CURRENT_PROJECT_VERSION = " Skwad.xcodeproj/project.pbxproj | sed 's/.*= \(.*\);/\1/'); \
+	echo "$$VERSION.$$BUILD"
+
+set-version:
+	@if [ -z "$(VERSION)" ]; then \
+		echo "Usage: make set-version VERSION=x.y"; \
+		exit 1; \
+	fi
+	@sed -i '' "s/MARKETING_VERSION = .*;/MARKETING_VERSION = $(VERSION);/g" Skwad.xcodeproj/project.pbxproj
+	@echo "Version set to $(VERSION)"
+
+increment-build:
+	@echo "Incrementing build number..."
+	@./scripts/increment-build.sh
+
+appcast:
+	@echo "Generating appcast..."
+	@./scripts/generate-appcast.sh "$(ZIP_PATH)" "$(EXPORT_PATH)/$(APP_NAME).app" "$(APPCAST_PATH)" "$(DOWNLOAD_URL)"
+
+release: increment-build notarize
 	@echo ""
 	@echo "🎉 Release build complete!"
 	@echo "   Distribution package: $(DMG_PATH)"
@@ -197,9 +225,18 @@ upload:
 			echo "Error: ZIP file not found. Run 'make notarize' first."; \
 			exit 1; \
 		fi; \
+		if [ ! -f "$(APPCAST_PATH)" ]; then \
+			echo "Error: Appcast file not found. Run 'make notarize' first."; \
+			exit 1; \
+		fi; \
 		command -v duck >/dev/null 2>&1 || { echo "Error: duck CLI not installed. Run 'brew install duck'"; exit 1; }; \
 		duck --username "$(SFTP_USER)" --identity "$(SFTP_KEY)" --existing overwrite --upload "sftp://$(SFTP_HOST)$(SFTP_PATH)/" $(ZIP_PATH); \
-		echo "✅ Upload complete: $(SFTP_HOST)$(SFTP_PATH)/$(APP_NAME).zip"; \
+		echo "Uploading $(APPCAST_PATH) to $(SFTP_HOST)$(SFTP_PATH)..."; \
+		duck --username "$(SFTP_USER)" --identity "$(SFTP_KEY)" --existing overwrite --upload "sftp://$(SFTP_HOST)$(SFTP_PATH)/" $(APPCAST_PATH); \
+		echo ""; \
+		echo "✅ Upload complete!"; \
+		echo "   ZIP: $(SFTP_HOST)$(SFTP_PATH)/$(APP_NAME).zip"; \
+		echo "   Appcast: $(SFTP_HOST)$(SFTP_PATH)/appcast.xml"; \
 	else \
 		echo "Error: Upload not configured. Set SFTP_HOST, SFTP_PATH, SFTP_USER in .env file"; \
 		exit 1; \

@@ -1,5 +1,6 @@
 import SwiftUI
 import Logging
+import Sparkle
 
 // Global MCP server instance
 private var mcpServerInstance: MCPServer?
@@ -8,6 +9,7 @@ private var mcpServerInstance: MCPServer?
 struct SkwadApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @StateObject private var agentManager = AgentManager()
+    private let updaterManager = UpdaterManager.shared
     @State private var mcpInitialized = false
     @State private var alertMessage: String?
     @State private var showAlert = false
@@ -233,6 +235,11 @@ struct SkwadApp: App {
 
         Settings {
             SettingsView()
+        }
+        .commands {
+            CommandGroup(after: .appInfo) {
+                CheckForUpdatesView(updater: updaterManager.updater)
+            }
         }
     }
 
