@@ -665,6 +665,8 @@ struct ImageCropperSheet: View {
     @State private var lastOffset: CGSize = .zero
 
     private let cropSize: CGFloat = 200
+    private let minScale: CGFloat = 0.1
+    private let maxScale: CGFloat = 20.0
 
     var body: some View {
         VStack(spacing: 20) {
@@ -674,7 +676,7 @@ struct ImageCropperSheet: View {
             ZStack {
                 ScrollWheelView { delta in
                     let zoomFactor = 1.0 + (delta * 0.01)
-                    scale = max(0.5, min(4.0, scale * zoomFactor))
+                    scale = max(minScale, min(maxScale, scale * zoomFactor))
                     lastScale = scale
                 } content: {
                     Image(nsImage: image)
@@ -700,7 +702,7 @@ struct ImageCropperSheet: View {
                 .gesture(
                     MagnificationGesture()
                         .onChanged { value in
-                            scale = max(0.5, min(4.0, lastScale * value))
+                            scale = max(minScale, min(maxScale, lastScale * value))
                         }
                         .onEnded { _ in
                             lastScale = scale
