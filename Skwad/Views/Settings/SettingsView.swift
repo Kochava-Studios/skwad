@@ -231,7 +231,7 @@ struct CodingSettingsView: View {
     Form {
       Section {
         AgentTypePicker(label: "Agent", selection: $selectedAgentType)
-        
+
         if isCustomAgent {
           LabeledContent("Command") {
             TextField("", text: commandBinding)
@@ -239,7 +239,7 @@ struct CodingSettingsView: View {
               .font(.system(.body, design: .monospaced))
           }
         }
-        
+
         LabeledContent("Options") {
           TextField("", text: optionsBinding)
             .textFieldStyle(.roundedBorder)
@@ -257,6 +257,15 @@ struct CodingSettingsView: View {
           Text("Enter a command for this custom agent")
             .foregroundColor(.secondary)
         }
+      }
+
+      Section {
+        OpenWithAppPicker(label: "Default app", selection: $settings.defaultOpenWithApp)
+      } header: {
+        Text("Open With (⌘⇧O)")
+      } footer: {
+        Text("The app to open when pressing ⌘⇧O on the active agent.")
+          .foregroundColor(.secondary)
       }
     }
     .formStyle(.grouped)

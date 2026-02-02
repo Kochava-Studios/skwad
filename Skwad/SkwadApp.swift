@@ -21,6 +21,11 @@ struct SkwadApp: App {
 
     private var settings: AppSettings { AppSettings.shared }
 
+    private var defaultOpenWithAppName: String? {
+        guard !settings.defaultOpenWithApp.isEmpty else { return nil }
+        return availableOpenWithApps.first { $0.id == settings.defaultOpenWithApp }?.name
+    }
+
     private static let isPreview = ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
 
     init() {
@@ -126,6 +131,16 @@ struct SkwadApp: App {
                 }
                 .keyboardShortcut("b", modifiers: [.command, .shift])
                 .disabled(agentManager.agents.isEmpty)
+
+                if let appName = defaultOpenWithAppName {
+                    Divider()
+
+                    Button("Open in \(appName)") {
+                        openActiveAgentInDefaultApp()
+                    }
+                    .keyboardShortcut("o", modifiers: [.command, .shift])
+                    .disabled(agentManager.activeAgentId == nil)
+                }
             }
 
             // Edit menu - text and terminal operations
@@ -293,6 +308,13 @@ struct SkwadApp: App {
 
         // Close the window
         NSApplication.shared.keyWindow?.close()
+    }
+
+    private func openActiveAgentInDefaultApp() {
+        guard let agent = agentManager.agents.first(where: { $0.id == agentManager.activeAgentId }) else {
+            return
+        }
+        OpenWithProvider.open(agent.folder, withAppId: settings.defaultOpenWithApp)
     }
 }
 

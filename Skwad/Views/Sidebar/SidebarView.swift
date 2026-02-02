@@ -72,26 +72,17 @@ struct AgentContextMenu<Content: View>: View {
             Divider()
 
             Menu {
-                Button {
-                    openInIDE(agent.folder, ide: "vscode")
-                } label: {
-                    IconLabel("VS Code", icon: "vscode")
-                }
-                Button {
-                    openInIDE(agent.folder, ide: "xcode")
-                } label: {
-                    IconLabel("Xcode", icon: "xcode")
-                }
-                Divider()
-                Button {
-                    openInFinder(agent.folder)
-                } label: {
-                    IconLabel("Finder", icon: "finder", fallback: "folder")
-                }
-                Button {
-                    openInTerminal(agent.folder)
-                } label: {
-                    IconLabel("Terminal", icon: "ghostty", fallback: "terminal")
+                ForEach(OpenWithProvider.menuElements()) { element in
+                    switch element {
+                    case .app(let app):
+                        Button {
+                            OpenWithProvider.open(agent.folder, with: app)
+                        } label: {
+                            IconLabel(app.name, icon: app.icon ?? "", fallback: app.systemIcon)
+                        }
+                    case .separator:
+                        Divider()
+                    }
                 }
             } label: {
                 Label("Open In...", systemImage: "arrow.up.forward.app")
@@ -372,63 +363,6 @@ struct SidebarView: View {
         agentManager.addAgent(folder: saved.folder, name: saved.name, avatar: saved.avatar)
     }
 
-    // MARK: - Open In IDE
-
-}
-
-// MARK: - Global Helper Functions
-
-private func openInIDE(_ folder: String, ide: String) {
-    switch ide {
-    case "vscode":
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/bin/open")
-        process.arguments = ["-b", "com.microsoft.VSCode", folder]
-        try? process.run()
-
-    case "xcode":
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/bin/open")
-        process.arguments = ["-a", "Xcode", folder]
-        try? process.run()
-
-    default:
-        break
-    }
-}
-
-private func openInFinder(_ folder: String) {
-    NSWorkspace.shared.selectFile(nil, inFileViewerRootedAtPath: folder)
-}
-
-private func openInTerminal(_ folder: String) {
-    // Try Ghostty first, fall back to Terminal.app
-    let ghosttyBundleId = "com.mitchellh.ghostty"
-    let terminalBundleId = "com.apple.Terminal"
-
-    let bundleId = NSWorkspace.shared.urlForApplication(withBundleIdentifier: ghosttyBundleId) != nil
-        ? ghosttyBundleId
-        : terminalBundleId
-
-    if bundleId == ghosttyBundleId {
-        // Ghostty: just open the folder, it will start a shell there
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/bin/open")
-        process.arguments = ["-b", ghosttyBundleId, folder]
-        try? process.run()
-    } else {
-        // Terminal.app: use AppleScript to cd into folder
-        let script = """
-        tell application "Terminal"
-            activate
-            do script "cd '\(folder)'"
-        end tell
-        """
-        if let appleScript = NSAppleScript(source: script) {
-            var error: NSDictionary?
-            appleScript.executeAndReturnError(&error)
-        }
-    }
 }
 
 extension Notification.Name {

@@ -206,6 +206,9 @@ class AppSettings: ObservableObject {
         savedAgents.map { Agent(id: $0.id, name: $0.name, avatar: $0.avatar, folder: $0.folder, agentType: $0.agentType) }
     }
 
+    // Coding - default open with app (Cmd+Shift+O)
+    @AppStorage("defaultOpenWithApp") var defaultOpenWithApp: String = ""
+
     // Coding - per-agent options
     @AppStorage("agentOptions_claude") var agentOptions_claude: String = ""
     @AppStorage("agentOptions_codex") var agentOptions_codex: String = ""

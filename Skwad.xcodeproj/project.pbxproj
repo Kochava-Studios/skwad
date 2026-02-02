@@ -11,6 +11,7 @@
 		0327FDF2A2ECDCE0DF53BE02 /* DiffView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA63472ED8A96242C89019C1 /* DiffView.swift */; };
 		05DDBA7B3DCF7C65CF6A9FFF /* GitWorktreeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D95A7EFF9B22BB564BAFA4 /* GitWorktreeManager.swift */; };
 		3FFD4CA0073309E4B34E6B66 /* CommitSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A486F6A72822BE9094B02DA7 /* CommitSheet.swift */; };
+		48E4A7F10E3C047EF657C139 /* OpenWithAppPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAB09CF01B6F4CD118B448A6 /* OpenWithAppPicker.swift */; };
 		491170A3B86B4F821B4A1417 /* NewWorktreeSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B074ACAD44D9FA064E28A16 /* NewWorktreeSheet.swift */; };
 		49401D3D3F6B5D076AF44DD4 /* VoiceInputOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3DBC302D03CA10E1AEEE3BC /* VoiceInputOverlay.swift */; };
 		49BE1929AE038865BFCD543D /* GitTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADCF18167D88BA578DBF2B2E /* GitTypes.swift */; };
@@ -34,14 +35,13 @@
 		8D7622B42F2C67CE006B6280 /* MCPSessionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D7622AB2F2C67CE006B6280 /* MCPSessionManager.swift */; };
 		8DD8074D2F2E52E900D7A935 /* AgentSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DD8074C2F2E52E900D7A935 /* AgentSheet.swift */; };
 		914A53BB8DBD66EC96B19BDA /* GitPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBECFB308DA186BC15E6AE50 /* GitPanelView.swift */; };
-		994333F7B19B798B193F5DDB /* PushToTalkMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE289D29B40A64B7399FFAFC /* PushToTalkMonitor.swift */; };
+		A0622F92A9748B402B7D8403 /* MenuItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = B85319AD6169FDBF46AAE73E /* MenuItem.swift */; };
 		A1789C06B8425D64920E2446 /* GitCLI.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCD187651343B17CF0D9CCCF /* GitCLI.swift */; };
-		AEFEE25756A8C0984BFD4D5C /* VoiceInputManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9895A27293EEDAA78A2585E8 /* VoiceInputManager.swift */; };
 		AS000001 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AS100001 /* Assets.xcassets */; };
 		B8654D4E2D19AA01B9A6072A /* VoiceInputManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03CE69DC7C60F2847F9B8C2E /* VoiceInputManager.swift */; };
-		C5578C32EDC686A572768BD6 /* VoiceInputOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 429BC5DA0748D2B8EA6EC043 /* VoiceInputOverlay.swift */; };
 		C6616FBD9C1D86E51B5D6B0E /* PushToTalkMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 337FE74E7DEB7971FDBEE143 /* PushToTalkMonitor.swift */; };
 		EC4663850678FAF77C0F1381 /* GitRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 137C060CFAE6151E52210D1A /* GitRepository.swift */; };
+		F4AB26B99E3CC3D579D72293 /* OpenWithProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = E032A72A15B3456546418CF7 /* OpenWithProvider.swift */; };
 		F8001001 /* SkwadApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8000001 /* SkwadApp.swift */; };
 		F8001002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8000002 /* ContentView.swift */; };
 		F8001003 /* Agent.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8000003 /* Agent.swift */; };
@@ -117,7 +117,10 @@
 		A486F6A72822BE9094B02DA7 /* CommitSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CommitSheet.swift; sourceTree = "<group>"; };
 		ADCF18167D88BA578DBF2B2E /* GitTypes.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GitTypes.swift; sourceTree = "<group>"; };
 		AS100001 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		B85319AD6169FDBF46AAE73E /* MenuItem.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MenuItem.swift; sourceTree = "<group>"; };
 		C3DBC302D03CA10E1AEEE3BC /* VoiceInputOverlay.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = VoiceInputOverlay.swift; path = Skwad/Voice/VoiceInputOverlay.swift; sourceTree = "<group>"; };
+		CAB09CF01B6F4CD118B448A6 /* OpenWithAppPicker.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OpenWithAppPicker.swift; sourceTree = "<group>"; };
+		E032A72A15B3456546418CF7 /* OpenWithProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OpenWithProvider.swift; sourceTree = "<group>"; };
 		EA63472ED8A96242C89019C1 /* DiffView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DiffView.swift; sourceTree = "<group>"; };
 		F8000001 /* SkwadApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SkwadApp.swift; sourceTree = "<group>"; };
 		F8000002 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -290,6 +293,8 @@
 				F8000004 /* AgentManager.swift */,
 				F8000009 /* AppSettings.swift */,
 				52D95A7EFF9B22BB564BAFA4 /* GitWorktreeManager.swift */,
+				B85319AD6169FDBF46AAE73E /* MenuItem.swift */,
+				E032A72A15B3456546418CF7 /* OpenWithProvider.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -342,6 +347,7 @@
 				SR100003 /* AgentTypePickerContent.swift */,
 				F800000C /* AvatarView.swift */,
 				8D6B972D2F2E366000CE877E /* MCPCommandView.swift */,
+				CAB09CF01B6F4CD118B448A6 /* OpenWithAppPicker.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -572,9 +578,9 @@
 				B8654D4E2D19AA01B9A6072A /* VoiceInputManager.swift in Sources */,
 				C6616FBD9C1D86E51B5D6B0E /* PushToTalkMonitor.swift in Sources */,
 				49401D3D3F6B5D076AF44DD4 /* VoiceInputOverlay.swift in Sources */,
-				AEFEE25756A8C0984BFD4D5C /* VoiceInputManager.swift in Sources */,
-				994333F7B19B798B193F5DDB /* PushToTalkMonitor.swift in Sources */,
-				C5578C32EDC686A572768BD6 /* VoiceInputOverlay.swift in Sources */,
+				A0622F92A9748B402B7D8403 /* MenuItem.swift in Sources */,
+				F4AB26B99E3CC3D579D72293 /* OpenWithProvider.swift in Sources */,
+				48E4A7F10E3C047EF657C139 /* OpenWithAppPicker.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
