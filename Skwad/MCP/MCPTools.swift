@@ -182,7 +182,7 @@ actor MCPToolHandler {
         let success = await mcpService.sendMessage(from: from, to: to, content: content)
 
         if success {
-            let response = SendMessageResponse(success: true, message: "Message sent successfully")
+            let response = SendMessageResponse(success: true, message: "Message sent successfully. Don't check for a response right away - you will be notified when the other agent responds.")
             return successResult(response)
         } else {
             return errorResult("Failed to send message: recipient not found or sender not registered")
