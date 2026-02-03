@@ -1,9 +1,8 @@
-import Testing
+import XCTest
 import Foundation
 @testable import Skwad
 
-@Suite("CommitSheet Helpers")
-struct CommitSheetHelpersTests {
+final class CommitSheetHelpersTests: XCTestCase {
 
     // MARK: - Can Commit Validation
 
@@ -12,55 +11,43 @@ struct CommitSheetHelpersTests {
         !message.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && !isCommitting
     }
 
-    @Suite("Can Commit Validation")
-    struct CanCommitValidationTests {
+    func testEmptyMessageCannotCommit() {
+        XCTAssertFalse(CommitSheetHelpersTests.canCommit(message: "", isCommitting: false))
+    }
 
-        @Test("empty message cannot commit")
-        func emptyMessageCannotCommit() {
-            #expect(CommitSheetHelpersTests.canCommit(message: "", isCommitting: false) == false)
-        }
+    func testWhitespaceOnlyMessageCannotCommit() {
+        XCTAssertFalse(CommitSheetHelpersTests.canCommit(message: "   ", isCommitting: false))
+        XCTAssertFalse(CommitSheetHelpersTests.canCommit(message: "\n\t\n", isCommitting: false))
+        XCTAssertFalse(CommitSheetHelpersTests.canCommit(message: "  \t  ", isCommitting: false))
+    }
 
-        @Test("whitespace only message cannot commit")
-        func whitespaceOnlyCannotCommit() {
-            #expect(CommitSheetHelpersTests.canCommit(message: "   ", isCommitting: false) == false)
-            #expect(CommitSheetHelpersTests.canCommit(message: "\n\t\n", isCommitting: false) == false)
-            #expect(CommitSheetHelpersTests.canCommit(message: "  \t  ", isCommitting: false) == false)
-        }
+    func testValidMessageCanCommit() {
+        XCTAssertTrue(CommitSheetHelpersTests.canCommit(message: "Fix bug", isCommitting: false))
+    }
 
-        @Test("valid message can commit")
-        func validMessageCanCommit() {
-            #expect(CommitSheetHelpersTests.canCommit(message: "Fix bug", isCommitting: false) == true)
-        }
+    func testMessageWithLeadingTrailingWhitespaceCanCommit() {
+        XCTAssertTrue(CommitSheetHelpersTests.canCommit(message: "  Fix bug  ", isCommitting: false))
+    }
 
-        @Test("message with leading/trailing whitespace can commit")
-        func messageWithWhitespaceCanCommit() {
-            #expect(CommitSheetHelpersTests.canCommit(message: "  Fix bug  ", isCommitting: false) == true)
-        }
+    func testCannotCommitWhileCommitting() {
+        XCTAssertFalse(CommitSheetHelpersTests.canCommit(message: "Fix bug", isCommitting: true))
+    }
 
-        @Test("cannot commit while committing")
-        func cannotCommitWhileCommitting() {
-            #expect(CommitSheetHelpersTests.canCommit(message: "Fix bug", isCommitting: true) == false)
-        }
+    func testEmptyMessageAndCommittingBothBlock() {
+        XCTAssertFalse(CommitSheetHelpersTests.canCommit(message: "", isCommitting: true))
+    }
 
-        @Test("empty message and committing both block")
-        func emptyAndCommittingBothBlock() {
-            #expect(CommitSheetHelpersTests.canCommit(message: "", isCommitting: true) == false)
-        }
+    func testMultilineMessageCanCommit() {
+        let message = """
+        feat: add new feature
 
-        @Test("multiline message can commit")
-        func multilineMessageCanCommit() {
-            let message = """
-            feat: add new feature
+        This is the body of the commit message
+        with multiple lines.
+        """
+        XCTAssertTrue(CommitSheetHelpersTests.canCommit(message: message, isCommitting: false))
+    }
 
-            This is the body of the commit message
-            with multiple lines.
-            """
-            #expect(CommitSheetHelpersTests.canCommit(message: message, isCommitting: false) == true)
-        }
-
-        @Test("single character message can commit")
-        func singleCharCanCommit() {
-            #expect(CommitSheetHelpersTests.canCommit(message: "x", isCommitting: false) == true)
-        }
+    func testSingleCharacterMessageCanCommit() {
+        XCTAssertTrue(CommitSheetHelpersTests.canCommit(message: "x", isCommitting: false))
     }
 }

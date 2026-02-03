@@ -1,4 +1,4 @@
-import Testing
+import XCTest
 import SwiftUI
 @testable import Skwad
 
@@ -144,8 +144,7 @@ struct NavigationTestHelper {
     }
 }
 
-@Suite("AgentManager Navigation")
-struct AgentManagerNavigationTests {
+final class AgentManagerNavigationTests: XCTestCase {
 
     // MARK: - Test Helpers
 
@@ -174,308 +173,265 @@ struct AgentManagerNavigationTests {
 
     // MARK: - Single Mode Tests
 
-    @Suite("Single Mode")
-    struct SingleModeTests {
+    func testSelectNextAgentCyclesForward() {
+        var helper = AgentManagerNavigationTests.createTestSetup(agentCount: 3)
+        let agents = helper.currentWorkspaceAgents
 
-        @Test("selectNextAgent cycles forward")
-        func selectNextAgentCyclesForward() {
-            var helper = AgentManagerNavigationTests.createTestSetup(agentCount: 3)
-            let agents = helper.currentWorkspaceAgents
+        // Start at first agent
+        XCTAssertEqual(helper.activeAgentIds, [agents[0].id])
 
-            // Start at first agent
-            #expect(helper.activeAgentIds == [agents[0].id])
+        // Move to next
+        helper.selectNextAgent()
+        XCTAssertEqual(helper.activeAgentIds, [agents[1].id])
 
-            // Move to next
-            helper.selectNextAgent()
-            #expect(helper.activeAgentIds == [agents[1].id])
+        // Move to next
+        helper.selectNextAgent()
+        XCTAssertEqual(helper.activeAgentIds, [agents[2].id])
+    }
 
-            // Move to next
-            helper.selectNextAgent()
-            #expect(helper.activeAgentIds == [agents[2].id])
-        }
+    func testSelectNextAgentWrapsAround() {
+        var helper = AgentManagerNavigationTests.createTestSetup(agentCount: 3)
+        let agents = helper.currentWorkspaceAgents
 
-        @Test("selectNextAgent wraps around")
-        func selectNextAgentWrapsAround() {
-            var helper = AgentManagerNavigationTests.createTestSetup(agentCount: 3)
-            let agents = helper.currentWorkspaceAgents
+        // Go to last agent
+        helper.activeAgentIds = [agents[2].id]
 
-            // Go to last agent
-            helper.activeAgentIds = [agents[2].id]
+        // Next should wrap to first
+        helper.selectNextAgent()
+        XCTAssertEqual(helper.activeAgentIds, [agents[0].id])
+    }
 
-            // Next should wrap to first
-            helper.selectNextAgent()
-            #expect(helper.activeAgentIds == [agents[0].id])
-        }
+    func testSelectPreviousAgentCyclesBackward() {
+        var helper = AgentManagerNavigationTests.createTestSetup(agentCount: 3)
+        let agents = helper.currentWorkspaceAgents
 
-        @Test("selectPreviousAgent cycles backward")
-        func selectPreviousAgentCyclesBackward() {
-            var helper = AgentManagerNavigationTests.createTestSetup(agentCount: 3)
-            let agents = helper.currentWorkspaceAgents
+        // Start at second agent
+        helper.activeAgentIds = [agents[1].id]
 
-            // Start at second agent
-            helper.activeAgentIds = [agents[1].id]
+        // Move back
+        helper.selectPreviousAgent()
+        XCTAssertEqual(helper.activeAgentIds, [agents[0].id])
+    }
 
-            // Move back
-            helper.selectPreviousAgent()
-            #expect(helper.activeAgentIds == [agents[0].id])
-        }
+    func testSelectPreviousAgentWrapsAround() {
+        var helper = AgentManagerNavigationTests.createTestSetup(agentCount: 3)
+        let agents = helper.currentWorkspaceAgents
 
-        @Test("selectPreviousAgent wraps around")
-        func selectPreviousAgentWrapsAround() {
-            var helper = AgentManagerNavigationTests.createTestSetup(agentCount: 3)
-            let agents = helper.currentWorkspaceAgents
+        // Start at first agent
+        XCTAssertEqual(helper.activeAgentIds, [agents[0].id])
 
-            // Start at first agent
-            #expect(helper.activeAgentIds == [agents[0].id])
+        // Previous should wrap to last
+        helper.selectPreviousAgent()
+        XCTAssertEqual(helper.activeAgentIds, [agents[2].id])
+    }
 
-            // Previous should wrap to last
-            helper.selectPreviousAgent()
-            #expect(helper.activeAgentIds == [agents[2].id])
-        }
+    func testSelectAgentAtIndexSelectsCorrect() {
+        var helper = AgentManagerNavigationTests.createTestSetup(agentCount: 4)
+        let agents = helper.currentWorkspaceAgents
 
-        @Test("selectAgentAtIndex selects correct agent")
-        func selectAgentAtIndexSelectsCorrect() {
-            var helper = AgentManagerNavigationTests.createTestSetup(agentCount: 4)
-            let agents = helper.currentWorkspaceAgents
+        helper.selectAgentAtIndex(2)
+        XCTAssertEqual(helper.activeAgentIds, [agents[2].id])
+    }
 
-            helper.selectAgentAtIndex(2)
-            #expect(helper.activeAgentIds == [agents[2].id])
-        }
+    func testSelectAgentAtIndexIgnoresOutOfBounds() {
+        var helper = AgentManagerNavigationTests.createTestSetup(agentCount: 3)
+        let agents = helper.currentWorkspaceAgents
 
-        @Test("selectAgentAtIndex ignores out of bounds")
-        func selectAgentAtIndexIgnoresOutOfBounds() {
-            var helper = AgentManagerNavigationTests.createTestSetup(agentCount: 3)
-            let agents = helper.currentWorkspaceAgents
+        // Try to select index 5 when only 3 agents exist
+        helper.selectAgentAtIndex(5)
+        XCTAssertEqual(helper.activeAgentIds, [agents[0].id])  // Should remain unchanged
+    }
 
-            // Try to select index 5 when only 3 agents exist
-            helper.selectAgentAtIndex(5)
-            #expect(helper.activeAgentIds == [agents[0].id])  // Should remain unchanged
-        }
+    func testSelectAgentAtIndexIgnoresNegative() {
+        var helper = AgentManagerNavigationTests.createTestSetup(agentCount: 3)
+        let agents = helper.currentWorkspaceAgents
 
-        @Test("selectAgentAtIndex ignores negative index")
-        func selectAgentAtIndexIgnoresNegative() {
-            var helper = AgentManagerNavigationTests.createTestSetup(agentCount: 3)
-            let agents = helper.currentWorkspaceAgents
+        helper.selectAgentAtIndex(-1)
+        XCTAssertEqual(helper.activeAgentIds, [agents[0].id])  // Should remain unchanged
+    }
 
-            helper.selectAgentAtIndex(-1)
-            #expect(helper.activeAgentIds == [agents[0].id])  // Should remain unchanged
-        }
+    func testSingleAgentNavigation() {
+        var helper = AgentManagerNavigationTests.createTestSetup(agentCount: 1)
+        let agents = helper.currentWorkspaceAgents
 
-        @Test("navigation with single agent stays on same agent")
-        func singleAgentNavigation() {
-            var helper = AgentManagerNavigationTests.createTestSetup(agentCount: 1)
-            let agents = helper.currentWorkspaceAgents
+        helper.selectNextAgent()
+        XCTAssertEqual(helper.activeAgentIds, [agents[0].id])
 
-            helper.selectNextAgent()
-            #expect(helper.activeAgentIds == [agents[0].id])
-
-            helper.selectPreviousAgent()
-            #expect(helper.activeAgentIds == [agents[0].id])
-        }
+        helper.selectPreviousAgent()
+        XCTAssertEqual(helper.activeAgentIds, [agents[0].id])
     }
 
     // MARK: - Split Mode Tests
 
-    @Suite("Split Mode")
-    struct SplitModeTests {
+    func testSelectNextPaneCycles() {
+        var helper = AgentManagerNavigationTests.createTestSetup(agentCount: 3, mode: .splitVertical, activeCount: 2)
 
-        @Test("selectNextPane cycles through panes")
-        func selectNextPaneCycles() {
-            var helper = AgentManagerNavigationTests.createTestSetup(agentCount: 3, mode: .splitVertical, activeCount: 2)
+        XCTAssertEqual(helper.focusedPaneIndex, 0)
 
-            #expect(helper.focusedPaneIndex == 0)
+        helper.selectNextPane()
+        XCTAssertEqual(helper.focusedPaneIndex, 1)
 
-            helper.selectNextPane()
-            #expect(helper.focusedPaneIndex == 1)
+        helper.selectNextPane()
+        XCTAssertEqual(helper.focusedPaneIndex, 0)  // Wraps back
+    }
 
-            helper.selectNextPane()
-            #expect(helper.focusedPaneIndex == 0)  // Wraps back
-        }
+    func testSelectPreviousPaneCycles() {
+        var helper = AgentManagerNavigationTests.createTestSetup(agentCount: 3, mode: .splitVertical, activeCount: 2)
 
-        @Test("selectPreviousPane cycles backward")
-        func selectPreviousPaneCycles() {
-            var helper = AgentManagerNavigationTests.createTestSetup(agentCount: 3, mode: .splitVertical, activeCount: 2)
+        XCTAssertEqual(helper.focusedPaneIndex, 0)
 
-            #expect(helper.focusedPaneIndex == 0)
+        helper.selectPreviousPane()
+        XCTAssertEqual(helper.focusedPaneIndex, 1)  // Wraps to last
 
-            helper.selectPreviousPane()
-            #expect(helper.focusedPaneIndex == 1)  // Wraps to last
+        helper.selectPreviousPane()
+        XCTAssertEqual(helper.focusedPaneIndex, 0)
+    }
 
-            helper.selectPreviousPane()
-            #expect(helper.focusedPaneIndex == 0)
-        }
+    func testSelectNextAgentSkipsOtherPanes() {
+        var helper = AgentManagerNavigationTests.createTestSetup(agentCount: 4, mode: .splitVertical, activeCount: 2)
+        let agents = helper.currentWorkspaceAgents
 
-        @Test("selectNextAgent skips agents in other panes")
-        func selectNextAgentSkipsOtherPanes() {
-            var helper = AgentManagerNavigationTests.createTestSetup(agentCount: 4, mode: .splitVertical, activeCount: 2)
-            let agents = helper.currentWorkspaceAgents
+        // Agents 0 and 1 are in panes, focused on pane 0
+        // selectNextAgent should go to agent 2 (skipping agent 1 which is in pane 1)
+        helper.selectNextAgent()
+        XCTAssertEqual(helper.activeAgentIds[0], agents[2].id)
+    }
 
-            // Agents 0 and 1 are in panes, focused on pane 0
-            // selectNextAgent should go to agent 2 (skipping agent 1 which is in pane 1)
-            helper.selectNextAgent()
-            #expect(helper.activeAgentIds[0] == agents[2].id)
-        }
+    func testPaneIndexReturnsCorrectPosition() {
+        let helper = AgentManagerNavigationTests.createTestSetup(agentCount: 4, mode: .splitVertical, activeCount: 2)
+        let agents = helper.currentWorkspaceAgents
 
-        @Test("paneIndex returns correct position")
-        func paneIndexReturnsCorrectPosition() {
-            let helper = AgentManagerNavigationTests.createTestSetup(agentCount: 4, mode: .splitVertical, activeCount: 2)
-            let agents = helper.currentWorkspaceAgents
+        XCTAssertEqual(helper.paneIndex(for: agents[0].id), 0)
+        XCTAssertEqual(helper.paneIndex(for: agents[1].id), 1)
+        XCTAssertNil(helper.paneIndex(for: agents[2].id))  // Not in any pane
+    }
 
-            #expect(helper.paneIndex(for: agents[0].id) == 0)
-            #expect(helper.paneIndex(for: agents[1].id) == 1)
-            #expect(helper.paneIndex(for: agents[2].id) == nil)  // Not in any pane
-        }
+    func testActiveAgentIdReturnsFocusedPaneAgent() {
+        var helper = AgentManagerNavigationTests.createTestSetup(agentCount: 3, mode: .splitVertical, activeCount: 2)
+        let agents = helper.currentWorkspaceAgents
 
-        @Test("activeAgentId returns focused pane agent")
-        func activeAgentIdReturnsFocusedPaneAgent() {
-            var helper = AgentManagerNavigationTests.createTestSetup(agentCount: 3, mode: .splitVertical, activeCount: 2)
-            let agents = helper.currentWorkspaceAgents
+        // Focus on pane 0
+        helper.focusedPaneIndex = 0
+        XCTAssertEqual(helper.activeAgentId, agents[0].id)
 
-            // Focus on pane 0
-            helper.focusedPaneIndex = 0
-            #expect(helper.activeAgentId == agents[0].id)
+        // Focus on pane 1
+        helper.focusedPaneIndex = 1
+        XCTAssertEqual(helper.activeAgentId, agents[1].id)
+    }
 
-            // Focus on pane 1
-            helper.focusedPaneIndex = 1
-            #expect(helper.activeAgentId == agents[1].id)
-        }
+    func testSelectNextPaneDoesNothingInSingleMode() {
+        var helper = AgentManagerNavigationTests.createTestSetup(agentCount: 3, mode: .single, activeCount: 1)
 
-        @Test("selectNextPane does nothing in single mode")
-        func selectNextPaneDoesNothingInSingleMode() {
-            var helper = AgentManagerNavigationTests.createTestSetup(agentCount: 3, mode: .single, activeCount: 1)
-
-            helper.selectNextPane()
-            #expect(helper.focusedPaneIndex == 0)
-        }
+        helper.selectNextPane()
+        XCTAssertEqual(helper.focusedPaneIndex, 0)
     }
 
     // MARK: - Four Pane Grid Tests
 
-    @Suite("Four Pane Grid")
-    struct FourPaneGridTests {
+    func testFourPaneModeTracksFourAgents() {
+        let helper = AgentManagerNavigationTests.createTestSetup(agentCount: 5, mode: .gridFourPane, activeCount: 4)
+        let agents = helper.currentWorkspaceAgents
 
-        @Test("four pane mode tracks four active agents")
-        func fourPaneModeTracksFourAgents() {
-            var helper = AgentManagerNavigationTests.createTestSetup(agentCount: 5, mode: .gridFourPane, activeCount: 4)
-            let agents = helper.currentWorkspaceAgents
+        XCTAssertEqual(helper.activeAgentIds.count, 4)
+        XCTAssertEqual(helper.activeAgentIds[0], agents[0].id)
+        XCTAssertEqual(helper.activeAgentIds[1], agents[1].id)
+        XCTAssertEqual(helper.activeAgentIds[2], agents[2].id)
+        XCTAssertEqual(helper.activeAgentIds[3], agents[3].id)
+    }
 
-            #expect(helper.activeAgentIds.count == 4)
-            #expect(helper.activeAgentIds[0] == agents[0].id)
-            #expect(helper.activeAgentIds[1] == agents[1].id)
-            #expect(helper.activeAgentIds[2] == agents[2].id)
-            #expect(helper.activeAgentIds[3] == agents[3].id)
+    func testSelectNextPaneCyclesFour() {
+        var helper = AgentManagerNavigationTests.createTestSetup(agentCount: 5, mode: .gridFourPane, activeCount: 4)
+
+        for expected in [1, 2, 3, 0] {
+            helper.selectNextPane()
+            XCTAssertEqual(helper.focusedPaneIndex, expected)
         }
+    }
 
-        @Test("selectNextPane cycles through four panes")
-        func selectNextPaneCyclesFour() {
-            var helper = AgentManagerNavigationTests.createTestSetup(agentCount: 5, mode: .gridFourPane, activeCount: 4)
+    func testSelectAgentAtIndexFocusesPane() {
+        var helper = AgentManagerNavigationTests.createTestSetup(agentCount: 5, mode: .gridFourPane, activeCount: 4)
 
-            for expected in [1, 2, 3, 0] {
-                helper.selectNextPane()
-                #expect(helper.focusedPaneIndex == expected)
-            }
-        }
+        // Select agent at index 2 (which is in pane 2)
+        helper.selectAgentAtIndex(2)
+        XCTAssertEqual(helper.focusedPaneIndex, 2)
+    }
 
-        @Test("selectAgentAtIndex focuses pane if agent is visible")
-        func selectAgentAtIndexFocusesPane() {
-            var helper = AgentManagerNavigationTests.createTestSetup(agentCount: 5, mode: .gridFourPane, activeCount: 4)
+    func testSelectAgentAtIndexReplacesIfNotVisible() {
+        var helper = AgentManagerNavigationTests.createTestSetup(agentCount: 5, mode: .gridFourPane, activeCount: 4)
+        let agents = helper.currentWorkspaceAgents
 
-            // Select agent at index 2 (which is in pane 2)
-            helper.selectAgentAtIndex(2)
-            #expect(helper.focusedPaneIndex == 2)
-        }
+        // Agent 4 is not in any pane
+        helper.focusedPaneIndex = 1
+        helper.selectAgentAtIndex(4)
 
-        @Test("selectAgentAtIndex replaces focused pane agent if not visible")
-        func selectAgentAtIndexReplacesIfNotVisible() {
-            var helper = AgentManagerNavigationTests.createTestSetup(agentCount: 5, mode: .gridFourPane, activeCount: 4)
-            let agents = helper.currentWorkspaceAgents
-
-            // Agent 4 is not in any pane
-            helper.focusedPaneIndex = 1
-            helper.selectAgentAtIndex(4)
-
-            // Agent 4 should now be in pane 1
-            #expect(helper.activeAgentIds[1] == agents[4].id)
-        }
+        // Agent 4 should now be in pane 1
+        XCTAssertEqual(helper.activeAgentIds[1], agents[4].id)
     }
 
     // MARK: - Agent Removal Tests
 
-    @Suite("Agent Removal")
-    struct AgentRemovalTests {
+    func testRemovingAgentUpdatesWorkspace() {
+        var helper = AgentManagerNavigationTests.createTestSetup(agentCount: 3)
+        let agentToRemove = helper.agents[1]
 
-        @Test("removing agent updates workspace agentIds")
-        func removingAgentUpdatesWorkspace() {
-            var helper = AgentManagerNavigationTests.createTestSetup(agentCount: 3)
-            let agentToRemove = helper.agents[1]
-
-            // Simulate removal
-            helper.agents.removeAll { $0.id == agentToRemove.id }
-            if let wsIndex = helper.workspaces.firstIndex(where: { $0.id == helper.currentWorkspaceId }) {
-                helper.workspaces[wsIndex].agentIds.removeAll { $0 == agentToRemove.id }
-            }
-
-            #expect(helper.currentWorkspaceAgents.count == 2)
-            #expect(!helper.currentWorkspaceAgents.contains { $0.id == agentToRemove.id })
+        // Simulate removal
+        helper.agents.removeAll { $0.id == agentToRemove.id }
+        if let wsIndex = helper.workspaces.firstIndex(where: { $0.id == helper.currentWorkspaceId }) {
+            helper.workspaces[wsIndex].agentIds.removeAll { $0 == agentToRemove.id }
         }
 
-        @Test("removing active agent clears from activeAgentIds")
-        func removingActiveAgentClearsActive() {
-            var helper = AgentManagerNavigationTests.createTestSetup(agentCount: 3)
-            let agentToRemove = helper.agents[0]  // The active agent
+        XCTAssertEqual(helper.currentWorkspaceAgents.count, 2)
+        XCTAssertFalse(helper.currentWorkspaceAgents.contains { $0.id == agentToRemove.id })
+    }
 
-            // Simulate removal
-            helper.agents.removeAll { $0.id == agentToRemove.id }
-            if let wsIndex = helper.workspaces.firstIndex(where: { $0.id == helper.currentWorkspaceId }) {
-                helper.workspaces[wsIndex].agentIds.removeAll { $0 == agentToRemove.id }
-                helper.workspaces[wsIndex].activeAgentIds.removeAll { $0 == agentToRemove.id }
-            }
+    func testRemovingActiveAgentClearsActive() {
+        var helper = AgentManagerNavigationTests.createTestSetup(agentCount: 3)
+        let agentToRemove = helper.agents[0]  // The active agent
 
-            #expect(!helper.activeAgentIds.contains(agentToRemove.id))
+        // Simulate removal
+        helper.agents.removeAll { $0.id == agentToRemove.id }
+        if let wsIndex = helper.workspaces.firstIndex(where: { $0.id == helper.currentWorkspaceId }) {
+            helper.workspaces[wsIndex].agentIds.removeAll { $0 == agentToRemove.id }
+            helper.workspaces[wsIndex].activeAgentIds.removeAll { $0 == agentToRemove.id }
         }
+
+        XCTAssertFalse(helper.activeAgentIds.contains(agentToRemove.id))
     }
 
     // MARK: - Empty Workspace Tests
 
-    @Suite("Empty Workspace")
-    struct EmptyWorkspaceTests {
+    func testEmptyWorkspaceReturnsEmptyAgents() {
+        let workspace = Workspace(name: "Empty")
+        let helper = NavigationTestHelper(
+            agents: [],
+            workspaces: [workspace],
+            currentWorkspaceId: workspace.id
+        )
 
-        @Test("empty workspace returns empty agents")
-        func emptyWorkspaceReturnsEmptyAgents() {
-            let workspace = Workspace(name: "Empty")
-            let helper = NavigationTestHelper(
-                agents: [],
-                workspaces: [workspace],
-                currentWorkspaceId: workspace.id
-            )
+        XCTAssertTrue(helper.currentWorkspaceAgents.isEmpty)
+    }
 
-            #expect(helper.currentWorkspaceAgents.isEmpty)
-        }
+    func testSelectNextAgentDoesNothingWithNoAgents() {
+        let workspace = Workspace(name: "Empty")
+        var helper = NavigationTestHelper(
+            agents: [],
+            workspaces: [workspace],
+            currentWorkspaceId: workspace.id
+        )
 
-        @Test("selectNextAgent does nothing with no agents")
-        func selectNextAgentDoesNothingWithNoAgents() {
-            let workspace = Workspace(name: "Empty")
-            var helper = NavigationTestHelper(
-                agents: [],
-                workspaces: [workspace],
-                currentWorkspaceId: workspace.id
-            )
+        helper.selectNextAgent()
+        XCTAssertTrue(helper.activeAgentIds.isEmpty)
+    }
 
-            helper.selectNextAgent()
-            #expect(helper.activeAgentIds.isEmpty)
-        }
+    func testSelectPreviousAgentDoesNothingWithNoAgents() {
+        let workspace = Workspace(name: "Empty")
+        var helper = NavigationTestHelper(
+            agents: [],
+            workspaces: [workspace],
+            currentWorkspaceId: workspace.id
+        )
 
-        @Test("selectPreviousAgent does nothing with no agents")
-        func selectPreviousAgentDoesNothingWithNoAgents() {
-            let workspace = Workspace(name: "Empty")
-            var helper = NavigationTestHelper(
-                agents: [],
-                workspaces: [workspace],
-                currentWorkspaceId: workspace.id
-            )
-
-            helper.selectPreviousAgent()
-            #expect(helper.activeAgentIds.isEmpty)
-        }
+        helper.selectPreviousAgent()
+        XCTAssertTrue(helper.activeAgentIds.isEmpty)
     }
 }

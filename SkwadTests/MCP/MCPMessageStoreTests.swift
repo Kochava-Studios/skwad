@@ -1,226 +1,195 @@
-import Testing
+import XCTest
 import Foundation
 @testable import Skwad
 
-@Suite("MCPMessageStore")
-struct MCPMessageStoreTests {
+final class MCPMessageStoreTests: XCTestCase {
 
     // MARK: - Message Storage
 
-    @Suite("Message Storage")
-    struct MessageStorageTests {
+    func testAddStoresMessage() async {
+        let store = MCPMessageStore()
+        let message = MCPMessage(from: "agent1", to: "agent2", content: "Hello")
 
-        @Test("add stores message")
-        func addStoresMessage() async {
-            let store = MCPMessageStore()
-            let message = MCPMessage(from: "agent1", to: "agent2", content: "Hello")
+        await store.add(message)
+        let unread = await store.getUnread(for: "agent2")
 
-            await store.add(message)
-            let unread = await store.getUnread(for: "agent2")
+        XCTAssertEqual(unread.count, 1)
+        XCTAssertEqual(unread[0].content, "Hello")
+    }
 
-            #expect(unread.count == 1)
-            #expect(unread[0].content == "Hello")
-        }
+    func testGetUnreadFiltersByRecipient() async {
+        let store = MCPMessageStore()
 
-        @Test("getUnread filters by recipient")
-        func getUnreadFiltersByRecipient() async {
-            let store = MCPMessageStore()
+        // Add messages to different recipients
+        await store.add(MCPMessage(from: "sender", to: "agent1", content: "Message 1"))
+        await store.add(MCPMessage(from: "sender", to: "agent2", content: "Message 2"))
+        await store.add(MCPMessage(from: "sender", to: "agent1", content: "Message 3"))
 
-            // Add messages to different recipients
-            await store.add(MCPMessage(from: "sender", to: "agent1", content: "Message 1"))
-            await store.add(MCPMessage(from: "sender", to: "agent2", content: "Message 2"))
-            await store.add(MCPMessage(from: "sender", to: "agent1", content: "Message 3"))
+        let agent1Messages = await store.getUnread(for: "agent1")
+        let agent2Messages = await store.getUnread(for: "agent2")
 
-            let agent1Messages = await store.getUnread(for: "agent1")
-            let agent2Messages = await store.getUnread(for: "agent2")
+        XCTAssertEqual(agent1Messages.count, 2)
+        XCTAssertEqual(agent2Messages.count, 1)
+    }
 
-            #expect(agent1Messages.count == 2)
-            #expect(agent2Messages.count == 1)
-        }
+    func testGetUnreadFiltersByReadStatus() async {
+        let store = MCPMessageStore()
 
-        @Test("getUnread filters by read status")
-        func getUnreadFiltersByReadStatus() async {
-            let store = MCPMessageStore()
+        await store.add(MCPMessage(from: "sender", to: "agent1", content: "Message 1"))
+        await store.add(MCPMessage(from: "sender", to: "agent1", content: "Message 2"))
 
-            await store.add(MCPMessage(from: "sender", to: "agent1", content: "Message 1"))
-            await store.add(MCPMessage(from: "sender", to: "agent1", content: "Message 2"))
+        // Mark messages as read
+        await store.markAsRead(for: "agent1")
 
-            // Mark messages as read
-            await store.markAsRead(for: "agent1")
+        // Add new unread message
+        await store.add(MCPMessage(from: "sender", to: "agent1", content: "Message 3"))
 
-            // Add new unread message
-            await store.add(MCPMessage(from: "sender", to: "agent1", content: "Message 3"))
+        let unread = await store.getUnread(for: "agent1")
+        XCTAssertEqual(unread.count, 1)
+        XCTAssertEqual(unread[0].content, "Message 3")
+    }
 
-            let unread = await store.getUnread(for: "agent1")
-            #expect(unread.count == 1)
-            #expect(unread[0].content == "Message 3")
-        }
+    func testHasUnreadReturnsTrueWhenMessagesExist() async {
+        let store = MCPMessageStore()
 
-        @Test("hasUnread returns true when messages exist")
-        func hasUnreadReturnsTrue() async {
-            let store = MCPMessageStore()
+        await store.add(MCPMessage(from: "sender", to: "agent1", content: "Hello"))
 
-            await store.add(MCPMessage(from: "sender", to: "agent1", content: "Hello"))
+        let hasUnread = await store.hasUnread(for: "agent1")
+        XCTAssertTrue(hasUnread)
+    }
 
-            let hasUnread = await store.hasUnread(for: "agent1")
-            #expect(hasUnread == true)
-        }
+    func testHasUnreadReturnsFalseWhenNoMessages() async {
+        let store = MCPMessageStore()
 
-        @Test("hasUnread returns false when no messages")
-        func hasUnreadReturnsFalseWhenNone() async {
-            let store = MCPMessageStore()
+        let hasUnread = await store.hasUnread(for: "agent1")
+        XCTAssertFalse(hasUnread)
+    }
 
-            let hasUnread = await store.hasUnread(for: "agent1")
-            #expect(hasUnread == false)
-        }
+    func testHasUnreadReturnsFalseForDifferentAgent() async {
+        let store = MCPMessageStore()
 
-        @Test("hasUnread returns false for different agent")
-        func hasUnreadReturnsFalseForDifferentAgent() async {
-            let store = MCPMessageStore()
+        await store.add(MCPMessage(from: "sender", to: "agent1", content: "Hello"))
 
-            await store.add(MCPMessage(from: "sender", to: "agent1", content: "Hello"))
-
-            let hasUnread = await store.hasUnread(for: "agent2")
-            #expect(hasUnread == false)
-        }
+        let hasUnread = await store.hasUnread(for: "agent2")
+        XCTAssertFalse(hasUnread)
     }
 
     // MARK: - Mark As Read
 
-    @Suite("Mark As Read")
-    struct MarkAsReadTests {
+    func testMarksAllForAgent() async {
+        let store = MCPMessageStore()
 
-        @Test("marks all for agent")
-        func marksAllForAgent() async {
-            let store = MCPMessageStore()
+        await store.add(MCPMessage(from: "sender", to: "agent1", content: "Message 1"))
+        await store.add(MCPMessage(from: "sender", to: "agent1", content: "Message 2"))
 
-            await store.add(MCPMessage(from: "sender", to: "agent1", content: "Message 1"))
-            await store.add(MCPMessage(from: "sender", to: "agent1", content: "Message 2"))
+        await store.markAsRead(for: "agent1")
 
-            await store.markAsRead(for: "agent1")
+        let unread = await store.getUnread(for: "agent1")
+        XCTAssertTrue(unread.isEmpty)
+    }
 
-            let unread = await store.getUnread(for: "agent1")
-            #expect(unread.isEmpty)
-        }
+    func testDoesNotMarkMessagesForOtherAgents() async {
+        let store = MCPMessageStore()
 
-        @Test("does not mark messages for other agents")
-        func doesNotMarkOtherAgents() async {
-            let store = MCPMessageStore()
+        await store.add(MCPMessage(from: "sender", to: "agent1", content: "Message 1"))
+        await store.add(MCPMessage(from: "sender", to: "agent2", content: "Message 2"))
 
-            await store.add(MCPMessage(from: "sender", to: "agent1", content: "Message 1"))
-            await store.add(MCPMessage(from: "sender", to: "agent2", content: "Message 2"))
+        await store.markAsRead(for: "agent1")
 
-            await store.markAsRead(for: "agent1")
-
-            let agent2Unread = await store.getUnread(for: "agent2")
-            #expect(agent2Unread.count == 1)
-        }
+        let agent2Unread = await store.getUnread(for: "agent2")
+        XCTAssertEqual(agent2Unread.count, 1)
     }
 
     // MARK: - Latest Unread
 
-    @Suite("Latest Unread")
-    struct LatestUnreadTests {
+    func testReturnsMostRecentUnreadMessageId() async {
+        let store = MCPMessageStore()
 
-        @Test("returns most recent unread message id")
-        func returnsMostRecentUnread() async {
-            let store = MCPMessageStore()
+        let message1 = MCPMessage(from: "sender", to: "agent1", content: "First")
+        let message2 = MCPMessage(from: "sender", to: "agent1", content: "Second")
 
-            let message1 = MCPMessage(from: "sender", to: "agent1", content: "First")
-            let message2 = MCPMessage(from: "sender", to: "agent1", content: "Second")
+        await store.add(message1)
+        await store.add(message2)
 
-            await store.add(message1)
-            await store.add(message2)
+        let latestId = await store.getLatestUnreadId(for: "agent1")
+        XCTAssertEqual(latestId, message2.id)
+    }
 
-            let latestId = await store.getLatestUnreadId(for: "agent1")
-            #expect(latestId == message2.id)
-        }
+    func testReturnsNilWhenNoUnreadMessages() async {
+        let store = MCPMessageStore()
 
-        @Test("returns nil when no unread messages")
-        func returnsNilWhenNone() async {
-            let store = MCPMessageStore()
+        let latestId = await store.getLatestUnreadId(for: "agent1")
+        XCTAssertNil(latestId)
+    }
 
-            let latestId = await store.getLatestUnreadId(for: "agent1")
-            #expect(latestId == nil)
-        }
+    func testReturnsNilAfterAllMarkedAsRead() async {
+        let store = MCPMessageStore()
 
-        @Test("returns nil after all marked as read")
-        func returnsNilAfterAllRead() async {
-            let store = MCPMessageStore()
+        await store.add(MCPMessage(from: "sender", to: "agent1", content: "Message"))
+        await store.markAsRead(for: "agent1")
 
-            await store.add(MCPMessage(from: "sender", to: "agent1", content: "Message"))
-            await store.markAsRead(for: "agent1")
-
-            let latestId = await store.getLatestUnreadId(for: "agent1")
-            #expect(latestId == nil)
-        }
+        let latestId = await store.getLatestUnreadId(for: "agent1")
+        XCTAssertNil(latestId)
     }
 
     // MARK: - Cleanup
 
-    @Suite("Cleanup")
-    struct CleanupTests {
+    func testRemovesOldestReadMessagesOverLimit() async {
+        let store = MCPMessageStore()
 
-        @Test("removes oldest read messages over limit")
-        func removesOldestReadOverLimit() async {
-            let store = MCPMessageStore()
-
-            // Add more than 100 read messages
-            for i in 0..<120 {
-                let message = MCPMessage(from: "sender", to: "agent1", content: "Message \(i)")
-                await store.add(message)
-            }
-
-            // Mark all as read
-            await store.markAsRead(for: "agent1")
-
-            // Run cleanup
-            await store.cleanup()
-
-            // Should have reduced count (cleanup removes oldest)
-            let unread = await store.getUnread(for: "agent1")
-            #expect(unread.isEmpty)  // All were marked as read
+        // Add more than 100 read messages
+        for i in 0..<120 {
+            let message = MCPMessage(from: "sender", to: "agent1", content: "Message \(i)")
+            await store.add(message)
         }
 
-        @Test("preserves unread messages during cleanup")
-        func preservesUnreadMessages() async {
-            let store = MCPMessageStore()
+        // Mark all as read
+        await store.markAsRead(for: "agent1")
 
-            // Add some read messages
-            for i in 0..<110 {
-                await store.add(MCPMessage(from: "sender", to: "agent1", content: "Read \(i)"))
-            }
-            await store.markAsRead(for: "agent1")
+        // Run cleanup
+        await store.cleanup()
 
-            // Add unread messages
-            for i in 0..<5 {
-                await store.add(MCPMessage(from: "sender", to: "agent1", content: "Unread \(i)"))
-            }
+        // Should have reduced count (cleanup removes oldest)
+        let unread = await store.getUnread(for: "agent1")
+        XCTAssertTrue(unread.isEmpty)  // All were marked as read
+    }
 
-            // Run cleanup
-            await store.cleanup()
+    func testPreservesUnreadMessagesDuringCleanup() async {
+        let store = MCPMessageStore()
 
-            // Unread messages should still exist
-            let unread = await store.getUnread(for: "agent1")
-            #expect(unread.count == 5)
+        // Add some read messages
+        for i in 0..<110 {
+            await store.add(MCPMessage(from: "sender", to: "agent1", content: "Read \(i)"))
+        }
+        await store.markAsRead(for: "agent1")
+
+        // Add unread messages
+        for i in 0..<5 {
+            await store.add(MCPMessage(from: "sender", to: "agent1", content: "Unread \(i)"))
         }
 
-        @Test("does nothing when under limit")
-        func doesNothingUnderLimit() async {
-            let store = MCPMessageStore()
+        // Run cleanup
+        await store.cleanup()
 
-            // Add fewer than 100 messages
-            for i in 0..<50 {
-                await store.add(MCPMessage(from: "sender", to: "agent1", content: "Message \(i)"))
-            }
-            await store.markAsRead(for: "agent1")
+        // Unread messages should still exist
+        let unread = await store.getUnread(for: "agent1")
+        XCTAssertEqual(unread.count, 5)
+    }
 
-            // Cleanup should do nothing
-            await store.cleanup()
+    func testDoesNothingWhenUnderLimit() async {
+        let store = MCPMessageStore()
 
-            // All messages should still be there (just marked as read)
-            let hasUnread = await store.hasUnread(for: "agent1")
-            #expect(hasUnread == false)
+        // Add fewer than 100 messages
+        for i in 0..<50 {
+            await store.add(MCPMessage(from: "sender", to: "agent1", content: "Message \(i)"))
         }
+        await store.markAsRead(for: "agent1")
+
+        // Cleanup should do nothing
+        await store.cleanup()
+
+        // All messages should still be there (just marked as read)
+        let hasUnread = await store.hasUnread(for: "agent1")
+        XCTAssertFalse(hasUnread)
     }
 }

@@ -1,432 +1,380 @@
-import Testing
+import XCTest
 import SwiftUI
 @testable import Skwad
 
-@Suite("AppSettings")
-struct AppSettingsTests {
+final class AppSettingsTests: XCTestCase {
 
     // MARK: - Color Hex Conversion
 
-    @Suite("Color Hex Conversion")
-    struct ColorHexConversionTests {
+    func testParsesHexWithHash() {
+        let color = Color(hex: "#FF0000")
+        XCTAssertNotNil(color)
+    }
 
-        @Test("parses 6-digit hex with hash")
-        func parsesHexWithHash() {
-            let color = Color(hex: "#FF0000")
-            #expect(color != nil)
-        }
+    func testParsesHexWithoutHash() {
+        let color = Color(hex: "FF0000")
+        XCTAssertNotNil(color)
+    }
 
-        @Test("parses 6-digit hex without hash")
-        func parsesHexWithoutHash() {
-            let color = Color(hex: "FF0000")
-            #expect(color != nil)
-        }
+    func testParsesLowercaseHex() {
+        let color = Color(hex: "#ff0000")
+        XCTAssertNotNil(color)
+    }
 
-        @Test("parses lowercase hex")
-        func parsesLowercaseHex() {
-            let color = Color(hex: "#ff0000")
-            #expect(color != nil)
-        }
+    func testParsesMixedCaseHex() {
+        let color = Color(hex: "#Ff00aB")
+        XCTAssertNotNil(color)
+    }
 
-        @Test("parses mixed case hex")
-        func parsesMixedCaseHex() {
-            let color = Color(hex: "#Ff00aB")
-            #expect(color != nil)
-        }
+    func testShortHexParsedAsPadded() {
+        // #FF00 is parsed as 0xFF00 = 0x00FF00 (green)
+        let color = Color(hex: "#FF00")
+        XCTAssertNotNil(color)
+    }
 
-        @Test("parses short hex as padded value")
-        func shortHexParsedAsPadded() {
-            // #FF00 is parsed as 0xFF00 = 0x00FF00 (green)
-            let color = Color(hex: "#FF00")
-            #expect(color != nil)
-        }
+    func testInvalidHexNonHexCharsReturnsNil() {
+        let color = Color(hex: "#GGHHII")
+        XCTAssertNil(color)
+    }
 
-        @Test("returns nil for invalid hex - non-hex chars")
-        func invalidHexNonHexChars() {
-            let color = Color(hex: "#GGHHII")
-            #expect(color == nil)
-        }
+    func testInvalidHexEmptyReturnsNil() {
+        let color = Color(hex: "")
+        XCTAssertNil(color)
+    }
 
-        @Test("returns nil for empty string")
-        func invalidHexEmpty() {
-            let color = Color(hex: "")
-            #expect(color == nil)
-        }
+    func testColorToHex() {
+        let color = Color(red: 1.0, green: 0.0, blue: 0.0)
+        let hex = color.toHex()
+        XCTAssertNotNil(hex)
+        XCTAssertTrue(hex?.hasPrefix("#") == true)
+        XCTAssertEqual(hex?.count, 7)
+    }
 
-        @Test("converts color to hex string")
-        func colorToHex() {
-            let color = Color(red: 1.0, green: 0.0, blue: 0.0)
-            let hex = color.toHex()
-            #expect(hex != nil)
-            #expect(hex?.hasPrefix("#") == true)
-            #expect(hex?.count == 7)
-        }
+    func testRoundTripRed() {
+        let original = Color(hex: "#FF0000")!
+        let hex = original.toHex()!
+        let restored = Color(hex: hex)
+        XCTAssertNotNil(restored)
+        // The restored hex should be the same
+        XCTAssertEqual(restored?.toHex(), hex)
+    }
 
-        @Test("round-trips color through hex - red")
-        func roundTripRed() {
-            let original = Color(hex: "#FF0000")!
-            let hex = original.toHex()!
-            let restored = Color(hex: hex)
-            #expect(restored != nil)
-            // The restored hex should be the same
-            #expect(restored?.toHex() == hex)
-        }
+    func testRoundTripGreen() {
+        let original = Color(hex: "#00FF00")!
+        let hex = original.toHex()!
+        let restored = Color(hex: hex)
+        XCTAssertNotNil(restored)
+    }
 
-        @Test("round-trips color through hex - green")
-        func roundTripGreen() {
-            let original = Color(hex: "#00FF00")!
-            let hex = original.toHex()!
-            let restored = Color(hex: hex)
-            #expect(restored != nil)
-        }
+    func testRoundTripBlue() {
+        let original = Color(hex: "#0000FF")!
+        let hex = original.toHex()!
+        let restored = Color(hex: hex)
+        XCTAssertNotNil(restored)
+    }
 
-        @Test("round-trips color through hex - blue")
-        func roundTripBlue() {
-            let original = Color(hex: "#0000FF")!
-            let hex = original.toHex()!
-            let restored = Color(hex: hex)
-            #expect(restored != nil)
-        }
-
-        @Test("handles whitespace in hex string")
-        func handlesWhitespace() {
-            let color = Color(hex: "  #FF0000  ")
-            #expect(color != nil)
-        }
+    func testHandlesWhitespaceInHexString() {
+        let color = Color(hex: "  #FF0000  ")
+        XCTAssertNotNil(color)
     }
 
     // MARK: - Color Luminance
 
-    @Suite("Color Luminance")
-    struct ColorLuminanceTests {
+    func testWhiteIsLight() {
+        let white = Color(hex: "#FFFFFF")!
+        XCTAssertTrue(white.isLight)
+    }
 
-        @Test("white is light")
-        func whiteIsLight() {
-            let white = Color(hex: "#FFFFFF")!
-            #expect(white.isLight == true)
-        }
+    func testYellowIsLight() {
+        let yellow = Color(hex: "#FFFF00")!
+        XCTAssertTrue(yellow.isLight)
+    }
 
-        @Test("yellow is light")
-        func yellowIsLight() {
-            let yellow = Color(hex: "#FFFF00")!
-            #expect(yellow.isLight == true)
-        }
+    func testLightGrayIsLight() {
+        let lightGray = Color(hex: "#CCCCCC")!
+        XCTAssertTrue(lightGray.isLight)
+    }
 
-        @Test("light gray is light")
-        func lightGrayIsLight() {
-            let lightGray = Color(hex: "#CCCCCC")!
-            #expect(lightGray.isLight == true)
-        }
+    func testBlackIsDark() {
+        let black = Color(hex: "#000000")!
+        XCTAssertFalse(black.isLight)
+    }
 
-        @Test("black is dark")
-        func blackIsDark() {
-            let black = Color(hex: "#000000")!
-            #expect(black.isLight == false)
-        }
+    func testNavyIsDark() {
+        let navy = Color(hex: "#000080")!
+        XCTAssertFalse(navy.isLight)
+    }
 
-        @Test("navy is dark")
-        func navyIsDark() {
-            let navy = Color(hex: "#000080")!
-            #expect(navy.isLight == false)
-        }
-
-        @Test("dark gray is dark")
-        func darkGrayIsDark() {
-            let darkGray = Color(hex: "#333333")!
-            #expect(darkGray.isLight == false)
-        }
+    func testDarkGrayIsDark() {
+        let darkGray = Color(hex: "#333333")!
+        XCTAssertFalse(darkGray.isLight)
     }
 
     // MARK: - Color Adjustment
 
-    @Suite("Color Adjustment")
-    struct ColorAdjustmentTests {
+    func testDarkenedReducesBrightness() {
+        let original = Color(hex: "#808080")!
+        let darkened = original.darkened(by: 0.1)
+        // The darkened color should have different hex
+        XCTAssertNotEqual(darkened.toHex(), original.toHex())
+    }
 
-        @Test("darkened reduces brightness")
-        func darkenedReducesBrightness() {
-            let original = Color(hex: "#808080")!
-            let darkened = original.darkened(by: 0.1)
-            // The darkened color should have different hex
-            #expect(darkened.toHex() != original.toHex())
-        }
+    func testLightenedIncreasesBrightness() {
+        let original = Color(hex: "#808080")!
+        let lightened = original.lightened(by: 0.1)
+        // The lightened color should have different hex
+        XCTAssertNotEqual(lightened.toHex(), original.toHex())
+    }
 
-        @Test("lightened increases brightness")
-        func lightenedIncreasesBrightness() {
-            let original = Color(hex: "#808080")!
-            let lightened = original.lightened(by: 0.1)
-            // The lightened color should have different hex
-            #expect(lightened.toHex() != original.toHex())
-        }
+    func testDarkenedClampsAtBlack() {
+        let black = Color(hex: "#000000")!
+        let darkened = black.darkened(by: 1.0)
+        // Should still be valid color (clamped to 0)
+        XCTAssertNotNil(darkened.toHex())
+    }
 
-        @Test("darkened clamps at black")
-        func darkenedClampsAtBlack() {
-            let black = Color(hex: "#000000")!
-            let darkened = black.darkened(by: 1.0)
-            // Should still be valid color (clamped to 0)
-            #expect(darkened.toHex() != nil)
-        }
+    func testLightenedClampsAtWhite() {
+        let white = Color(hex: "#FFFFFF")!
+        let lightened = white.lightened(by: 1.0)
+        // Should still be valid color (clamped to 1)
+        XCTAssertNotNil(lightened.toHex())
+    }
 
-        @Test("lightened clamps at white")
-        func lightenedClampsAtWhite() {
-            let white = Color(hex: "#FFFFFF")!
-            let lightened = white.lightened(by: 1.0)
-            // Should still be valid color (clamped to 1)
-            #expect(lightened.toHex() != nil)
-        }
+    func testContrastDarkensLightColors() {
+        let lightColor = Color(hex: "#CCCCCC")!
+        let contrasted = lightColor.withAddedContrast(by: 0.1)
+        // Light colors get darkened
+        XCTAssertNotEqual(contrasted.toHex(), lightColor.toHex())
+    }
 
-        @Test("withAddedContrast darkens light colors")
-        func contrastDarkensLight() {
-            let lightColor = Color(hex: "#CCCCCC")!
-            let contrasted = lightColor.withAddedContrast(by: 0.1)
-            // Light colors get darkened
-            #expect(contrasted.toHex() != lightColor.toHex())
-        }
-
-        @Test("withAddedContrast lightens dark colors")
-        func contrastLightensDark() {
-            let darkColor = Color(hex: "#333333")!
-            let contrasted = darkColor.withAddedContrast(by: 0.1)
-            // Dark colors get lightened
-            #expect(contrasted.toHex() != darkColor.toHex())
-        }
+    func testContrastLightensDarkColors() {
+        let darkColor = Color(hex: "#333333")!
+        let contrasted = darkColor.withAddedContrast(by: 0.1)
+        // Dark colors get lightened
+        XCTAssertNotEqual(contrasted.toHex(), darkColor.toHex())
     }
 
     // MARK: - Command Resolution
 
-    @Suite("Command Resolution")
     @MainActor
-    struct CommandResolutionTests {
+    func testClaudeAgentCommand() {
+        let settings = AppSettings.shared
+        let command = settings.getCommand(for: "claude")
+        XCTAssertEqual(command, "claude")
+    }
 
-        @Test("predefined claude agent returns claude as command")
-        func claudeAgentCommand() {
-            let settings = AppSettings.shared
-            let command = settings.getCommand(for: "claude")
-            #expect(command == "claude")
-        }
+    @MainActor
+    func testCodexAgentCommand() {
+        let settings = AppSettings.shared
+        let command = settings.getCommand(for: "codex")
+        XCTAssertEqual(command, "codex")
+    }
 
-        @Test("predefined codex agent returns codex as command")
-        func codexAgentCommand() {
-            let settings = AppSettings.shared
-            let command = settings.getCommand(for: "codex")
-            #expect(command == "codex")
-        }
+    @MainActor
+    func testAiderAgentCommand() {
+        let settings = AppSettings.shared
+        let command = settings.getCommand(for: "aider")
+        XCTAssertEqual(command, "aider")
+    }
 
-        @Test("predefined aider agent returns aider as command")
-        func aiderAgentCommand() {
-            let settings = AppSettings.shared
-            let command = settings.getCommand(for: "aider")
-            #expect(command == "aider")
-        }
+    @MainActor
+    func testOpencodeAgentCommand() {
+        let settings = AppSettings.shared
+        let command = settings.getCommand(for: "opencode")
+        XCTAssertEqual(command, "opencode")
+    }
 
-        @Test("predefined opencode agent returns opencode as command")
-        func opencodeAgentCommand() {
-            let settings = AppSettings.shared
-            let command = settings.getCommand(for: "opencode")
-            #expect(command == "opencode")
-        }
+    @MainActor
+    func testGooseAgentCommand() {
+        let settings = AppSettings.shared
+        let command = settings.getCommand(for: "goose")
+        XCTAssertEqual(command, "goose")
+    }
 
-        @Test("predefined goose agent returns goose as command")
-        func gooseAgentCommand() {
-            let settings = AppSettings.shared
-            let command = settings.getCommand(for: "goose")
-            #expect(command == "goose")
-        }
+    @MainActor
+    func testGeminiAgentCommand() {
+        let settings = AppSettings.shared
+        let command = settings.getCommand(for: "gemini")
+        XCTAssertEqual(command, "gemini")
+    }
 
-        @Test("predefined gemini agent returns gemini as command")
-        func geminiAgentCommand() {
-            let settings = AppSettings.shared
-            let command = settings.getCommand(for: "gemini")
-            #expect(command == "gemini")
-        }
+    @MainActor
+    func testUnknownAgentCommand() {
+        let settings = AppSettings.shared
+        let command = settings.getCommand(for: "unknownagent")
+        XCTAssertEqual(command, "unknownagent")
+    }
 
-        @Test("unknown agent type returns type as command")
-        func unknownAgentCommand() {
-            let settings = AppSettings.shared
-            let command = settings.getCommand(for: "unknownagent")
-            #expect(command == "unknownagent")
-        }
+    @MainActor
+    func testFullCommandCombinesCommandAndOptions() {
+        let settings = AppSettings.shared
+        // Save current value
+        let originalOptions = settings.agentOptions_claude
 
-        @Test("getFullCommand combines command and options")
-        func fullCommandCombinesCommandAndOptions() {
-            let settings = AppSettings.shared
-            // Save current value
-            let originalOptions = settings.agentOptions_claude
+        // Set options
+        settings.agentOptions_claude = "--model opus"
 
-            // Set options
-            settings.agentOptions_claude = "--model opus"
+        let fullCommand = settings.getFullCommand(for: "claude")
+        XCTAssertEqual(fullCommand, "claude --model opus")
 
-            let fullCommand = settings.getFullCommand(for: "claude")
-            #expect(fullCommand == "claude --model opus")
+        // Restore
+        settings.agentOptions_claude = originalOptions
+    }
 
-            // Restore
-            settings.agentOptions_claude = originalOptions
-        }
+    @MainActor
+    func testFullCommandNoOptions() {
+        let settings = AppSettings.shared
+        // Save current value
+        let originalOptions = settings.agentOptions_codex
 
-        @Test("getFullCommand with empty options returns just command")
-        func fullCommandNoOptions() {
-            let settings = AppSettings.shared
-            // Save current value
-            let originalOptions = settings.agentOptions_codex
+        // Clear options
+        settings.agentOptions_codex = ""
 
-            // Clear options
-            settings.agentOptions_codex = ""
+        let fullCommand = settings.getFullCommand(for: "codex")
+        XCTAssertEqual(fullCommand, "codex")
 
-            let fullCommand = settings.getFullCommand(for: "codex")
-            #expect(fullCommand == "codex")
+        // Restore
+        settings.agentOptions_codex = originalOptions
+    }
 
-            // Restore
-            settings.agentOptions_codex = originalOptions
-        }
+    @MainActor
+    func testOptionsForUnknownAgent() {
+        let settings = AppSettings.shared
+        let options = settings.getOptions(for: "unknownagent")
+        XCTAssertEqual(options, "")
+    }
 
-        @Test("getOptions returns empty for unknown agent")
-        func optionsForUnknownAgent() {
-            let settings = AppSettings.shared
-            let options = settings.getOptions(for: "unknownagent")
-            #expect(options == "")
-        }
+    @MainActor
+    func testSetOptionsForKnownAgent() {
+        let settings = AppSettings.shared
+        // Save current
+        let original = settings.agentOptions_aider
 
-        @Test("setOptions stores value for known agent type")
-        func setOptionsForKnownAgent() {
-            let settings = AppSettings.shared
-            // Save current
-            let original = settings.agentOptions_aider
+        settings.setOptions("--test-option", for: "aider")
+        XCTAssertEqual(settings.getOptions(for: "aider"), "--test-option")
 
-            settings.setOptions("--test-option", for: "aider")
-            #expect(settings.getOptions(for: "aider") == "--test-option")
-
-            // Restore
-            settings.agentOptions_aider = original
-        }
+        // Restore
+        settings.agentOptions_aider = original
     }
 
     // MARK: - Recent Repos
 
-    @Suite("Recent Repos")
     @MainActor
-    struct RecentReposTests {
+    func testAddRecentRepoAddsToFront() {
+        let settings = AppSettings.shared
+        // Save current
+        let original = settings.recentRepos
 
-        @Test("addRecentRepo adds to front")
-        func addRecentRepoAddsToFront() {
-            let settings = AppSettings.shared
-            // Save current
-            let original = settings.recentRepos
+        settings.recentRepos = ["repo1", "repo2"]
+        settings.addRecentRepo("repo3")
 
-            settings.recentRepos = ["repo1", "repo2"]
-            settings.addRecentRepo("repo3")
+        XCTAssertEqual(settings.recentRepos.first, "repo3")
 
-            #expect(settings.recentRepos.first == "repo3")
+        // Restore
+        settings.recentRepos = original
+    }
 
-            // Restore
-            settings.recentRepos = original
-        }
+    @MainActor
+    func testAddRecentRepoDeduplicates() {
+        let settings = AppSettings.shared
+        let original = settings.recentRepos
 
-        @Test("addRecentRepo deduplicates")
-        func addRecentRepoDeduplicates() {
-            let settings = AppSettings.shared
-            let original = settings.recentRepos
+        settings.recentRepos = ["repo1", "repo2", "repo3"]
+        settings.addRecentRepo("repo2")
 
-            settings.recentRepos = ["repo1", "repo2", "repo3"]
-            settings.addRecentRepo("repo2")
+        // repo2 should now be first, and there should be no duplicate
+        XCTAssertEqual(settings.recentRepos.first, "repo2")
+        XCTAssertEqual(settings.recentRepos.filter { $0 == "repo2" }.count, 1)
 
-            // repo2 should now be first, and there should be no duplicate
-            #expect(settings.recentRepos.first == "repo2")
-            #expect(settings.recentRepos.filter { $0 == "repo2" }.count == 1)
+        // Restore
+        settings.recentRepos = original
+    }
 
-            // Restore
-            settings.recentRepos = original
-        }
+    @MainActor
+    func testAddRecentRepoLimitsTo5() {
+        let settings = AppSettings.shared
+        let original = settings.recentRepos
 
-        @Test("addRecentRepo limits to 5")
-        func addRecentRepoLimitsTo5() {
-            let settings = AppSettings.shared
-            let original = settings.recentRepos
+        settings.recentRepos = ["repo1", "repo2", "repo3", "repo4", "repo5"]
+        settings.addRecentRepo("repo6")
 
-            settings.recentRepos = ["repo1", "repo2", "repo3", "repo4", "repo5"]
-            settings.addRecentRepo("repo6")
+        XCTAssertEqual(settings.recentRepos.count, 5)
+        XCTAssertEqual(settings.recentRepos.first, "repo6")
+        XCTAssertFalse(settings.recentRepos.contains("repo5"))
 
-            #expect(settings.recentRepos.count == 5)
-            #expect(settings.recentRepos.first == "repo6")
-            #expect(!settings.recentRepos.contains("repo5"))
-
-            // Restore
-            settings.recentRepos = original
-        }
+        // Restore
+        settings.recentRepos = original
     }
 
     // MARK: - Recent Agents
 
-    @Suite("Recent Agents")
     @MainActor
-    struct RecentAgentsTests {
+    func testAddRecentAgentDeduplicatesByFolder() {
+        let settings = AppSettings.shared
+        let original = settings.recentAgents
 
-        @Test("addRecentAgent deduplicates by folder")
-        func addRecentAgentDeduplicatesByFolder() {
-            let settings = AppSettings.shared
-            let original = settings.recentAgents
+        // Create test agents
+        let agent1 = Agent(name: "Agent1", folder: "/path/to/folder1")
+        let agent2 = Agent(name: "Agent2", folder: "/path/to/folder2")
+        let agent1Updated = Agent(name: "Agent1Updated", folder: "/path/to/folder1")
 
-            // Create test agents
-            let agent1 = Agent(name: "Agent1", folder: "/path/to/folder1")
-            let agent2 = Agent(name: "Agent2", folder: "/path/to/folder2")
-            let agent1Updated = Agent(name: "Agent1Updated", folder: "/path/to/folder1")
+        settings.recentAgents = []
+        settings.addRecentAgent(agent1)
+        settings.addRecentAgent(agent2)
+        settings.addRecentAgent(agent1Updated)
 
-            settings.recentAgents = []
-            settings.addRecentAgent(agent1)
-            settings.addRecentAgent(agent2)
-            settings.addRecentAgent(agent1Updated)
+        // Should only have 2 entries (folder1 was deduplicated)
+        XCTAssertEqual(settings.recentAgents.count, 2)
+        // The updated agent should be first
+        XCTAssertEqual(settings.recentAgents.first?.folder, "/path/to/folder1")
 
-            // Should only have 2 entries (folder1 was deduplicated)
-            #expect(settings.recentAgents.count == 2)
-            // The updated agent should be first
-            #expect(settings.recentAgents.first?.folder == "/path/to/folder1")
+        // Restore
+        settings.recentAgents = original
+    }
 
-            // Restore
-            settings.recentAgents = original
+    @MainActor
+    func testAddRecentAgentLimitsTo8() {
+        let settings = AppSettings.shared
+        let original = settings.recentAgents
+
+        settings.recentAgents = []
+
+        // Add 9 agents
+        for i in 1...9 {
+            let agent = Agent(name: "Agent\(i)", folder: "/path/to/folder\(i)")
+            settings.addRecentAgent(agent)
         }
 
-        @Test("addRecentAgent limits to 8")
-        func addRecentAgentLimitsTo8() {
-            let settings = AppSettings.shared
-            let original = settings.recentAgents
+        XCTAssertEqual(settings.recentAgents.count, 8)
+        // Most recent should be first
+        XCTAssertEqual(settings.recentAgents.first?.folder, "/path/to/folder9")
+        // Oldest (folder1) should be gone
+        XCTAssertFalse(settings.recentAgents.contains { $0.folder == "/path/to/folder1" })
 
-            settings.recentAgents = []
+        // Restore
+        settings.recentAgents = original
+    }
 
-            // Add 9 agents
-            for i in 1...9 {
-                let agent = Agent(name: "Agent\(i)", folder: "/path/to/folder\(i)")
-                settings.addRecentAgent(agent)
-            }
+    @MainActor
+    func testRemoveRecentAgentByFolder() {
+        let settings = AppSettings.shared
+        let original = settings.recentAgents
 
-            #expect(settings.recentAgents.count == 8)
-            // Most recent should be first
-            #expect(settings.recentAgents.first?.folder == "/path/to/folder9")
-            // Oldest (folder1) should be gone
-            #expect(!settings.recentAgents.contains { $0.folder == "/path/to/folder1" })
+        // Setup
+        settings.recentAgents = []
+        let agent1 = Agent(name: "Agent1", folder: "/path/to/folder1")
+        let agent2 = Agent(name: "Agent2", folder: "/path/to/folder2")
+        settings.addRecentAgent(agent1)
+        settings.addRecentAgent(agent2)
 
-            // Restore
-            settings.recentAgents = original
-        }
+        // Create a SavedAgent to remove
+        let savedToRemove = SavedAgent(id: UUID(), name: "Agent2", avatar: "🤖", folder: "/path/to/folder2")
+        settings.removeRecentAgent(savedToRemove)
 
-        @Test("removeRecentAgent removes by folder")
-        func removeRecentAgentByFolder() {
-            let settings = AppSettings.shared
-            let original = settings.recentAgents
+        XCTAssertEqual(settings.recentAgents.count, 1)
+        XCTAssertEqual(settings.recentAgents.first?.folder, "/path/to/folder1")
 
-            // Setup
-            settings.recentAgents = []
-            let agent1 = Agent(name: "Agent1", folder: "/path/to/folder1")
-            let agent2 = Agent(name: "Agent2", folder: "/path/to/folder2")
-            settings.addRecentAgent(agent1)
-            settings.addRecentAgent(agent2)
-
-            // Create a SavedAgent to remove
-            let savedToRemove = SavedAgent(id: UUID(), name: "Agent2", avatar: "🤖", folder: "/path/to/folder2")
-            settings.removeRecentAgent(savedToRemove)
-
-            #expect(settings.recentAgents.count == 1)
-            #expect(settings.recentAgents.first?.folder == "/path/to/folder1")
-
-            // Restore
-            settings.recentAgents = original
-        }
+        // Restore
+        settings.recentAgents = original
     }
 }

@@ -1,9 +1,8 @@
-import Testing
+import XCTest
 import Foundation
 @testable import Skwad
 
-@Suite("MCPCommandView Helpers")
-struct MCPCommandViewHelpersTests {
+final class MCPCommandViewHelpersTests: XCTestCase {
 
     // MARK: - MCP Command Generation
 
@@ -39,103 +38,85 @@ struct MCPCommandViewHelpersTests {
         }
     }
 
-    @Suite("Display Command Generation")
-    struct DisplayCommandTests {
-        let serverURL = "http://localhost:9876"
+    let serverURL = "http://localhost:9876"
 
-        @Test("claude shows info message for display")
-        func claudeShowsInfoMessage() {
-            let command = MCPCommandViewHelpersTests.mcpCommand(for: "claude", serverURL: serverURL)
-            #expect(command.contains("auto-started"))
-            #expect(!command.contains("localhost"))
-        }
+    // MARK: - Display Command Generation
 
-        @Test("codex generates add command")
-        func codexGeneratesAddCommand() {
-            let command = MCPCommandViewHelpersTests.mcpCommand(for: "codex", serverURL: serverURL)
-            #expect(command == "codex mcp add skwad --url http://localhost:9876")
-        }
-
-        @Test("opencode generates add command with URL")
-        func opencodeGeneratesAddCommand() {
-            let command = MCPCommandViewHelpersTests.mcpCommand(for: "opencode", serverURL: serverURL)
-            #expect(command.contains("opencode mcp add"))
-            #expect(command.contains(serverURL))
-        }
-
-        @Test("gemini generates add command with transport")
-        func geminiGeneratesAddCommand() {
-            let command = MCPCommandViewHelpersTests.mcpCommand(for: "gemini", serverURL: serverURL)
-            #expect(command.contains("gemini mcp add"))
-            #expect(command.contains("--transport http"))
-            #expect(command.contains("--scope user"))
-            #expect(command.contains(serverURL))
-        }
-
-        @Test("copilot shows info message")
-        func copilotShowsInfoMessage() {
-            let command = MCPCommandViewHelpersTests.mcpCommand(for: "copilot", serverURL: serverURL)
-            #expect(command.contains("auto-started"))
-        }
-
-        @Test("unknown agent returns empty")
-        func unknownAgentReturnsEmpty() {
-            let command = MCPCommandViewHelpersTests.mcpCommand(for: "unknown", serverURL: serverURL)
-            #expect(command == "")
-        }
+    func testClaudeShowsInfoMessageForDisplay() {
+        let command = MCPCommandViewHelpersTests.mcpCommand(for: "claude", serverURL: serverURL)
+        XCTAssertTrue(command.contains("auto-started"))
+        XCTAssertFalse(command.contains("localhost"))
     }
 
-    @Suite("Copy Command Generation")
-    struct CopyCommandTests {
-        let serverURL = "http://localhost:9876"
-
-        @Test("claude copy command is valid CLI")
-        func claudeCopyCommandIsValidCLI() {
-            let command = MCPCommandViewHelpersTests.mcpCommandCopy(for: "claude", serverURL: serverURL)
-            #expect(command == "claude mcp add --transport http --scope user skwad http://localhost:9876")
-        }
-
-        @Test("opencode copy command is simplified")
-        func opencodeCopyCommandIsSimplified() {
-            let command = MCPCommandViewHelpersTests.mcpCommandCopy(for: "opencode", serverURL: serverURL)
-            #expect(command == "opencode mcp add")
-        }
-
-        @Test("copilot copy command is empty")
-        func copilotCopyCommandIsEmpty() {
-            let command = MCPCommandViewHelpersTests.mcpCommandCopy(for: "copilot", serverURL: serverURL)
-            #expect(command == "")
-        }
-
-        @Test("codex copy command matches display command")
-        func codexCopyMatchesDisplay() {
-            let display = MCPCommandViewHelpersTests.mcpCommand(for: "codex", serverURL: serverURL)
-            let copy = MCPCommandViewHelpersTests.mcpCommandCopy(for: "codex", serverURL: serverURL)
-            #expect(copy == display)
-        }
-
-        @Test("gemini copy command matches display command")
-        func geminiCopyMatchesDisplay() {
-            let display = MCPCommandViewHelpersTests.mcpCommand(for: "gemini", serverURL: serverURL)
-            let copy = MCPCommandViewHelpersTests.mcpCommandCopy(for: "gemini", serverURL: serverURL)
-            #expect(copy == display)
-        }
+    func testCodexGeneratesAddCommand() {
+        let command = MCPCommandViewHelpersTests.mcpCommand(for: "codex", serverURL: serverURL)
+        XCTAssertEqual(command, "codex mcp add skwad --url http://localhost:9876")
     }
 
-    @Suite("Server URL Substitution")
-    struct ServerURLSubstitutionTests {
+    func testOpencodeGeneratesAddCommandWithURL() {
+        let command = MCPCommandViewHelpersTests.mcpCommand(for: "opencode", serverURL: serverURL)
+        XCTAssertTrue(command.contains("opencode mcp add"))
+        XCTAssertTrue(command.contains(serverURL))
+    }
 
-        @Test("different URLs are substituted correctly")
-        func differentURLsSubstituted() {
-            let url1 = "http://localhost:8080"
-            let url2 = "http://192.168.1.100:9999"
+    func testGeminiGeneratesAddCommandWithTransport() {
+        let command = MCPCommandViewHelpersTests.mcpCommand(for: "gemini", serverURL: serverURL)
+        XCTAssertTrue(command.contains("gemini mcp add"))
+        XCTAssertTrue(command.contains("--transport http"))
+        XCTAssertTrue(command.contains("--scope user"))
+        XCTAssertTrue(command.contains(serverURL))
+    }
 
-            let cmd1 = MCPCommandViewHelpersTests.mcpCommand(for: "codex", serverURL: url1)
-            let cmd2 = MCPCommandViewHelpersTests.mcpCommand(for: "codex", serverURL: url2)
+    func testCopilotShowsInfoMessage() {
+        let command = MCPCommandViewHelpersTests.mcpCommand(for: "copilot", serverURL: serverURL)
+        XCTAssertTrue(command.contains("auto-started"))
+    }
 
-            #expect(cmd1.contains("8080"))
-            #expect(cmd2.contains("192.168.1.100"))
-            #expect(cmd2.contains("9999"))
-        }
+    func testUnknownAgentReturnsEmpty() {
+        let command = MCPCommandViewHelpersTests.mcpCommand(for: "unknown", serverURL: serverURL)
+        XCTAssertEqual(command, "")
+    }
+
+    // MARK: - Copy Command Generation
+
+    func testClaudeCopyCommandIsValidCLI() {
+        let command = MCPCommandViewHelpersTests.mcpCommandCopy(for: "claude", serverURL: serverURL)
+        XCTAssertEqual(command, "claude mcp add --transport http --scope user skwad http://localhost:9876")
+    }
+
+    func testOpencodeCopyCommandIsSimplified() {
+        let command = MCPCommandViewHelpersTests.mcpCommandCopy(for: "opencode", serverURL: serverURL)
+        XCTAssertEqual(command, "opencode mcp add")
+    }
+
+    func testCopilotCopyCommandIsEmpty() {
+        let command = MCPCommandViewHelpersTests.mcpCommandCopy(for: "copilot", serverURL: serverURL)
+        XCTAssertEqual(command, "")
+    }
+
+    func testCodexCopyMatchesDisplay() {
+        let display = MCPCommandViewHelpersTests.mcpCommand(for: "codex", serverURL: serverURL)
+        let copy = MCPCommandViewHelpersTests.mcpCommandCopy(for: "codex", serverURL: serverURL)
+        XCTAssertEqual(copy, display)
+    }
+
+    func testGeminiCopyMatchesDisplay() {
+        let display = MCPCommandViewHelpersTests.mcpCommand(for: "gemini", serverURL: serverURL)
+        let copy = MCPCommandViewHelpersTests.mcpCommandCopy(for: "gemini", serverURL: serverURL)
+        XCTAssertEqual(copy, display)
+    }
+
+    // MARK: - Server URL Substitution
+
+    func testDifferentURLsAreSubstitutedCorrectly() {
+        let url1 = "http://localhost:8080"
+        let url2 = "http://192.168.1.100:9999"
+
+        let cmd1 = MCPCommandViewHelpersTests.mcpCommand(for: "codex", serverURL: url1)
+        let cmd2 = MCPCommandViewHelpersTests.mcpCommand(for: "codex", serverURL: url2)
+
+        XCTAssertTrue(cmd1.contains("8080"))
+        XCTAssertTrue(cmd2.contains("192.168.1.100"))
+        XCTAssertTrue(cmd2.contains("9999"))
     }
 }

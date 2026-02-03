@@ -1,15 +1,13 @@
-import Testing
+import XCTest
 import SwiftUI
 @testable import Skwad
 
-@Suite("ContentView Helpers")
-struct ContentViewHelpersTests {
+final class ContentViewHelpersTests: XCTestCase {
 
     // MARK: - Pane Layout Computation
 
     /// Test helper that mirrors the computePaneRect logic from ContentView
-    /// This allows testing the pure layout calculation without needing the full view
-    static func computePaneRect(pane: Int, layoutMode: LayoutMode, splitRatio: CGFloat, size: CGSize) -> CGRect {
+    private func computePaneRect(pane: Int, layoutMode: LayoutMode, splitRatio: CGFloat, size: CGSize) -> CGRect {
         switch layoutMode {
         case .single:
             return CGRect(origin: .zero, size: size)
@@ -38,233 +36,352 @@ struct ContentViewHelpersTests {
         }
     }
 
-    @Suite("Single Mode Layout")
-    struct SingleModeLayoutTests {
+    // MARK: - Single Mode Layout
 
-        @Test("single mode returns full size")
-        func singleModeReturnsFullSize() {
-            let size = CGSize(width: 1000, height: 800)
-            let rect = ContentViewHelpersTests.computePaneRect(
-                pane: 0,
-                layoutMode: .single,
+    func testSingleModeReturnsFullSize() {
+        let size = CGSize(width: 1000, height: 800)
+        let rect = computePaneRect(
+            pane: 0,
+            layoutMode: .single,
+            splitRatio: 0.5,
+            size: size
+        )
+
+        XCTAssertEqual(rect.origin, .zero)
+        XCTAssertEqual(rect.size, size)
+    }
+
+    func testSingleModeIgnoresPaneIndex() {
+        let size = CGSize(width: 1000, height: 800)
+        let rect0 = computePaneRect(pane: 0, layoutMode: .single, splitRatio: 0.5, size: size)
+        let rect1 = computePaneRect(pane: 1, layoutMode: .single, splitRatio: 0.5, size: size)
+
+        XCTAssertEqual(rect0, rect1)
+    }
+
+    // MARK: - Split Vertical Layout
+
+    func testSplitVerticalPane0IsLeft() {
+        let size = CGSize(width: 1000, height: 800)
+        let rect = computePaneRect(
+            pane: 0,
+            layoutMode: .splitVertical,
+            splitRatio: 0.5,
+            size: size
+        )
+
+        XCTAssertEqual(rect.origin.x, 0)
+        XCTAssertEqual(rect.origin.y, 0)
+        XCTAssertEqual(rect.width, 500)
+        XCTAssertEqual(rect.height, 800)
+    }
+
+    func testSplitVerticalPane1IsRight() {
+        let size = CGSize(width: 1000, height: 800)
+        let rect = computePaneRect(
+            pane: 1,
+            layoutMode: .splitVertical,
+            splitRatio: 0.5,
+            size: size
+        )
+
+        XCTAssertEqual(rect.origin.x, 500)
+        XCTAssertEqual(rect.origin.y, 0)
+        XCTAssertEqual(rect.width, 500)
+        XCTAssertEqual(rect.height, 800)
+    }
+
+    func testSplitVerticalRespectsSplitRatio() {
+        let size = CGSize(width: 1000, height: 800)
+        let rect0 = computePaneRect(pane: 0, layoutMode: .splitVertical, splitRatio: 0.3, size: size)
+        let rect1 = computePaneRect(pane: 1, layoutMode: .splitVertical, splitRatio: 0.3, size: size)
+
+        XCTAssertEqual(rect0.width, 300)
+        XCTAssertEqual(rect1.width, 700)
+        XCTAssertEqual(rect1.origin.x, 300)
+    }
+
+    func testSplitVerticalPanesCoverFullWidth() {
+        let size = CGSize(width: 1000, height: 800)
+        let rect0 = computePaneRect(pane: 0, layoutMode: .splitVertical, splitRatio: 0.6, size: size)
+        let rect1 = computePaneRect(pane: 1, layoutMode: .splitVertical, splitRatio: 0.6, size: size)
+
+        XCTAssertEqual(rect0.width + rect1.width, size.width)
+    }
+
+    // MARK: - Split Horizontal Layout
+
+    func testSplitHorizontalPane0IsTop() {
+        let size = CGSize(width: 1000, height: 800)
+        let rect = computePaneRect(
+            pane: 0,
+            layoutMode: .splitHorizontal,
+            splitRatio: 0.5,
+            size: size
+        )
+
+        XCTAssertEqual(rect.origin.x, 0)
+        XCTAssertEqual(rect.origin.y, 0)
+        XCTAssertEqual(rect.width, 1000)
+        XCTAssertEqual(rect.height, 400)
+    }
+
+    func testSplitHorizontalPane1IsBottom() {
+        let size = CGSize(width: 1000, height: 800)
+        let rect = computePaneRect(
+            pane: 1,
+            layoutMode: .splitHorizontal,
+            splitRatio: 0.5,
+            size: size
+        )
+
+        XCTAssertEqual(rect.origin.x, 0)
+        XCTAssertEqual(rect.origin.y, 400)
+        XCTAssertEqual(rect.width, 1000)
+        XCTAssertEqual(rect.height, 400)
+    }
+
+    func testSplitHorizontalRespectsSplitRatio() {
+        let size = CGSize(width: 1000, height: 800)
+        let rect0 = computePaneRect(pane: 0, layoutMode: .splitHorizontal, splitRatio: 0.25, size: size)
+        let rect1 = computePaneRect(pane: 1, layoutMode: .splitHorizontal, splitRatio: 0.25, size: size)
+
+        XCTAssertEqual(rect0.height, 200)
+        XCTAssertEqual(rect1.height, 600)
+        XCTAssertEqual(rect1.origin.y, 200)
+    }
+
+    // MARK: - Grid Four Pane Layout
+
+    func testGridPane0IsTopLeft() {
+        let size = CGSize(width: 1000, height: 800)
+        let rect = computePaneRect(
+            pane: 0,
+            layoutMode: .gridFourPane,
+            splitRatio: 0.5,
+            size: size
+        )
+
+        XCTAssertEqual(rect.origin.x, 0)
+        XCTAssertEqual(rect.origin.y, 0)
+        XCTAssertEqual(rect.width, 500)
+        XCTAssertEqual(rect.height, 400)
+    }
+
+    func testGridPane1IsTopRight() {
+        let size = CGSize(width: 1000, height: 800)
+        let rect = computePaneRect(
+            pane: 1,
+            layoutMode: .gridFourPane,
+            splitRatio: 0.5,
+            size: size
+        )
+
+        XCTAssertEqual(rect.origin.x, 500)
+        XCTAssertEqual(rect.origin.y, 0)
+        XCTAssertEqual(rect.width, 500)
+        XCTAssertEqual(rect.height, 400)
+    }
+
+    func testGridPane2IsBottomLeft() {
+        let size = CGSize(width: 1000, height: 800)
+        let rect = computePaneRect(
+            pane: 2,
+            layoutMode: .gridFourPane,
+            splitRatio: 0.5,
+            size: size
+        )
+
+        XCTAssertEqual(rect.origin.x, 0)
+        XCTAssertEqual(rect.origin.y, 400)
+        XCTAssertEqual(rect.width, 500)
+        XCTAssertEqual(rect.height, 400)
+    }
+
+    func testGridPane3IsBottomRight() {
+        let size = CGSize(width: 1000, height: 800)
+        let rect = computePaneRect(
+            pane: 3,
+            layoutMode: .gridFourPane,
+            splitRatio: 0.5,
+            size: size
+        )
+
+        XCTAssertEqual(rect.origin.x, 500)
+        XCTAssertEqual(rect.origin.y, 400)
+        XCTAssertEqual(rect.width, 500)
+        XCTAssertEqual(rect.height, 400)
+    }
+
+    func testGridInvalidPaneReturnsFullSize() {
+        let size = CGSize(width: 1000, height: 800)
+        let rect = computePaneRect(
+            pane: 5,
+            layoutMode: .gridFourPane,
+            splitRatio: 0.5,
+            size: size
+        )
+
+        XCTAssertEqual(rect.origin, .zero)
+        XCTAssertEqual(rect.size, size)
+    }
+
+    func testGridPanesCoverFullArea() {
+        let size = CGSize(width: 1000, height: 800)
+        var totalArea: CGFloat = 0
+
+        for pane in 0..<4 {
+            let rect = computePaneRect(
+                pane: pane,
+                layoutMode: .gridFourPane,
                 splitRatio: 0.5,
                 size: size
             )
-
-            #expect(rect.origin == .zero)
-            #expect(rect.size == size)
+            totalArea += rect.width * rect.height
         }
 
-        @Test("single mode ignores pane index")
-        func singleModeIgnoresPaneIndex() {
-            let size = CGSize(width: 1000, height: 800)
-            let rect0 = ContentViewHelpersTests.computePaneRect(pane: 0, layoutMode: .single, splitRatio: 0.5, size: size)
-            let rect1 = ContentViewHelpersTests.computePaneRect(pane: 1, layoutMode: .single, splitRatio: 0.5, size: size)
+        XCTAssertEqual(totalArea, size.width * size.height)
+    }
 
-            #expect(rect0 == rect1)
+    // MARK: - Git Panel Availability
+
+    /// Helper to determine if git panel can be shown
+    private func canShowGitPanel(activeAgent: Agent?) -> Bool {
+        guard let agent = activeAgent else { return false }
+        return GitWorktreeManager.shared.isGitRepo(agent.folder)
+    }
+
+    func testCanShowGitPanelReturnsFalseWhenNoAgent() {
+        let result = canShowGitPanel(activeAgent: nil)
+        XCTAssertFalse(result)
+    }
+
+    func testCanShowGitPanelReturnsFalseForNonGitFolder() {
+        let agent = Agent(name: "Test", folder: "/tmp")
+        let result = canShowGitPanel(activeAgent: agent)
+        XCTAssertFalse(result)
+    }
+
+    // MARK: - Sidebar Width Constraints
+
+    private let minSidebarWidth: CGFloat = 200
+    private let maxSidebarWidth: CGFloat = 400
+
+    private func constrainSidebarWidth(_ width: CGFloat) -> CGFloat {
+        min(max(width, minSidebarWidth), maxSidebarWidth)
+    }
+
+    func testSidebarWidthConstrainedToMinimum() {
+        let result = constrainSidebarWidth(100)
+        XCTAssertEqual(result, 200)
+    }
+
+    func testSidebarWidthConstrainedToMaximum() {
+        let result = constrainSidebarWidth(500)
+        XCTAssertEqual(result, 400)
+    }
+
+    func testSidebarWidthWithinBoundsUnchanged() {
+        let result = constrainSidebarWidth(300)
+        XCTAssertEqual(result, 300)
+    }
+
+    func testSidebarWidthAtMinimumBoundary() {
+        let result = constrainSidebarWidth(200)
+        XCTAssertEqual(result, 200)
+    }
+
+    func testSidebarWidthAtMaximumBoundary() {
+        let result = constrainSidebarWidth(400)
+        XCTAssertEqual(result, 400)
+    }
+
+    // MARK: - Split Ratio Constraints
+
+    private func constrainSplitRatio(_ ratio: CGFloat) -> CGFloat {
+        max(0.25, min(0.75, ratio))
+    }
+
+    func testSplitRatioConstrainedToMinimum025() {
+        let result = constrainSplitRatio(0.1)
+        XCTAssertEqual(result, 0.25)
+    }
+
+    func testSplitRatioConstrainedToMaximum075() {
+        let result = constrainSplitRatio(0.9)
+        XCTAssertEqual(result, 0.75)
+    }
+
+    func testSplitRatioWithinBoundsUnchanged() {
+        let result = constrainSplitRatio(0.5)
+        XCTAssertEqual(result, 0.5)
+    }
+
+    func testSplitRatioAtBoundaries() {
+        XCTAssertEqual(constrainSplitRatio(0.25), 0.25)
+        XCTAssertEqual(constrainSplitRatio(0.75), 0.75)
+    }
+
+    // MARK: - Layout Mode Detection
+
+    func testSingleModeIsSinglePane() {
+        let mode = LayoutMode.single
+        XCTAssertEqual(mode, .single)
+        XCTAssertEqual(mode.rawValue, "single")
+    }
+
+    func testSplitVerticalModeIsLeftRight() {
+        let mode = LayoutMode.splitVertical
+        XCTAssertEqual(mode, .splitVertical)
+        XCTAssertEqual(mode.rawValue, "splitVertical")
+    }
+
+    func testSplitHorizontalModeIsTopBottom() {
+        let mode = LayoutMode.splitHorizontal
+        XCTAssertEqual(mode, .splitHorizontal)
+        XCTAssertEqual(mode.rawValue, "splitHorizontal")
+    }
+
+    func testGridFourPaneModeIsGrid() {
+        let mode = LayoutMode.gridFourPane
+        XCTAssertEqual(mode, .gridFourPane)
+        XCTAssertEqual(mode.rawValue, "gridFourPane")
+    }
+
+    func testLayoutModesAreCodable() throws {
+        let modes: [LayoutMode] = [.single, .splitVertical, .splitHorizontal, .gridFourPane]
+
+        for mode in modes {
+            let encoded = try JSONEncoder().encode(mode)
+            let decoded = try JSONDecoder().decode(LayoutMode.self, from: encoded)
+            XCTAssertEqual(decoded, mode)
         }
     }
 
-    @Suite("Split Vertical Layout")
-    struct SplitVerticalLayoutTests {
+    // MARK: - Audio Waveform
 
-        @Test("split vertical pane 0 is left side")
-        func splitVerticalPane0IsLeft() {
-            let size = CGSize(width: 1000, height: 800)
-            let rect = ContentViewHelpersTests.computePaneRect(
-                pane: 0,
-                layoutMode: .splitVertical,
-                splitRatio: 0.5,
-                size: size
-            )
-
-            #expect(rect.origin.x == 0)
-            #expect(rect.origin.y == 0)
-            #expect(rect.width == 500)
-            #expect(rect.height == 800)
-        }
-
-        @Test("split vertical pane 1 is right side")
-        func splitVerticalPane1IsRight() {
-            let size = CGSize(width: 1000, height: 800)
-            let rect = ContentViewHelpersTests.computePaneRect(
-                pane: 1,
-                layoutMode: .splitVertical,
-                splitRatio: 0.5,
-                size: size
-            )
-
-            #expect(rect.origin.x == 500)
-            #expect(rect.origin.y == 0)
-            #expect(rect.width == 500)
-            #expect(rect.height == 800)
-        }
-
-        @Test("split vertical respects split ratio")
-        func splitVerticalRespectsRatio() {
-            let size = CGSize(width: 1000, height: 800)
-            let rect0 = ContentViewHelpersTests.computePaneRect(pane: 0, layoutMode: .splitVertical, splitRatio: 0.3, size: size)
-            let rect1 = ContentViewHelpersTests.computePaneRect(pane: 1, layoutMode: .splitVertical, splitRatio: 0.3, size: size)
-
-            #expect(rect0.width == 300)
-            #expect(rect1.width == 700)
-            #expect(rect1.origin.x == 300)
-        }
-
-        @Test("split vertical panes cover full width")
-        func splitVerticalPanesCoverFullWidth() {
-            let size = CGSize(width: 1000, height: 800)
-            let rect0 = ContentViewHelpersTests.computePaneRect(pane: 0, layoutMode: .splitVertical, splitRatio: 0.6, size: size)
-            let rect1 = ContentViewHelpersTests.computePaneRect(pane: 1, layoutMode: .splitVertical, splitRatio: 0.6, size: size)
-
-            #expect(rect0.width + rect1.width == size.width)
-        }
+    /// Helper to compute bar height from sample value
+    private func computeBarHeight(sample: Float, maxHeight: CGFloat) -> CGFloat {
+        max(2, CGFloat(sample) * maxHeight)
     }
 
-    @Suite("Split Horizontal Layout")
-    struct SplitHorizontalLayoutTests {
-
-        @Test("split horizontal pane 0 is top")
-        func splitHorizontalPane0IsTop() {
-            let size = CGSize(width: 1000, height: 800)
-            let rect = ContentViewHelpersTests.computePaneRect(
-                pane: 0,
-                layoutMode: .splitHorizontal,
-                splitRatio: 0.5,
-                size: size
-            )
-
-            #expect(rect.origin.x == 0)
-            #expect(rect.origin.y == 0)
-            #expect(rect.width == 1000)
-            #expect(rect.height == 400)
-        }
-
-        @Test("split horizontal pane 1 is bottom")
-        func splitHorizontalPane1IsBottom() {
-            let size = CGSize(width: 1000, height: 800)
-            let rect = ContentViewHelpersTests.computePaneRect(
-                pane: 1,
-                layoutMode: .splitHorizontal,
-                splitRatio: 0.5,
-                size: size
-            )
-
-            #expect(rect.origin.x == 0)
-            #expect(rect.origin.y == 400)
-            #expect(rect.width == 1000)
-            #expect(rect.height == 400)
-        }
-
-        @Test("split horizontal respects split ratio")
-        func splitHorizontalRespectsRatio() {
-            let size = CGSize(width: 1000, height: 800)
-            let rect0 = ContentViewHelpersTests.computePaneRect(pane: 0, layoutMode: .splitHorizontal, splitRatio: 0.25, size: size)
-            let rect1 = ContentViewHelpersTests.computePaneRect(pane: 1, layoutMode: .splitHorizontal, splitRatio: 0.25, size: size)
-
-            #expect(rect0.height == 200)
-            #expect(rect1.height == 600)
-            #expect(rect1.origin.y == 200)
-        }
+    func testBarHeightHasMinimumOf2() {
+        let height = computeBarHeight(sample: 0, maxHeight: 100)
+        XCTAssertEqual(height, 2)
     }
 
-    @Suite("Grid Four Pane Layout")
-    struct GridFourPaneLayoutTests {
+    func testBarHeightScalesWithSample() {
+        let height = computeBarHeight(sample: 0.5, maxHeight: 100)
+        XCTAssertEqual(height, 50)
+    }
 
-        @Test("grid pane 0 is top-left")
-        func gridPane0IsTopLeft() {
-            let size = CGSize(width: 1000, height: 800)
-            let rect = ContentViewHelpersTests.computePaneRect(
-                pane: 0,
-                layoutMode: .gridFourPane,
-                splitRatio: 0.5,
-                size: size
-            )
+    func testBarHeightReachesMaxHeight() {
+        let height = computeBarHeight(sample: 1.0, maxHeight: 100)
+        XCTAssertEqual(height, 100)
+    }
 
-            #expect(rect.origin.x == 0)
-            #expect(rect.origin.y == 0)
-            #expect(rect.width == 500)
-            #expect(rect.height == 400)
-        }
-
-        @Test("grid pane 1 is top-right")
-        func gridPane1IsTopRight() {
-            let size = CGSize(width: 1000, height: 800)
-            let rect = ContentViewHelpersTests.computePaneRect(
-                pane: 1,
-                layoutMode: .gridFourPane,
-                splitRatio: 0.5,
-                size: size
-            )
-
-            #expect(rect.origin.x == 500)
-            #expect(rect.origin.y == 0)
-            #expect(rect.width == 500)
-            #expect(rect.height == 400)
-        }
-
-        @Test("grid pane 2 is bottom-left")
-        func gridPane2IsBottomLeft() {
-            let size = CGSize(width: 1000, height: 800)
-            let rect = ContentViewHelpersTests.computePaneRect(
-                pane: 2,
-                layoutMode: .gridFourPane,
-                splitRatio: 0.5,
-                size: size
-            )
-
-            #expect(rect.origin.x == 0)
-            #expect(rect.origin.y == 400)
-            #expect(rect.width == 500)
-            #expect(rect.height == 400)
-        }
-
-        @Test("grid pane 3 is bottom-right")
-        func gridPane3IsBottomRight() {
-            let size = CGSize(width: 1000, height: 800)
-            let rect = ContentViewHelpersTests.computePaneRect(
-                pane: 3,
-                layoutMode: .gridFourPane,
-                splitRatio: 0.5,
-                size: size
-            )
-
-            #expect(rect.origin.x == 500)
-            #expect(rect.origin.y == 400)
-            #expect(rect.width == 500)
-            #expect(rect.height == 400)
-        }
-
-        @Test("grid invalid pane returns full size")
-        func gridInvalidPaneReturnsFullSize() {
-            let size = CGSize(width: 1000, height: 800)
-            let rect = ContentViewHelpersTests.computePaneRect(
-                pane: 5,
-                layoutMode: .gridFourPane,
-                splitRatio: 0.5,
-                size: size
-            )
-
-            #expect(rect.origin == .zero)
-            #expect(rect.size == size)
-        }
-
-        @Test("grid panes cover full area")
-        func gridPanesCoverFullArea() {
-            let size = CGSize(width: 1000, height: 800)
-            var totalArea: CGFloat = 0
-
-            for pane in 0..<4 {
-                let rect = ContentViewHelpersTests.computePaneRect(
-                    pane: pane,
-                    layoutMode: .gridFourPane,
-                    splitRatio: 0.5,
-                    size: size
-                )
-                totalArea += rect.width * rect.height
-            }
-
-            #expect(totalArea == size.width * size.height)
-        }
+    func testNegativeSampleClampsToMinimum() {
+        let height = computeBarHeight(sample: -0.5, maxHeight: 100)
+        XCTAssertEqual(height, 2)  // max(2, -50) = 2
     }
 }

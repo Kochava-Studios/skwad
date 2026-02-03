@@ -1,10 +1,9 @@
-import Testing
+import XCTest
 import AppKit
 import Foundation
 @testable import Skwad
 
-@Suite("AvatarView Helpers")
-struct AvatarViewHelpersTests {
+final class AvatarViewHelpersTests: XCTestCase {
 
     // MARK: - Avatar Image Parsing
 
@@ -21,96 +20,80 @@ struct AvatarViewHelpersTests {
         return avatar.hasPrefix("data:image")
     }
 
-    @Suite("Data URI Detection")
-    struct DataURIDetectionTests {
+    // MARK: - Data URI Detection
 
-        @Test("detects PNG data URI")
-        func detectsPngDataURI() {
-            let uri = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
-            #expect(AvatarViewHelpersTests.isDataURI(uri) == true)
-        }
-
-        @Test("detects JPEG data URI")
-        func detectsJpegDataURI() {
-            let uri = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAA=="
-            #expect(AvatarViewHelpersTests.isDataURI(uri) == true)
-        }
-
-        @Test("rejects emoji string")
-        func rejectsEmojiString() {
-            #expect(AvatarViewHelpersTests.isDataURI("🤖") == false)
-        }
-
-        @Test("rejects plain text")
-        func rejectsPlainText() {
-            #expect(AvatarViewHelpersTests.isDataURI("hello") == false)
-        }
-
-        @Test("rejects nil")
-        func rejectsNil() {
-            #expect(AvatarViewHelpersTests.isDataURI(nil) == false)
-        }
-
-        @Test("rejects empty string")
-        func rejectsEmptyString() {
-            #expect(AvatarViewHelpersTests.isDataURI("") == false)
-        }
-
-        @Test("rejects partial data prefix")
-        func rejectsPartialDataPrefix() {
-            #expect(AvatarViewHelpersTests.isDataURI("data:") == false)
-            #expect(AvatarViewHelpersTests.isDataURI("data:text") == false)
-        }
+    func testDetectsPngDataURI() {
+        let uri = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+        XCTAssertTrue(AvatarViewHelpersTests.isDataURI(uri))
     }
 
-    @Suite("Base64 Parsing")
-    struct Base64ParsingTests {
+    func testDetectsJpegDataURI() {
+        let uri = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAA=="
+        XCTAssertTrue(AvatarViewHelpersTests.isDataURI(uri))
+    }
 
-        @Test("extracts base64 data from valid data URI")
-        func extractsBase64FromValidURI() {
-            // A 1x1 transparent PNG
-            let uri = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
-            let data = AvatarViewHelpersTests.parseAvatarBase64(uri)
+    func testRejectsEmojiString() {
+        XCTAssertFalse(AvatarViewHelpersTests.isDataURI("🤖"))
+    }
 
-            #expect(data != nil)
-            #expect(data!.count > 0)
-        }
+    func testRejectsPlainText() {
+        XCTAssertFalse(AvatarViewHelpersTests.isDataURI("hello"))
+    }
 
-        @Test("returns nil for missing comma")
-        func returnsNilForMissingComma() {
-            let uri = "data:image/png;base64"
-            let data = AvatarViewHelpersTests.parseAvatarBase64(uri)
+    func testRejectsNil() {
+        XCTAssertFalse(AvatarViewHelpersTests.isDataURI(nil))
+    }
 
-            #expect(data == nil)
-        }
+    func testRejectsEmptyString() {
+        XCTAssertFalse(AvatarViewHelpersTests.isDataURI(""))
+    }
 
-        @Test("returns nil for invalid base64")
-        func returnsNilForInvalidBase64() {
-            let uri = "data:image/png;base64,not-valid-base64!!!"
-            let data = AvatarViewHelpersTests.parseAvatarBase64(uri)
+    func testRejectsPartialDataPrefix() {
+        XCTAssertFalse(AvatarViewHelpersTests.isDataURI("data:"))
+        XCTAssertFalse(AvatarViewHelpersTests.isDataURI("data:text"))
+    }
 
-            #expect(data == nil)
-        }
+    // MARK: - Base64 Parsing
 
-        @Test("handles empty base64 section")
-        func handlesEmptyBase64Section() {
-            let uri = "data:image/png;base64,"
-            let data = AvatarViewHelpersTests.parseAvatarBase64(uri)
+    func testExtractsBase64DataFromValidDataURI() {
+        // A 1x1 transparent PNG
+        let uri = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+        let data = AvatarViewHelpersTests.parseAvatarBase64(uri)
 
-            // Empty string is valid base64, returns empty data
-            #expect(data != nil)
-            #expect(data!.count == 0)
-        }
+        XCTAssertNotNil(data)
+        XCTAssertGreaterThan(data!.count, 0)
+    }
 
-        @Test("parsed data can create NSImage")
-        func parsedDataCreatesNSImage() {
-            // A 1x1 red PNG
-            let uri = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFBQIAX8jx0gAAAABJRU5ErkJggg=="
-            let data = AvatarViewHelpersTests.parseAvatarBase64(uri)
+    func testReturnsNilForMissingComma() {
+        let uri = "data:image/png;base64"
+        let data = AvatarViewHelpersTests.parseAvatarBase64(uri)
 
-            #expect(data != nil)
-            let image = NSImage(data: data!)
-            #expect(image != nil)
-        }
+        XCTAssertNil(data)
+    }
+
+    func testReturnsNilForInvalidBase64() {
+        let uri = "data:image/png;base64,not-valid-base64!!!"
+        let data = AvatarViewHelpersTests.parseAvatarBase64(uri)
+
+        XCTAssertNil(data)
+    }
+
+    func testHandlesEmptyBase64Section() {
+        let uri = "data:image/png;base64,"
+        let data = AvatarViewHelpersTests.parseAvatarBase64(uri)
+
+        // Empty string is valid base64, returns empty data
+        XCTAssertNotNil(data)
+        XCTAssertEqual(data!.count, 0)
+    }
+
+    func testParsedDataCanCreateNSImage() {
+        // A 1x1 red PNG
+        let uri = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFBQIAX8jx0gAAAABJRU5ErkJggg=="
+        let data = AvatarViewHelpersTests.parseAvatarBase64(uri)
+
+        XCTAssertNotNil(data)
+        let image = NSImage(data: data!)
+        XCTAssertNotNil(image)
     }
 }

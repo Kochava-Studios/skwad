@@ -1,178 +1,154 @@
-import Testing
+import XCTest
 import Foundation
 @testable import Skwad
 
-@Suite("AgentSheet Helpers")
-struct AgentSheetHelpersTests {
+final class AgentSheetHelpersTests: XCTestCase {
 
     // MARK: - Path Shortening
 
-    @Suite("Path Shortening")
-    struct PathShorteningTests {
+    /// Helper function that mirrors the shortenedPath logic from AgentSheet
+    private func shortenPath(_ path: String) -> String {
+        if let home = ProcessInfo.processInfo.environment["HOME"], path.hasPrefix(home) {
+            return "~" + path.dropFirst(home.count)
+        }
+        return path
+    }
 
-        /// Helper function that mirrors the shortenedPath logic from AgentSheet
-        private func shortenPath(_ path: String) -> String {
-            if let home = ProcessInfo.processInfo.environment["HOME"], path.hasPrefix(home) {
-                return "~" + path.dropFirst(home.count)
-            }
-            return path
+    func testReplacesHomeWithTilde() {
+        guard let home = ProcessInfo.processInfo.environment["HOME"] else {
+            // Skip test if HOME not set
+            return
         }
 
-        @Test("replaces home with tilde")
-        func replacesHomeWithTilde() {
-            guard let home = ProcessInfo.processInfo.environment["HOME"] else {
-                // Skip test if HOME not set
-                return
-            }
+        let path = "\(home)/src/project"
+        let shortened = shortenPath(path)
 
-            let path = "\(home)/src/project"
-            let shortened = shortenPath(path)
+        XCTAssertEqual(shortened, "~/src/project")
+    }
 
-            #expect(shortened == "~/src/project")
+    func testPreservesPathsNotUnderHome() {
+        let path = "/tmp/some/path"
+        let shortened = shortenPath(path)
+
+        XCTAssertEqual(shortened, "/tmp/some/path")
+    }
+
+    func testHandlesHomeDirectoryItself() {
+        guard let home = ProcessInfo.processInfo.environment["HOME"] else {
+            return
         }
 
-        @Test("preserves paths not under home")
-        func preservesNonHomePaths() {
-            let path = "/tmp/some/path"
-            let shortened = shortenPath(path)
+        let shortened = shortenPath(home)
 
-            #expect(shortened == "/tmp/some/path")
+        XCTAssertEqual(shortened, "~")
+    }
+
+    func testHandlesPathsWithTrailingSlash() {
+        guard let home = ProcessInfo.processInfo.environment["HOME"] else {
+            return
         }
 
-        @Test("handles home directory itself")
-        func handlesHomeDirectoryItself() {
-            guard let home = ProcessInfo.processInfo.environment["HOME"] else {
-                return
-            }
+        let path = "\(home)/src/project/"
+        let shortened = shortenPath(path)
 
-            let shortened = shortenPath(home)
-
-            #expect(shortened == "~")
-        }
-
-        @Test("handles paths with trailing slash")
-        func handlesTrailingSlash() {
-            guard let home = ProcessInfo.processInfo.environment["HOME"] else {
-                return
-            }
-
-            let path = "\(home)/src/project/"
-            let shortened = shortenPath(path)
-
-            #expect(shortened == "~/src/project/")
-        }
+        XCTAssertEqual(shortened, "~/src/project/")
     }
 
     // MARK: - Validation
 
-    @Suite("Validation")
-    struct ValidationTests {
-
-        /// Validation logic extracted from AgentSheet
-        private func validateFolder(_ selectedFolder: String) -> String? {
-            if selectedFolder.isEmpty {
-                return "Please select a folder for the agent."
-            }
-
-            var isDirectory: ObjCBool = false
-            if !FileManager.default.fileExists(atPath: selectedFolder, isDirectory: &isDirectory) || !isDirectory.boolValue {
-                return "The selected folder does not exist."
-            }
-
-            return nil  // No error
+    /// Validation logic extracted from AgentSheet
+    private func validateFolder(_ selectedFolder: String) -> String? {
+        if selectedFolder.isEmpty {
+            return "Please select a folder for the agent."
         }
 
-        @Test("requires folder selection")
-        func requiresFolderSelection() {
-            let error = validateFolder("")
-
-            #expect(error != nil)
-            #expect(error?.contains("select") == true)
+        var isDirectory: ObjCBool = false
+        if !FileManager.default.fileExists(atPath: selectedFolder, isDirectory: &isDirectory) || !isDirectory.boolValue {
+            return "The selected folder does not exist."
         }
 
-        @Test("validates folder exists")
-        func validatesFolderExists() {
-            let error = validateFolder("/this/path/definitely/does/not/exist/12345")
+        return nil  // No error
+    }
 
-            #expect(error != nil)
-            #expect(error?.contains("does not exist") == true)
-        }
+    func testRequiresFolderSelection() {
+        let error = validateFolder("")
 
-        @Test("accepts valid folder")
-        func acceptsValidFolder() {
-            // /tmp should exist on macOS
-            let error = validateFolder("/tmp")
+        XCTAssertNotNil(error)
+        XCTAssertTrue(error?.contains("select") == true)
+    }
 
-            #expect(error == nil)
-        }
+    func testValidatesFolderExists() {
+        let error = validateFolder("/this/path/definitely/does/not/exist/12345")
 
-        @Test("rejects file as folder")
-        func rejectsFileAsFolder() {
-            // Create a temp file
-            let tempFile = NSTemporaryDirectory() + "test_file_\(UUID().uuidString)"
-            FileManager.default.createFile(atPath: tempFile, contents: nil)
-            defer { try? FileManager.default.removeItem(atPath: tempFile) }
+        XCTAssertNotNil(error)
+        XCTAssertTrue(error?.contains("does not exist") == true)
+    }
 
-            let error = validateFolder(tempFile)
+    func testAcceptsValidFolder() {
+        // /tmp should exist on macOS
+        let error = validateFolder("/tmp")
 
-            #expect(error != nil)
-        }
+        XCTAssertNil(error)
+    }
+
+    func testRejectsFileAsFolder() {
+        // Create a temp file
+        let tempFile = NSTemporaryDirectory() + "test_file_\(UUID().uuidString)"
+        FileManager.default.createFile(atPath: tempFile, contents: nil)
+        defer { try? FileManager.default.removeItem(atPath: tempFile) }
+
+        let error = validateFolder(tempFile)
+
+        XCTAssertNotNil(error)
     }
 
     // MARK: - AgentPrefill
 
-    @Suite("AgentPrefill")
-    struct AgentPrefillTests {
+    func testCreatesUniqueId() {
+        let prefill1 = AgentPrefill(
+            name: "Test",
+            avatar: nil,
+            folder: "/path",
+            agentType: "claude",
+            insertAfterId: nil
+        )
+        let prefill2 = AgentPrefill(
+            name: "Test",
+            avatar: nil,
+            folder: "/path",
+            agentType: "claude",
+            insertAfterId: nil
+        )
 
-        @Test("creates unique id")
-        func createsUniqueId() {
-            let prefill1 = AgentPrefill(
-                name: "Test",
-                avatar: nil,
-                folder: "/path",
-                agentType: "claude",
-                insertAfterId: nil
-            )
-            let prefill2 = AgentPrefill(
-                name: "Test",
-                avatar: nil,
-                folder: "/path",
-                agentType: "claude",
-                insertAfterId: nil
-            )
+        XCTAssertNotEqual(prefill1.id, prefill2.id)
+    }
 
-            #expect(prefill1.id != prefill2.id)
-        }
+    func testStoresAllProperties() {
+        let insertId = UUID()
+        let prefill = AgentPrefill(
+            name: "MyAgent",
+            avatar: "🤖",
+            folder: "/path/to/project",
+            agentType: "codex",
+            insertAfterId: insertId
+        )
 
-        @Test("stores all properties")
-        func storesAllProperties() {
-            let insertId = UUID()
-            let prefill = AgentPrefill(
-                name: "MyAgent",
-                avatar: "🤖",
-                folder: "/path/to/project",
-                agentType: "codex",
-                insertAfterId: insertId
-            )
+        XCTAssertEqual(prefill.name, "MyAgent")
+        XCTAssertEqual(prefill.avatar, "🤖")
+        XCTAssertEqual(prefill.folder, "/path/to/project")
+        XCTAssertEqual(prefill.agentType, "codex")
+        XCTAssertEqual(prefill.insertAfterId, insertId)
+    }
 
-            #expect(prefill.name == "MyAgent")
-            #expect(prefill.avatar == "🤖")
-            #expect(prefill.folder == "/path/to/project")
-            #expect(prefill.agentType == "codex")
-            #expect(prefill.insertAfterId == insertId)
-        }
+    func testHandlesNilAvatar() {
+        let prefill = AgentPrefill(
+            name: "Test",
+            avatar: nil,
+            folder: "/path",
+            agentType: "claude",
+            insertAfterId: nil
+        )
 
-        @Test("handles nil avatar")
-        func handlesNilAvatar() {
-            let prefill = AgentPrefill(
-                name: "Test",
-                avatar: nil,
-                folder: "/path",
-                agentType: "claude",
-                insertAfterId: nil
-            )
-
-            #expect(prefill.avatar == nil)
-        }
+        XCTAssertNil(prefill.avatar)
     }
 }

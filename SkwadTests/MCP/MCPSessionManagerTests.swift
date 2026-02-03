@@ -1,234 +1,198 @@
-import Testing
+import XCTest
 import Foundation
 @testable import Skwad
 
-@Suite("MCPSessionManager")
-struct MCPSessionManagerTests {
+final class MCPSessionManagerTests: XCTestCase {
 
     // MARK: - Session Creation
 
-    @Suite("Session Creation")
-    struct SessionCreationTests {
+    func testCreatesSessionWithUniqueId() async {
+        let manager = MCPSessionManager()
+        let agentId = UUID()
 
-        @Test("creates session with unique id")
-        func createsSessionWithUniqueId() async {
-            let manager = MCPSessionManager()
-            let agentId = UUID()
+        let session = await manager.createSession(for: agentId)
 
-            let session = await manager.createSession(for: agentId)
+        XCTAssertFalse(session.id.isEmpty)
+        XCTAssertEqual(session.agentId, agentId)
+    }
 
-            #expect(!session.id.isEmpty)
-            #expect(session.agentId == agentId)
-        }
+    func testCreatesDifferentIdsForDifferentAgents() async {
+        let manager = MCPSessionManager()
+        let agentId1 = UUID()
+        let agentId2 = UUID()
 
-        @Test("creates different ids for different agents")
-        func createsDifferentIds() async {
-            let manager = MCPSessionManager()
-            let agentId1 = UUID()
-            let agentId2 = UUID()
+        let session1 = await manager.createSession(for: agentId1)
+        let session2 = await manager.createSession(for: agentId2)
 
-            let session1 = await manager.createSession(for: agentId1)
-            let session2 = await manager.createSession(for: agentId2)
+        XCTAssertNotEqual(session1.id, session2.id)
+    }
 
-            #expect(session1.id != session2.id)
-        }
+    func testReplacesExistingSessionForSameAgent() async {
+        let manager = MCPSessionManager()
+        let agentId = UUID()
 
-        @Test("replaces existing session for same agent")
-        func replacesExistingForSameAgent() async {
-            let manager = MCPSessionManager()
-            let agentId = UUID()
+        let session1 = await manager.createSession(for: agentId)
+        let session2 = await manager.createSession(for: agentId)
 
-            let session1 = await manager.createSession(for: agentId)
-            let session2 = await manager.createSession(for: agentId)
+        // New session should have different id
+        XCTAssertNotEqual(session1.id, session2.id)
 
-            // New session should have different id
-            #expect(session1.id != session2.id)
+        // Only new session should be retrievable
+        let retrievedById1 = await manager.getSession(id: session1.id)
+        let retrievedById2 = await manager.getSession(id: session2.id)
 
-            // Only new session should be retrievable
-            let retrievedById1 = await manager.getSession(id: session1.id)
-            let retrievedById2 = await manager.getSession(id: session2.id)
+        XCTAssertNil(retrievedById1)  // Old session removed
+        XCTAssertNotNil(retrievedById2)  // New session exists
+    }
 
-            #expect(retrievedById1 == nil)  // Old session removed
-            #expect(retrievedById2 != nil)  // New session exists
-        }
+    func testSessionHasValidTimestamps() async {
+        let manager = MCPSessionManager()
+        let agentId = UUID()
+        let beforeCreation = Date()
 
-        @Test("session has valid timestamps")
-        func sessionHasValidTimestamps() async {
-            let manager = MCPSessionManager()
-            let agentId = UUID()
-            let beforeCreation = Date()
+        let session = await manager.createSession(for: agentId)
 
-            let session = await manager.createSession(for: agentId)
-
-            #expect(session.createdAt >= beforeCreation)
-            #expect(session.lastActivity >= beforeCreation)
-        }
+        XCTAssertGreaterThanOrEqual(session.createdAt, beforeCreation)
+        XCTAssertGreaterThanOrEqual(session.lastActivity, beforeCreation)
     }
 
     // MARK: - Session Retrieval
 
-    @Suite("Session Retrieval")
-    struct SessionRetrievalTests {
+    func testRetrievesSessionById() async {
+        let manager = MCPSessionManager()
+        let agentId = UUID()
 
-        @Test("retrieves session by id")
-        func retrievesById() async {
-            let manager = MCPSessionManager()
-            let agentId = UUID()
+        let created = await manager.createSession(for: agentId)
+        let retrieved = await manager.getSession(id: created.id)
 
-            let created = await manager.createSession(for: agentId)
-            let retrieved = await manager.getSession(id: created.id)
+        XCTAssertNotNil(retrieved)
+        XCTAssertEqual(retrieved?.agentId, agentId)
+    }
 
-            #expect(retrieved != nil)
-            #expect(retrieved?.agentId == agentId)
-        }
+    func testRetrievesSessionByAgentId() async {
+        let manager = MCPSessionManager()
+        let agentId = UUID()
 
-        @Test("retrieves session by agentId")
-        func retrievesByAgentId() async {
-            let manager = MCPSessionManager()
-            let agentId = UUID()
+        let created = await manager.createSession(for: agentId)
+        let retrieved = await manager.getSession(for: agentId)
 
-            let created = await manager.createSession(for: agentId)
-            let retrieved = await manager.getSession(for: agentId)
+        XCTAssertNotNil(retrieved)
+        XCTAssertEqual(retrieved?.id, created.id)
+    }
 
-            #expect(retrieved != nil)
-            #expect(retrieved?.id == created.id)
-        }
+    func testReturnsNilForUnknownSessionId() async {
+        let manager = MCPSessionManager()
 
-        @Test("returns nil for unknown session id")
-        func returnsNilForUnknownId() async {
-            let manager = MCPSessionManager()
+        let retrieved = await manager.getSession(id: "unknown-id")
 
-            let retrieved = await manager.getSession(id: "unknown-id")
+        XCTAssertNil(retrieved)
+    }
 
-            #expect(retrieved == nil)
-        }
+    func testReturnsNilForUnknownAgentId() async {
+        let manager = MCPSessionManager()
 
-        @Test("returns nil for unknown agent id")
-        func returnsNilForUnknownAgentId() async {
-            let manager = MCPSessionManager()
+        let retrieved = await manager.getSession(for: UUID())
 
-            let retrieved = await manager.getSession(for: UUID())
-
-            #expect(retrieved == nil)
-        }
+        XCTAssertNil(retrieved)
     }
 
     // MARK: - Session Removal
 
-    @Suite("Session Removal")
-    struct SessionRemovalTests {
+    func testRemovesSessionById() async {
+        let manager = MCPSessionManager()
+        let agentId = UUID()
 
-        @Test("removes session by id")
-        func removesById() async {
-            let manager = MCPSessionManager()
-            let agentId = UUID()
+        let session = await manager.createSession(for: agentId)
+        await manager.removeSession(id: session.id)
 
-            let session = await manager.createSession(for: agentId)
-            await manager.removeSession(id: session.id)
+        let retrieved = await manager.getSession(id: session.id)
+        XCTAssertNil(retrieved)
+    }
 
-            let retrieved = await manager.getSession(id: session.id)
-            #expect(retrieved == nil)
-        }
+    func testRemovesSessionByAgentId() async {
+        let manager = MCPSessionManager()
+        let agentId = UUID()
 
-        @Test("removes session by agent id")
-        func removesByAgentId() async {
-            let manager = MCPSessionManager()
-            let agentId = UUID()
+        let session = await manager.createSession(for: agentId)
+        await manager.removeSession(for: agentId)
 
-            let session = await manager.createSession(for: agentId)
-            await manager.removeSession(for: agentId)
+        let retrieved = await manager.getSession(for: agentId)
+        XCTAssertNil(retrieved)
 
-            let retrieved = await manager.getSession(for: agentId)
-            #expect(retrieved == nil)
+        // Should also not be retrievable by session id
+        let retrievedById = await manager.getSession(id: session.id)
+        XCTAssertNil(retrievedById)
+    }
 
-            // Should also not be retrievable by session id
-            let retrievedById = await manager.getSession(id: session.id)
-            #expect(retrievedById == nil)
-        }
+    func testClearsBothMappingsOnRemoval() async {
+        let manager = MCPSessionManager()
+        let agentId = UUID()
 
-        @Test("clears both mappings on removal")
-        func clearsBothMappings() async {
-            let manager = MCPSessionManager()
-            let agentId = UUID()
+        let session = await manager.createSession(for: agentId)
+        await manager.removeSession(id: session.id)
 
-            let session = await manager.createSession(for: agentId)
-            await manager.removeSession(id: session.id)
+        // Both lookups should fail
+        let byId = await manager.getSession(id: session.id)
+        let byAgent = await manager.getSession(for: agentId)
 
-            // Both lookups should fail
-            let byId = await manager.getSession(id: session.id)
-            let byAgent = await manager.getSession(for: agentId)
-
-            #expect(byId == nil)
-            #expect(byAgent == nil)
-        }
+        XCTAssertNil(byId)
+        XCTAssertNil(byAgent)
     }
 
     // MARK: - Stale Cleanup
 
-    @Suite("Stale Cleanup")
-    struct StaleCleanupTests {
+    func testRemovesSessionsOlderThanTimeout() async {
+        let manager = MCPSessionManager()
+        let agentId = UUID()
 
-        @Test("removes sessions older than timeout")
-        func removesOldSessions() async {
-            let manager = MCPSessionManager()
-            let agentId = UUID()
+        _ = await manager.createSession(for: agentId)
 
-            _ = await manager.createSession(for: agentId)
+        // Use a very short timeout (0 seconds means all sessions are stale)
+        await manager.cleanupStaleSessions(olderThan: 0)
 
-            // Use a very short timeout (0 seconds means all sessions are stale)
-            await manager.cleanupStaleSessions(olderThan: 0)
+        let retrieved = await manager.getSession(for: agentId)
+        XCTAssertNil(retrieved)
+    }
 
-            let retrieved = await manager.getSession(for: agentId)
-            #expect(retrieved == nil)
-        }
+    func testPreservesRecentSessions() async {
+        let manager = MCPSessionManager()
+        let agentId = UUID()
 
-        @Test("preserves recent sessions")
-        func preservesRecentSessions() async {
-            let manager = MCPSessionManager()
-            let agentId = UUID()
+        _ = await manager.createSession(for: agentId)
 
-            _ = await manager.createSession(for: agentId)
+        // Use a long timeout
+        await manager.cleanupStaleSessions(olderThan: 3600)
 
-            // Use a long timeout
-            await manager.cleanupStaleSessions(olderThan: 3600)
+        let retrieved = await manager.getSession(for: agentId)
+        XCTAssertNotNil(retrieved)
+    }
 
-            let retrieved = await manager.getSession(for: agentId)
-            #expect(retrieved != nil)
-        }
+    func testAllSessionsReturnsAll() async {
+        let manager = MCPSessionManager()
 
-        @Test("allSessions returns all active sessions")
-        func allSessionsReturnsAll() async {
-            let manager = MCPSessionManager()
+        _ = await manager.createSession(for: UUID())
+        _ = await manager.createSession(for: UUID())
+        _ = await manager.createSession(for: UUID())
 
-            _ = await manager.createSession(for: UUID())
-            _ = await manager.createSession(for: UUID())
-            _ = await manager.createSession(for: UUID())
-
-            let all = await manager.allSessions()
-            #expect(all.count == 3)
-        }
+        let all = await manager.allSessions()
+        XCTAssertEqual(all.count, 3)
     }
 
     // MARK: - Activity Update
 
-    @Suite("Activity Update")
-    struct ActivityUpdateTests {
+    func testUpdateActivityUpdatesTimestamp() async {
+        let manager = MCPSessionManager()
+        let agentId = UUID()
 
-        @Test("updateActivity updates lastActivity timestamp")
-        func updateActivityUpdatesTimestamp() async {
-            let manager = MCPSessionManager()
-            let agentId = UUID()
+        let session = await manager.createSession(for: agentId)
+        let originalActivity = session.lastActivity
 
-            let session = await manager.createSession(for: agentId)
-            let originalActivity = session.lastActivity
+        // Small delay to ensure time difference
+        try? await Task.sleep(nanoseconds: 10_000_000)  // 10ms
 
-            // Small delay to ensure time difference
-            try? await Task.sleep(nanoseconds: 10_000_000)  // 10ms
+        await manager.updateActivity(sessionId: session.id)
 
-            await manager.updateActivity(sessionId: session.id)
-
-            let updated = await manager.getSession(id: session.id)
-            #expect(updated?.lastActivity ?? originalActivity > originalActivity)
-        }
+        let updated = await manager.getSession(id: session.id)
+        XCTAssertGreaterThan(updated?.lastActivity ?? originalActivity, originalActivity)
     }
 }

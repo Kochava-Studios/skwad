@@ -1,223 +1,180 @@
-import Testing
+import XCTest
 import SwiftUI
 @testable import Skwad
 
-@Suite("Workspace")
-struct WorkspaceTests {
+final class WorkspaceTests: XCTestCase {
 
     // MARK: - Initials Computation
 
-    @Suite("Initials Computation")
-    struct InitialsComputationTests {
+    func testTwoWordsReturnsFirstLetters() {
+        let initials = Workspace.computeInitials(from: "Hello World")
+        XCTAssertEqual(initials, "HW")
+    }
 
-        @Test("two words returns first letters")
-        func twoWordsReturnsFirstLetters() {
-            let initials = Workspace.computeInitials(from: "Hello World")
-            #expect(initials == "HW")
-        }
+    func testTwoWordsLowercaseReturnsUppercase() {
+        let initials = Workspace.computeInitials(from: "hello world")
+        XCTAssertEqual(initials, "HW")
+    }
 
-        @Test("two words with lowercase returns uppercase")
-        func twoWordsLowercaseReturnsUppercase() {
-            let initials = Workspace.computeInitials(from: "hello world")
-            #expect(initials == "HW")
-        }
+    func testThreeWordsUsesFirstTwo() {
+        let initials = Workspace.computeInitials(from: "Alpha Beta Gamma")
+        XCTAssertEqual(initials, "AB")
+    }
 
-        @Test("three words uses first two")
-        func threeWordsUsesFirstTwo() {
-            let initials = Workspace.computeInitials(from: "Alpha Beta Gamma")
-            #expect(initials == "AB")
-        }
+    func testSingleWordReturnsFirstTwoChars() {
+        let initials = Workspace.computeInitials(from: "Workspace")
+        XCTAssertEqual(initials, "WO")
+    }
 
-        @Test("single word returns first two chars")
-        func singleWordReturnsFirstTwoChars() {
-            let initials = Workspace.computeInitials(from: "Workspace")
-            #expect(initials == "WO")
-        }
+    func testSingleCharWord() {
+        let initials = Workspace.computeInitials(from: "A")
+        XCTAssertEqual(initials, "A")
+    }
 
-        @Test("single short word returns one char uppercase")
-        func singleCharWord() {
-            let initials = Workspace.computeInitials(from: "A")
-            #expect(initials == "A")
-        }
+    func testEmptyStringReturnsQuestionMark() {
+        let initials = Workspace.computeInitials(from: "")
+        XCTAssertEqual(initials, "?")
+    }
 
-        @Test("empty string returns question mark")
-        func emptyStringReturnsQuestionMark() {
-            let initials = Workspace.computeInitials(from: "")
-            #expect(initials == "?")
-        }
+    func testWhitespaceOnlyReturnsQuestionMark() {
+        let initials = Workspace.computeInitials(from: "   ")
+        XCTAssertEqual(initials, "?")
+    }
 
-        @Test("whitespace only returns question mark")
-        func whitespaceOnlyReturnsQuestionMark() {
-            let initials = Workspace.computeInitials(from: "   ")
-            #expect(initials == "?")
-        }
+    func testLeadingWhitespaceIsTrimmed() {
+        let initials = Workspace.computeInitials(from: "  Hello World")
+        XCTAssertEqual(initials, "HW")
+    }
 
-        @Test("leading whitespace is trimmed")
-        func leadingWhitespaceIsTrimmed() {
-            let initials = Workspace.computeInitials(from: "  Hello World")
-            #expect(initials == "HW")
-        }
-
-        @Test("workspace property returns correct initials")
-        func workspacePropertyReturnsCorrectInitials() {
-            let workspace = Workspace(name: "My Project")
-            #expect(workspace.initials == "MP")
-        }
+    func testWorkspacePropertyReturnsCorrectInitials() {
+        let workspace = Workspace(name: "My Project")
+        XCTAssertEqual(workspace.initials, "MP")
     }
 
     // MARK: - Create Default
 
-    @Suite("Create Default")
-    struct CreateDefaultTests {
+    func testCreatesSkwadWorkspace() {
+        let workspace = Workspace.createDefault()
+        XCTAssertEqual(workspace.name, "Skwad")
+    }
 
-        @Test("creates Skwad workspace")
-        func createsSkwadWorkspace() {
-            let workspace = Workspace.createDefault()
-            #expect(workspace.name == "Skwad")
-        }
+    func testUsesBlueColor() {
+        let workspace = Workspace.createDefault()
+        XCTAssertEqual(workspace.colorHex, WorkspaceColor.blue.rawValue)
+    }
 
-        @Test("uses blue color")
-        func usesBlueColor() {
-            let workspace = Workspace.createDefault()
-            #expect(workspace.colorHex == WorkspaceColor.blue.rawValue)
-        }
+    func testStartsWithEmptyAgentList() {
+        let workspace = Workspace.createDefault()
+        XCTAssertTrue(workspace.agentIds.isEmpty)
+    }
 
-        @Test("starts with empty agent list when no agents provided")
-        func startsWithEmptyAgentList() {
-            let workspace = Workspace.createDefault()
-            #expect(workspace.agentIds.isEmpty)
-        }
+    func testIncludesProvidedAgentIds() {
+        let agentId1 = UUID()
+        let agentId2 = UUID()
+        let workspace = Workspace.createDefault(withAgentIds: [agentId1, agentId2])
+        XCTAssertEqual(workspace.agentIds, [agentId1, agentId2])
+    }
 
-        @Test("includes provided agent IDs")
-        func includesProvidedAgentIds() {
-            let agentId1 = UUID()
-            let agentId2 = UUID()
-            let workspace = Workspace.createDefault(withAgentIds: [agentId1, agentId2])
-            #expect(workspace.agentIds == [agentId1, agentId2])
-        }
+    func testSetsFirstAgentAsActive() {
+        let agentId1 = UUID()
+        let agentId2 = UUID()
+        let workspace = Workspace.createDefault(withAgentIds: [agentId1, agentId2])
+        XCTAssertEqual(workspace.activeAgentIds, [agentId1])
+    }
 
-        @Test("sets first agent as active when agents provided")
-        func setsFirstAgentAsActive() {
-            let agentId1 = UUID()
-            let agentId2 = UUID()
-            let workspace = Workspace.createDefault(withAgentIds: [agentId1, agentId2])
-            #expect(workspace.activeAgentIds == [agentId1])
-        }
+    func testActiveAgentIdsEmptyWhenNoAgents() {
+        let workspace = Workspace.createDefault()
+        XCTAssertTrue(workspace.activeAgentIds.isEmpty)
+    }
 
-        @Test("activeAgentIds empty when no agents provided")
-        func activeAgentIdsEmptyWhenNoAgents() {
-            let workspace = Workspace.createDefault()
-            #expect(workspace.activeAgentIds.isEmpty)
-        }
+    func testDefaultLayoutIsSingle() {
+        let workspace = Workspace.createDefault()
+        XCTAssertEqual(workspace.layoutMode, .single)
+    }
 
-        @Test("default layout is single")
-        func defaultLayoutIsSingle() {
-            let workspace = Workspace.createDefault()
-            #expect(workspace.layoutMode == .single)
-        }
+    func testDefaultFocusedPaneIsZero() {
+        let workspace = Workspace.createDefault()
+        XCTAssertEqual(workspace.focusedPaneIndex, 0)
+    }
 
-        @Test("default focused pane is 0")
-        func defaultFocusedPaneIsZero() {
-            let workspace = Workspace.createDefault()
-            #expect(workspace.focusedPaneIndex == 0)
-        }
-
-        @Test("default split ratio is 0.5")
-        func defaultSplitRatioIsHalf() {
-            let workspace = Workspace.createDefault()
-            #expect(workspace.splitRatio == 0.5)
-        }
+    func testDefaultSplitRatioIsHalf() {
+        let workspace = Workspace.createDefault()
+        XCTAssertEqual(workspace.splitRatio, 0.5)
     }
 
     // MARK: - Workspace Color
 
-    @Suite("WorkspaceColor")
-    struct WorkspaceColorTests {
-
-        @Test("all colors have valid hex")
-        func allColorsHaveValidHex() {
-            for workspaceColor in WorkspaceColor.allCases {
-                let color = Color(hex: workspaceColor.rawValue)
-                #expect(color != nil, "WorkspaceColor.\(workspaceColor) should have valid hex")
-            }
+    func testAllColorsHaveValidHex() {
+        for workspaceColor in WorkspaceColor.allCases {
+            let color = Color(hex: workspaceColor.rawValue)
+            XCTAssertNotNil(color, "WorkspaceColor.\(workspaceColor) should have valid hex")
         }
+    }
 
-        @Test("default color is blue")
-        func defaultColorIsBlue() {
-            #expect(WorkspaceColor.default == .blue)
-        }
+    func testDefaultColorIsBlue() {
+        XCTAssertEqual(WorkspaceColor.default, .blue)
+    }
 
-        @Test("color property returns valid SwiftUI color")
-        func colorPropertyReturnsValidColor() {
-            for workspaceColor in WorkspaceColor.allCases {
-                // This should not crash - validates color conversion works
-                let _ = workspaceColor.color
-            }
+    func testColorPropertyReturnsValidColor() {
+        for workspaceColor in WorkspaceColor.allCases {
+            // This should not crash - validates color conversion works
+            let _ = workspaceColor.color
         }
+    }
 
-        @Test("workspace color property returns correct color")
-        func workspaceColorPropertyReturnsCorrectColor() {
-            let workspace = Workspace(name: "Test", colorHex: WorkspaceColor.purple.rawValue)
-            // The color should be parseable
-            let _ = workspace.color
-        }
+    func testWorkspaceColorPropertyReturnsCorrectColor() {
+        let workspace = Workspace(name: "Test", colorHex: WorkspaceColor.purple.rawValue)
+        // The color should be parseable
+        let _ = workspace.color
+    }
 
-        @Test("workspace with invalid hex falls back to blue")
-        func invalidHexFallsBackToBlue() {
-            let workspace = Workspace(name: "Test", colorHex: "invalid")
-            // Should fall back to blue
-            let _ = workspace.color  // Should not crash
-        }
+    func testInvalidHexFallsBackToBlue() {
+        let workspace = Workspace(name: "Test", colorHex: "invalid")
+        // Should fall back to blue
+        let _ = workspace.color  // Should not crash
     }
 
     // MARK: - Workspace Initialization
 
-    @Suite("Workspace Initialization")
-    struct WorkspaceInitializationTests {
+    func testCustomInitializationPreservesAllValues() {
+        let id = UUID()
+        let agentId1 = UUID()
+        let agentId2 = UUID()
 
-        @Test("custom initialization preserves all values")
-        func customInitializationPreservesAllValues() {
-            let id = UUID()
-            let agentId1 = UUID()
-            let agentId2 = UUID()
+        let workspace = Workspace(
+            id: id,
+            name: "Custom",
+            colorHex: WorkspaceColor.green.rawValue,
+            agentIds: [agentId1, agentId2],
+            layoutMode: .splitVertical,
+            activeAgentIds: [agentId1],
+            focusedPaneIndex: 1,
+            splitRatio: 0.7
+        )
 
-            let workspace = Workspace(
-                id: id,
-                name: "Custom",
-                colorHex: WorkspaceColor.green.rawValue,
-                agentIds: [agentId1, agentId2],
-                layoutMode: .splitVertical,
-                activeAgentIds: [agentId1],
-                focusedPaneIndex: 1,
-                splitRatio: 0.7
-            )
+        XCTAssertEqual(workspace.id, id)
+        XCTAssertEqual(workspace.name, "Custom")
+        XCTAssertEqual(workspace.colorHex, WorkspaceColor.green.rawValue)
+        XCTAssertEqual(workspace.agentIds, [agentId1, agentId2])
+        XCTAssertEqual(workspace.layoutMode, .splitVertical)
+        XCTAssertEqual(workspace.activeAgentIds, [agentId1])
+        XCTAssertEqual(workspace.focusedPaneIndex, 1)
+        XCTAssertEqual(workspace.splitRatio, 0.7)
+    }
 
-            #expect(workspace.id == id)
-            #expect(workspace.name == "Custom")
-            #expect(workspace.colorHex == WorkspaceColor.green.rawValue)
-            #expect(workspace.agentIds == [agentId1, agentId2])
-            #expect(workspace.layoutMode == .splitVertical)
-            #expect(workspace.activeAgentIds == [agentId1])
-            #expect(workspace.focusedPaneIndex == 1)
-            #expect(workspace.splitRatio == 0.7)
-        }
+    func testWorkspaceIsHashable() {
+        let workspace1 = Workspace(name: "Test1")
+        let workspace2 = Workspace(name: "Test2")
 
-        @Test("workspace is Hashable")
-        func workspaceIsHashable() {
-            let workspace1 = Workspace(name: "Test1")
-            let workspace2 = Workspace(name: "Test2")
+        var set = Set<Workspace>()
+        set.insert(workspace1)
+        set.insert(workspace2)
 
-            var set = Set<Workspace>()
-            set.insert(workspace1)
-            set.insert(workspace2)
+        XCTAssertEqual(set.count, 2)
+    }
 
-            #expect(set.count == 2)
-        }
-
-        @Test("workspace is Identifiable")
-        func workspaceIsIdentifiable() {
-            let workspace = Workspace(name: "Test")
-            #expect(workspace.id != UUID(uuidString: "00000000-0000-0000-0000-000000000000"))
-        }
+    func testWorkspaceIsIdentifiable() {
+        let workspace = Workspace(name: "Test")
+        XCTAssertNotEqual(workspace.id, UUID(uuidString: "00000000-0000-0000-0000-000000000000"))
     }
 }
