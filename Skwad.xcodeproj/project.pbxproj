@@ -523,15 +523,6 @@
 			path = SkwadTests;
 			sourceTree = "<group>";
 		};
-		TS500011 /* Utilities */ = {
-			isa = PBXGroup;
-			children = (
-				TS100029 /* TerminalTextCleanerTests.swift */,
-				TS100031 /* ClipboardTests.swift */,
-			);
-			path = Utilities;
-			sourceTree = "<group>";
-		};
 		TS500001 /* Git */ = {
 			isa = PBXGroup;
 			children = (
@@ -637,6 +628,15 @@
 				TS100028 /* WorkspaceAvatarViewUITests.swift */,
 			);
 			path = Workspace;
+			sourceTree = "<group>";
+		};
+		TS500011 /* Utilities */ = {
+			isa = PBXGroup;
+			children = (
+				TS100029 /* TerminalTextCleanerTests.swift */,
+				TS100031 /* ClipboardTests.swift */,
+			);
+			path = Utilities;
 			sourceTree = "<group>";
 		};
 		TS500012 /* Voice */ = {
@@ -1056,7 +1056,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 9;
 				DEVELOPMENT_TEAM = S3Y2KVL7H7;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1088,7 +1088,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 9;
 				DEVELOPMENT_TEAM = S3Y2KVL7H7;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
