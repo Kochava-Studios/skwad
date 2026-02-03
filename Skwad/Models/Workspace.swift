@@ -40,7 +40,19 @@ struct Workspace: Identifiable, Codable, Hashable {
     var layoutMode: LayoutMode
     var activeAgentIds: [UUID]  // which agents are visible in panes
     var focusedPaneIndex: Int
-    var splitRatio: CGFloat
+    var splitRatio: CGFloat  // primary split ratio (kept for backwards compatibility, maps to splitRatioPrimary)
+    var splitRatioSecondary: CGFloat?  // secondary split ratio - optional for backwards compatibility
+
+    /// Primary split ratio (vertical in splitVertical/grid, horizontal in splitHorizontal)
+    var splitRatioPrimary: CGFloat {
+        get { splitRatio }
+        set { splitRatio = newValue }
+    }
+
+    /// Secondary split ratio with default fallback (used in grid mode)
+    var effectiveSplitRatioSecondary: CGFloat {
+        splitRatioSecondary ?? 0.5
+    }
 
     init(
         id: UUID = UUID(),
@@ -50,7 +62,8 @@ struct Workspace: Identifiable, Codable, Hashable {
         layoutMode: LayoutMode = .single,
         activeAgentIds: [UUID] = [],
         focusedPaneIndex: Int = 0,
-        splitRatio: CGFloat = 0.5
+        splitRatio: CGFloat = 0.5,
+        splitRatioSecondary: CGFloat? = nil
     ) {
         self.id = id
         self.name = name
@@ -60,6 +73,7 @@ struct Workspace: Identifiable, Codable, Hashable {
         self.activeAgentIds = activeAgentIds
         self.focusedPaneIndex = focusedPaneIndex
         self.splitRatio = splitRatio
+        self.splitRatioSecondary = splitRatioSecondary
     }
 
     var color: Color {

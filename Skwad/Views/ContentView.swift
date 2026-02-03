@@ -12,6 +12,7 @@ struct ContentView: View {
   @State private var escapeMonitor: Any?
   @State private var sidebarVisible = true
   @State private var dragStartRatio: CGFloat?
+  @State private var dragStartRatioSecondary: CGFloat?
 
   // Bindings from SkwadApp for menu commands
   @Binding var showNewAgentSheet: Bool
@@ -246,24 +247,52 @@ struct ContentView: View {
                 y: isVertical ? 0 : pos - dividerWidth / 2
               )
             } else {
-              // Grid mode: vertical and horizontal dividers at center (not draggable)
+              // Grid mode: vertical divider (primary) and horizontal divider (secondary)
               let dividerWidth: CGFloat = 12
-              // Vertical divider
+              let vertPos = geo.size.width * agentManager.splitRatio
+              let horizPos = geo.size.height * agentManager.splitRatioSecondary
+
+              // Vertical divider (controls primary ratio)
               SplitDividerView(
                 isVertical: true,
-                onDrag: { _ in },
-                onDragEnd: { }
+                onDrag: { delta in
+                  if dragStartRatio == nil {
+                    dragStartRatio = agentManager.splitRatio
+                  }
+                  let startPos = geo.size.width * dragStartRatio!
+                  let newRatio = (startPos + delta) / geo.size.width
+                  agentManager.splitRatio = max(0.25, min(0.75, newRatio))
+                },
+                onDragEnd: {
+                  dragStartRatio = nil
+                  for id in agentManager.activeAgentIds {
+                    agentManager.notifyTerminalResize(for: id)
+                  }
+                }
               )
               .frame(width: dividerWidth, height: geo.size.height)
-              .offset(x: geo.size.width / 2 - dividerWidth / 2)
-              // Horizontal divider
+              .offset(x: vertPos - dividerWidth / 2)
+
+              // Horizontal divider (controls secondary ratio)
               SplitDividerView(
                 isVertical: false,
-                onDrag: { _ in },
-                onDragEnd: { }
+                onDrag: { delta in
+                  if dragStartRatioSecondary == nil {
+                    dragStartRatioSecondary = agentManager.splitRatioSecondary
+                  }
+                  let startPos = geo.size.height * dragStartRatioSecondary!
+                  let newRatio = (startPos + delta) / geo.size.height
+                  agentManager.splitRatioSecondary = max(0.25, min(0.75, newRatio))
+                },
+                onDragEnd: {
+                  dragStartRatioSecondary = nil
+                  for id in agentManager.activeAgentIds {
+                    agentManager.notifyTerminalResize(for: id)
+                  }
+                }
               )
               .frame(width: geo.size.width, height: dividerWidth)
-              .offset(y: geo.size.height / 2 - dividerWidth / 2)
+              .offset(y: horizPos - dividerWidth / 2)
             }
           }
         }
@@ -375,30 +404,33 @@ struct ContentView: View {
 
   /// Compute rect for a pane index given layout mode and split ratio
   private func computePaneRect(_ pane: Int, in size: CGSize) -> CGRect {
-    let ratio = agentManager.splitRatio
+    let ratioPrimary = agentManager.splitRatio
+    let ratioSecondary = agentManager.splitRatioSecondary
     switch agentManager.layoutMode {
     case .single:
       return CGRect(origin: .zero, size: size)
     case .splitVertical:  // left | right
-      let w0 = size.width * ratio
+      let w0 = size.width * ratioPrimary
       let w1 = size.width - w0
       return pane == 0
         ? CGRect(x: 0, y: 0, width: w0, height: size.height)
         : CGRect(x: w0, y: 0, width: w1, height: size.height)
     case .splitHorizontal:  // top / bottom
-      let h0 = size.height * ratio
+      let h0 = size.height * ratioPrimary
       let h1 = size.height - h0
       return pane == 0
         ? CGRect(x: 0, y: 0, width: size.width, height: h0)
         : CGRect(x: 0, y: h0, width: size.width, height: h1)
-    case .gridFourPane:  // 4-pane grid
-      let w = size.width / 2
-      let h = size.height / 2
+    case .gridFourPane:  // 4-pane grid (primary = vertical, secondary = horizontal)
+      let w0 = size.width * ratioPrimary
+      let w1 = size.width - w0
+      let h0 = size.height * ratioSecondary
+      let h1 = size.height - h0
       switch pane {
-      case 0: return CGRect(x: 0, y: 0, width: w, height: h)        // top-left
-      case 1: return CGRect(x: w, y: 0, width: w, height: h)        // top-right
-      case 2: return CGRect(x: 0, y: h, width: w, height: h)        // bottom-left
-      case 3: return CGRect(x: w, y: h, width: w, height: h)        // bottom-right
+      case 0: return CGRect(x: 0, y: 0, width: w0, height: h0)        // top-left
+      case 1: return CGRect(x: w0, y: 0, width: w1, height: h0)       // top-right
+      case 2: return CGRect(x: 0, y: h0, width: w0, height: h1)       // bottom-left
+      case 3: return CGRect(x: w0, y: h0, width: w1, height: h1)      // bottom-right
       default: return CGRect(origin: .zero, size: size)
       }
     }

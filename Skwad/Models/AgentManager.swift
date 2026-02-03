@@ -100,6 +100,11 @@ final class AgentManager {
         set { updateCurrentWorkspace { $0.splitRatio = newValue } }
     }
 
+    var splitRatioSecondary: CGFloat {
+        get { currentWorkspace?.effectiveSplitRatioSecondary ?? 0.5 }
+        set { updateCurrentWorkspace { $0.splitRatioSecondary = newValue } }
+    }
+
     private func updateCurrentWorkspace(_ update: (inout Workspace) -> Void) {
         guard let id = currentWorkspaceId,
               var workspace = workspaces.first(where: { $0.id == id }),

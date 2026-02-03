@@ -7,7 +7,7 @@ final class ContentViewHelpersTests: XCTestCase {
     // MARK: - Pane Layout Computation
 
     /// Test helper that mirrors the computePaneRect logic from ContentView
-    private func computePaneRect(pane: Int, layoutMode: LayoutMode, splitRatio: CGFloat, size: CGSize) -> CGRect {
+    private func computePaneRect(pane: Int, layoutMode: LayoutMode, splitRatio: CGFloat, splitRatioSecondary: CGFloat = 0.5, size: CGSize) -> CGRect {
         switch layoutMode {
         case .single:
             return CGRect(origin: .zero, size: size)
@@ -23,14 +23,16 @@ final class ContentViewHelpersTests: XCTestCase {
             return pane == 0
                 ? CGRect(x: 0, y: 0, width: size.width, height: h0)
                 : CGRect(x: 0, y: h0, width: size.width, height: h1)
-        case .gridFourPane:  // 4-pane grid
-            let w = size.width / 2
-            let h = size.height / 2
+        case .gridFourPane:  // 4-pane grid (primary = vertical, secondary = horizontal)
+            let w0 = size.width * splitRatio
+            let w1 = size.width - w0
+            let h0 = size.height * splitRatioSecondary
+            let h1 = size.height - h0
             switch pane {
-            case 0: return CGRect(x: 0, y: 0, width: w, height: h)        // top-left
-            case 1: return CGRect(x: w, y: 0, width: w, height: h)        // top-right
-            case 2: return CGRect(x: 0, y: h, width: w, height: h)        // bottom-left
-            case 3: return CGRect(x: w, y: h, width: w, height: h)        // bottom-right
+            case 0: return CGRect(x: 0, y: 0, width: w0, height: h0)        // top-left
+            case 1: return CGRect(x: w0, y: 0, width: w1, height: h0)       // top-right
+            case 2: return CGRect(x: 0, y: h0, width: w0, height: h1)       // bottom-left
+            case 3: return CGRect(x: w0, y: h0, width: w1, height: h1)      // bottom-right
             default: return CGRect(origin: .zero, size: size)
             }
         }
@@ -235,6 +237,51 @@ final class ContentViewHelpersTests: XCTestCase {
                 pane: pane,
                 layoutMode: .gridFourPane,
                 splitRatio: 0.5,
+                size: size
+            )
+            totalArea += rect.width * rect.height
+        }
+
+        XCTAssertEqual(totalArea, size.width * size.height)
+    }
+
+    func testGridWithDifferentRatios() {
+        let size = CGSize(width: 1000, height: 800)
+        // Primary = 0.3 (vertical), Secondary = 0.6 (horizontal)
+        let rect0 = computePaneRect(pane: 0, layoutMode: .gridFourPane, splitRatio: 0.3, splitRatioSecondary: 0.6, size: size)
+        let rect1 = computePaneRect(pane: 1, layoutMode: .gridFourPane, splitRatio: 0.3, splitRatioSecondary: 0.6, size: size)
+        let rect2 = computePaneRect(pane: 2, layoutMode: .gridFourPane, splitRatio: 0.3, splitRatioSecondary: 0.6, size: size)
+        let rect3 = computePaneRect(pane: 3, layoutMode: .gridFourPane, splitRatio: 0.3, splitRatioSecondary: 0.6, size: size)
+
+        // Verify widths: left panes = 300, right panes = 700
+        XCTAssertEqual(rect0.width, 300)
+        XCTAssertEqual(rect1.width, 700)
+        XCTAssertEqual(rect2.width, 300)
+        XCTAssertEqual(rect3.width, 700)
+
+        // Verify heights: top panes = 480, bottom panes = 320
+        XCTAssertEqual(rect0.height, 480)
+        XCTAssertEqual(rect1.height, 480)
+        XCTAssertEqual(rect2.height, 320)
+        XCTAssertEqual(rect3.height, 320)
+
+        // Verify positions
+        XCTAssertEqual(rect0.origin, CGPoint(x: 0, y: 0))
+        XCTAssertEqual(rect1.origin, CGPoint(x: 300, y: 0))
+        XCTAssertEqual(rect2.origin, CGPoint(x: 0, y: 480))
+        XCTAssertEqual(rect3.origin, CGPoint(x: 300, y: 480))
+    }
+
+    func testGridPanesCoverFullAreaWithDifferentRatios() {
+        let size = CGSize(width: 1000, height: 800)
+        var totalArea: CGFloat = 0
+
+        for pane in 0..<4 {
+            let rect = computePaneRect(
+                pane: pane,
+                layoutMode: .gridFourPane,
+                splitRatio: 0.4,
+                splitRatioSecondary: 0.7,
                 size: size
             )
             totalArea += rect.width * rect.height
