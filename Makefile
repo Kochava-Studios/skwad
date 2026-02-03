@@ -15,7 +15,7 @@ ZIP_PATH := $(BUILD_DIR)/$(APP_NAME).zip
 APPCAST_PATH := $(BUILD_DIR)/appcast.xml
 
 # Download URL for updates
-DOWNLOAD_URL ?= https://bonamy.fr/skwad/Skwad.zip
+DOWNLOAD_URL ?= https://github.com/Kochava-Studios/skwad/releases/latest/download/Skwad.zip
 
 # Apple Developer settings (override via environment variables)
 TEAM_ID ?= $(shell /usr/libexec/PlistBuddy -c "Print :TeamIdentifier:0" ~/Library/Preferences/com.apple.dt.Xcode.plist 2>/dev/null)

@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>SUFeedURL</key>
-	<string>https://bonamy.fr/skwad/appcast.xml</string>
+	<string>https://github.com/Kochava-Studios/skwad/releases/latest/download/appcast.xml</string>
 	<key>SUPublicEDKey</key>
 	<string>Ly6mieNPNaFhdYyen9CuMTshryIaSiVHWNAhZ6ZdEOQ=</string>
 </dict>
