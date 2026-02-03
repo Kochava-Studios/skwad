@@ -107,6 +107,7 @@
 		TS000019 /* CommitSheetHelpersTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100018 /* CommitSheetHelpersTests.swift */; };
 		TS000020 /* AvatarViewHelpersTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100019 /* AvatarViewHelpersTests.swift */; };
 		TS000021 /* MCPCommandViewHelpersTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100020 /* MCPCommandViewHelpersTests.swift */; };
+		TS000022 /* AgentManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100021 /* AgentManagerTests.swift */; };
 		UP000001 /* UpdaterManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = UP100001 /* UpdaterManager.swift */; };
 		UT000001 /* Clipboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = UT100001 /* Clipboard.swift */; };
 		UT000002 /* TerminalTextCleaner.swift in Sources */ = {isa = PBXBuildFile; fileRef = UT100002 /* TerminalTextCleaner.swift */; };
@@ -223,6 +224,7 @@
 		TS100018 /* CommitSheetHelpersTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommitSheetHelpersTests.swift; sourceTree = "<group>"; };
 		TS100019 /* AvatarViewHelpersTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvatarViewHelpersTests.swift; sourceTree = "<group>"; };
 		TS100020 /* MCPCommandViewHelpersTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPCommandViewHelpersTests.swift; sourceTree = "<group>"; };
+		TS100021 /* AgentManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentManagerTests.swift; sourceTree = "<group>"; };
 		TS100100 /* SkwadTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SkwadTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		UP100001 /* UpdaterManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdaterManager.swift; sourceTree = "<group>"; };
 		UT100001 /* Clipboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Clipboard.swift; sourceTree = "<group>"; };
@@ -511,6 +513,7 @@
 				TS100005 /* WorkspaceTests.swift */,
 				TS100006 /* AgentManagerNavigationTests.swift */,
 				TS100011 /* GitWorktreeManagerTests.swift */,
+				TS100021 /* AgentManagerTests.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -819,6 +822,7 @@
 				TS000019 /* CommitSheetHelpersTests.swift in Sources */,
 				TS000020 /* AvatarViewHelpersTests.swift in Sources */,
 				TS000021 /* MCPCommandViewHelpersTests.swift in Sources */,
+				TS000022 /* AgentManagerTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
