@@ -368,11 +368,7 @@ struct AgentSheet: View {
     // MARK: - Computed Properties
 
     private var shortenedPath: String {
-        let path = selectedFolder
-        if let home = ProcessInfo.processInfo.environment["HOME"], path.hasPrefix(home) {
-            return "~" + path.dropFirst(home.count)
-        }
-        return path
+        PathUtils.shortened(selectedFolder)
     }
 
     private var nonRecentRepos: [RepoInfo] {
@@ -504,21 +500,7 @@ struct AgentSheet: View {
     }
 
     private func imageToBase64(_ image: NSImage) -> String {
-        let targetSize = NSSize(width: 128, height: 128)
-        let resizedImage = NSImage(size: targetSize)
-        resizedImage.lockFocus()
-        image.draw(in: NSRect(origin: .zero, size: targetSize),
-                   from: NSRect(origin: .zero, size: image.size),
-                   operation: .copy,
-                   fraction: 1.0)
-        resizedImage.unlockFocus()
-
-        guard let tiffData = resizedImage.tiffRepresentation,
-              let bitmap = NSBitmapImageRep(data: tiffData),
-              let pngData = bitmap.representation(using: .png, properties: [:]) else {
-            return "🤖"
-        }
-        return "data:image/png;base64,\(pngData.base64EncodedString())"
+        image.toBase64PNG(resizedTo: NSSize(width: 128, height: 128))
     }
 
     private func validateAndCreateAgent() {
@@ -584,29 +566,11 @@ struct AvatarPickerView: View {
             LazyVGrid(columns: columns, spacing: 4) {
                 ForEach(emojiOptions, id: \.self) { option in
                     Button {
-                        // Convert icon name to data URI for consistent handling
                         if let image = NSImage(named: option) {
-                            // Resize the icon to 40x40 then add transparent padding to 64x64
-                            let resizedImage = image.scalePreservingAspectRatio(
-                                targetSize: NSSize(width: 40, height: 40)
-                            )
-                            
-                            // Create a 64x64 canvas with transparent background
-                            let paddedImage = NSImage(size: NSSize(width: 64, height: 64))
-                            paddedImage.lockFocus()
-                            
-                            // Draw the resized image centered in the 64x64 canvas
-                            let x = (64 - resizedImage.size.width) / 2
-                            let y = (64 - resizedImage.size.height) / 2
-                            resizedImage.draw(at: NSPoint(x: x, y: y), from: .zero, operation: .copy, fraction: 1.0)
-                            
-                            paddedImage.unlockFocus()
-                            
-                            if let tiffData = paddedImage.tiffRepresentation,
-                               let bitmapImage = NSBitmapImageRep(data: tiffData),
-                               let pngData = bitmapImage.representation(using: .png, properties: [:]) {
-                                let base64 = pngData.base64EncodedString()
-                                selection = "data:image/png;base64,\(base64)"
+                            let resizedImage = image.scalePreservingAspectRatio(targetSize: NSSize(width: 40, height: 40))
+                            let paddedImage = resizedImage.centeredInCanvas(size: NSSize(width: 64, height: 64))
+                            if let base64 = paddedImage.toBase64PNG() {
+                                selection = base64
                             }
                         } else {
                             selection = option
@@ -754,36 +718,12 @@ struct ImageCropperSheet: View {
     }
 
     private func cropImage() -> NSImage {
-        let imageSize = image.size
-
-        let widthRatio = cropSize / imageSize.width
-        let heightRatio = cropSize / imageSize.height
-        let fillScale = max(widthRatio, heightRatio)
-
-        let fillWidth = imageSize.width * fillScale
-        let fillHeight = imageSize.height * fillScale
-
-        let finalWidth = fillWidth * scale
-        let finalHeight = fillHeight * scale
-
-        let drawX = (cropSize - finalWidth) / 2 + offset.width
-        let drawY = (cropSize - finalHeight) / 2 - offset.height
-
-        let outputImage = NSImage(size: NSSize(width: cropSize, height: cropSize))
-        outputImage.lockFocus()
-
-        let circlePath = NSBezierPath(ovalIn: NSRect(x: 0, y: 0, width: cropSize, height: cropSize))
-        circlePath.addClip()
-
-        image.draw(
-            in: NSRect(x: drawX, y: drawY, width: finalWidth, height: finalHeight),
-            from: NSRect(origin: .zero, size: imageSize),
-            operation: .copy,
-            fraction: 1.0
+        image.cropped(
+            to: NSSize(width: cropSize, height: cropSize),
+            scale: scale,
+            offset: offset,
+            circular: true
         )
-
-        outputImage.unlockFocus()
-        return outputImage
     }
 }
 

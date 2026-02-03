@@ -126,6 +126,7 @@
 		UT000002 /* TerminalTextCleaner.swift in Sources */ = {isa = PBXBuildFile; fileRef = UT100002 /* TerminalTextCleaner.swift */; };
 		UT000003 /* WindowResizeObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = UT100003 /* WindowResizeObserver.swift */; };
 		UT000004 /* ManagedTimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = UT100004 /* ManagedTimer.swift */; };
+		UT000005 /* PathUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = UT100005 /* PathUtils.swift */; };
 		WS000001 /* Workspace.swift in Sources */ = {isa = PBXBuildFile; fileRef = WS100001 /* Workspace.swift */; };
 		WS000002 /* WorkspaceBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = WS100002 /* WorkspaceBarView.swift */; };
 		WS000003 /* WorkspaceSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = WS100003 /* WorkspaceSheet.swift */; };
@@ -257,6 +258,7 @@
 		UT100002 /* TerminalTextCleaner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalTextCleaner.swift; sourceTree = "<group>"; };
 		UT100003 /* WindowResizeObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowResizeObserver.swift; sourceTree = "<group>"; };
 		UT100004 /* ManagedTimer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManagedTimer.swift; sourceTree = "<group>"; };
+		UT100005 /* PathUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PathUtils.swift; sourceTree = "<group>"; };
 		WS100001 /* Workspace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Workspace.swift; sourceTree = "<group>"; };
 		WS100002 /* WorkspaceBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkspaceBarView.swift; sourceTree = "<group>"; };
 		WS100003 /* WorkspaceSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkspaceSheet.swift; sourceTree = "<group>"; };
@@ -662,6 +664,7 @@
 				UT100001 /* Clipboard.swift */,
 				UT100004 /* ManagedTimer.swift */,
 				8D6B972B2F2E32DD00CE877E /* NSImage+Scaling.swift */,
+				UT100005 /* PathUtils.swift */,
 				UT100002 /* TerminalTextCleaner.swift */,
 				8D6B97242F2DC47300CE877E /* TimingConstants.swift */,
 				UT100003 /* WindowResizeObserver.swift */,
@@ -843,6 +846,7 @@
 				UT000002 /* TerminalTextCleaner.swift in Sources */,
 				UT000003 /* WindowResizeObserver.swift in Sources */,
 				UT000004 /* ManagedTimer.swift in Sources */,
+				UT000005 /* PathUtils.swift in Sources */,
 				05DDBA7B3DCF7C65CF6A9FFF /* GitWorktreeManager.swift in Sources */,
 				491170A3B86B4F821B4A1417 /* NewWorktreeSheet.swift in Sources */,
 				A1789C06B8425D64920E2446 /* GitCLI.swift in Sources */,

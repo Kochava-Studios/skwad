@@ -262,15 +262,8 @@ struct CodingSettingsView: View {
     }
 
     if panel.runModal() == .OK, let url = panel.url {
-      settings.sourceBaseFolder = shortenPath(url.path)
+      settings.sourceBaseFolder = PathUtils.shortened(url.path)
     }
-  }
-
-  private func shortenPath(_ path: String) -> String {
-    if let home = ProcessInfo.processInfo.environment["HOME"], path.hasPrefix(home) {
-      return "~" + path.dropFirst(home.count)
-    }
-    return path
   }
 }
 

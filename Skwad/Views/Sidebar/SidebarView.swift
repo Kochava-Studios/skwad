@@ -14,29 +14,16 @@ struct IconLabel: View {
 
     var body: some View {
         if let image = NSImage(named: icon) {
-            // Resize the NSImage before creating the SwiftUI Image
-            let resized = resizeImage(image, to: NSSize(width: 16, height: 16))
             Label {
                 Text(title)
             } icon: {
-                Image(nsImage: resized)
+                Image(nsImage: image.resized(to: NSSize(width: 16, height: 16)))
             }
         } else if let fallback = fallback {
             Label(title, systemImage: fallback)
         } else {
             Text(title)
         }
-    }
-
-    private func resizeImage(_ image: NSImage, to size: NSSize) -> NSImage {
-        let newImage = NSImage(size: size)
-        newImage.lockFocus()
-        image.draw(in: NSRect(origin: .zero, size: size),
-                   from: NSRect(origin: .zero, size: image.size),
-                   operation: .copy,
-                   fraction: 1.0)
-        newImage.unlockFocus()
-        return newImage
     }
 }
 
