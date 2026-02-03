@@ -133,28 +133,9 @@ struct SidebarView: View {
     @State private var showCloseAllConfirmation = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
+        VStack() {
           
-          HStack {
-            
-            Button {
-              withAnimation(.easeInOut(duration: 0.25)) {
-                sidebarVisible = false
-              }
-            } label: {
-              Image(systemName: "sidebar.left")
-                .font(.system(size: 12))
-                .foregroundColor(Theme.secondaryText)
-            }
-            .buttonStyle(.plain)
-            .help("Collapse sidebar")
-            .frame(maxWidth: .infinity, alignment: .trailing)
-            .padding(.horizontal, 16)
-            .padding(.top, 10)
-            
-          }
-          
-          Spacer(minLength: 16)
+          Spacer(minLength: 40)
 
           VStack {
               HStack {
@@ -165,9 +146,20 @@ struct SidebarView: View {
 
                 Spacer()
 
+                  Button {
+                    withAnimation(.easeInOut(duration: 0.25)) {
+                      sidebarVisible = false
+                    }
+                  } label: {
+                    Image(systemName: "sidebar.left")
+                      .font(.system(size: 12))
+                      .foregroundColor(Theme.secondaryText)
+                  }
+                  .buttonStyle(.plain)
+                  .help("Collapse sidebar")
               }
             }
-            .padding(.horizontal, 16)
+            .padding(.horizontal, 8)
             .padding(.top, 0)
             .padding(.bottom, 8)
 
