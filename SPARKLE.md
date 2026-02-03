@@ -10,8 +10,8 @@ Skwad uses [Sparkle 2.x](https://sparkle-project.org/) for automatic updates. Up
 
 - **Public Key** (in `Skwad/Info.plist`): `Ly6mieNPNaFhdYyen9CuMTshryIaSiVHWNAhZ6ZdEOQ=`
 - **Private Key**: Stored in macOS Keychain under "Sparkle Private Key" and backed up in Bitwarden
-- **Feed URL**: `https://bonamy.fr/skwad/appcast.xml`
-- **Download URL**: `https://bonamy.fr/skwad/Skwad.zip`
+- **Feed URL**: `https://github.com/Kochava-Studios/skwad/releases/latest/download/appcast.xml`
+- **Download URL**: `https://github.com/Kochava-Studios/skwad/releases/latest/download/Skwad.zip`
 
 ## Sparkle Tools Location
 

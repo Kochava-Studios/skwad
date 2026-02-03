@@ -60,7 +60,7 @@ class TerminalSessionController: ObservableObject {
     private var didInjectRegistration = false
     private var idleCount = 0  // Track how many times we've become idle
     
-    private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "fr.bonamy.skwad", category: "TerminalSession")
+    private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.kochava.skwad", category: "TerminalSession")
 
     // MARK: - Initialization
 

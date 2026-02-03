@@ -56,7 +56,7 @@ class GhosttyTerminalView: NSView {
     /// Current scrollbar state from Ghostty core (used by scroll view)
     var scrollbar: Ghostty.Action.Scrollbar?
 
-    private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "fr.bonamy.skwad", category: "GhosttyTerminal")
+    private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.kochava.skwad", category: "GhosttyTerminal")
 
     // MARK: - Handler Components
 

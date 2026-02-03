@@ -8,7 +8,7 @@ set -e
 ZIP_PATH="${1:-build/Skwad.zip}"
 APP_PATH="${2:-build/export/Skwad.app}"
 OUTPUT_PATH="${3:-build/appcast.xml}"
-DOWNLOAD_URL="${4:-https://bonamy.fr/skwad/Skwad.zip}"
+DOWNLOAD_URL="${4:-https://github.com/Kochava-Studios/skwad/releases/latest/download/Skwad.zip}"
 
 # Sparkle sign_update tool location
 SIGN_TOOL="build/DerivedData/SourcePackages/artifacts/sparkle/Sparkle/bin/sign_update"
@@ -61,7 +61,7 @@ cat > "$OUTPUT_PATH" << EOF
 <rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" xmlns:dc="http://purl.org/dc/elements/1.1/">
   <channel>
     <title>Skwad Updates</title>
-    <link>https://bonamy.fr/skwad/appcast.xml</link>
+    <link>https://github.com/Kochava-Studios/skwad/releases/latest/download/appcast.xml</link>
     <description>Most recent changes with links to updates.</description>
     <language>en</language>
     <item>

@@ -50,7 +50,7 @@ extension Ghostty.Action {
 extension Notification.Name {
     /// Posted when the terminal scrollbar state changes.
     /// userInfo contains ScrollbarKey with Ghostty.Action.Scrollbar value.
-    static let ghosttyDidUpdateScrollbar = Notification.Name("fr.bonamy.skwad.ghostty.didUpdateScrollbar")
+    static let ghosttyDidUpdateScrollbar = Notification.Name("com.kochava.skwad.ghostty.didUpdateScrollbar")
 
     /// Key for scrollbar state in notification userInfo
     static let ScrollbarKey = ghosttyDidUpdateScrollbar.rawValue + ".scrollbar"

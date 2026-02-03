@@ -18,7 +18,7 @@ import SwiftUI
 // MARK: - Ghostty Namespace
 
 enum Ghostty {
-    static let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "fr.bonamy.skwad", category: "Ghostty")
+    static let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.kochava.skwad", category: "Ghostty")
 
     /// Wrapper to hold reference to a surface for tracking
     /// Note: ghostty_surface_t is an opaque pointer, so we store it directly

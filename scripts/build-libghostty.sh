@@ -43,7 +43,7 @@ perl -0pi -e 's/module\.linkFramework\("IOSurface", \.\{\}\);/module.linkFramewo
 
 # Patch bundle ID to use Skwad's instead of Ghostty's
 # This prevents loading user's Ghostty config from ~/Library/Application Support/com.mitchellh.ghostty/
-sed -i '' 's/com\.mitchellh\.ghostty/fr.bonamy.skwad/g' "${WORKDIR}/ghostty/src/build_config.zig"
+sed -i '' 's/com\.mitchellh\.ghostty/com.kochava.skwad/g' "${WORKDIR}/ghostty/src/build_config.zig"
 
 ZIG_FLAGS=(
     -Dapp-runtime=none
