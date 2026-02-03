@@ -1,0 +1,89 @@
+name: Build Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., 1.0.0)'
+        required: false
+        type: string
+
+jobs:
+  build:
+    runs-on: macos-26
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_26.2.app/Contents/Developer
+
+      - name: Download libghostty
+        run: |
+          mkdir -p Vendor/libghostty/lib
+          gh release download libs-v1 -p 'libghostty.a' -D Vendor/libghostty/lib
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Import certificate
+        run: |
+          KEYCHAIN_PATH=$RUNNER_TEMP/build.keychain-db
+          CERTIFICATE_PATH=$RUNNER_TEMP/certificate.p12
+
+          # Decode certificate
+          echo "${{ secrets.BUILD_CERTIFICATE_BASE64 }}" | base64 --decode -o $CERTIFICATE_PATH
+
+          # Create keychain
+          security create-keychain -p "${{ secrets.APPLE_PASSWORD }}" $KEYCHAIN_PATH
+          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+          security unlock-keychain -p "${{ secrets.APPLE_PASSWORD }}" $KEYCHAIN_PATH
+
+          # Import certificate
+          security import $CERTIFICATE_PATH -P "${{ secrets.APPLE_PASSWORD }}" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+          security set-key-partition-list -S apple-tool:,apple: -k "${{ secrets.APPLE_PASSWORD }}" $KEYCHAIN_PATH
+          security list-keychain -d user -s $KEYCHAIN_PATH
+
+          # Verify
+          security find-identity -v -p codesigning
+
+          # Cleanup
+          rm -f $CERTIFICATE_PATH
+
+      - name: Set version
+        if: ${{ inputs.version != '' }}
+        run: make set-version VERSION=${{ inputs.version }}
+
+      - name: Get version
+        id: version
+        run: echo "version=$(make get-version)" >> $GITHUB_OUTPUT
+
+      - name: Build, sign, and notarize
+        run: make notarize
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APP_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          SIGNING_CERTIFICATE: ${{ secrets.SIGNING_CERTIFICATE }}
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: Skwad-${{ steps.version.outputs.version }}
+          path: |
+            build/Skwad.zip
+            build/Skwad.dmg
+            build/appcast.xml
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          name: Skwad v${{ steps.version.outputs.version }}
+          files: |
+            build/Skwad.zip
+            build/Skwad.dmg
+            build/appcast.xml
+          generate_release_notes: true
