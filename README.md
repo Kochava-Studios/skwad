@@ -62,6 +62,10 @@ See [AGENTS.md](AGENTS.md) for detailed architecture documentation.
 - [Hummingbird](https://github.com/hummingbird-project/hummingbird) - HTTP server for MCP
 - [swift-log](https://github.com/apple/swift-log) - Logging
 
+## Maintainers
+
+- **Creator & Lead Maintainer:** [@nbonamy-kochava](https://github.com/nbonamy-kochava) (aka [@nbonamy](https://github.com/nbonamy))
+
 ## License
 
 MIT
