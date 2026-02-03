@@ -127,6 +127,7 @@
 		UT000003 /* WindowResizeObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = UT100003 /* WindowResizeObserver.swift */; };
 		UT000004 /* ManagedTimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = UT100004 /* ManagedTimer.swift */; };
 		UT000005 /* PathUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = UT100005 /* PathUtils.swift */; };
+		VM000001 /* GitPanelViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = VM100001 /* GitPanelViewModel.swift */; };
 		WS000001 /* Workspace.swift in Sources */ = {isa = PBXBuildFile; fileRef = WS100001 /* Workspace.swift */; };
 		WS000002 /* WorkspaceBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = WS100002 /* WorkspaceBarView.swift */; };
 		WS000003 /* WorkspaceSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = WS100003 /* WorkspaceSheet.swift */; };
@@ -259,6 +260,7 @@
 		UT100003 /* WindowResizeObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowResizeObserver.swift; sourceTree = "<group>"; };
 		UT100004 /* ManagedTimer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManagedTimer.swift; sourceTree = "<group>"; };
 		UT100005 /* PathUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PathUtils.swift; sourceTree = "<group>"; };
+		VM100001 /* GitPanelViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitPanelViewModel.swift; sourceTree = "<group>"; };
 		WS100001 /* Workspace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Workspace.swift; sourceTree = "<group>"; };
 		WS100002 /* WorkspaceBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkspaceBarView.swift; sourceTree = "<group>"; };
 		WS100003 /* WorkspaceSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkspaceSheet.swift; sourceTree = "<group>"; };
@@ -365,6 +367,7 @@
 				SR200000 /* Services */,
 				UP200000 /* Updater */,
 				UT200000 /* Utilities */,
+				VM200000 /* ViewModels */,
 				F8000013 /* Views */,
 				77680A9680BE89ECA55216DA /* Voice */,
 				8D6B97272F2E316A00CE877E /* AppDelegate.swift */,
@@ -672,6 +675,14 @@
 			path = Utilities;
 			sourceTree = "<group>";
 		};
+		VM200000 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				VM100001 /* GitPanelViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
 		WS200001 /* Workspace */ = {
 			isa = PBXGroup;
 			children = (
@@ -847,6 +858,7 @@
 				UT000003 /* WindowResizeObserver.swift in Sources */,
 				UT000004 /* ManagedTimer.swift in Sources */,
 				UT000005 /* PathUtils.swift in Sources */,
+				VM000001 /* GitPanelViewModel.swift in Sources */,
 				05DDBA7B3DCF7C65CF6A9FFF /* GitWorktreeManager.swift in Sources */,
 				491170A3B86B4F821B4A1417 /* NewWorktreeSheet.swift in Sources */,
 				A1789C06B8425D64920E2446 /* GitCLI.swift in Sources */,

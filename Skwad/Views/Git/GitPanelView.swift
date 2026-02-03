@@ -7,19 +7,9 @@ struct GitPanelView: View {
 
     @EnvironmentObject var agentManager: AgentManager
     @ObservedObject private var settings = AppSettings.shared
-    @State private var status: RepositoryStatus?
-    @State private var selectedFile: FileStatus?
-    @State private var selectedDiff: FileDiff?
-    @State private var showStagedDiff = false
-    @State private var isLoading = true
-    @State private var errorMessage: String?
-    @State private var fileWatcher: GitFileWatcher?
+    @State private var viewModel: GitPanelViewModel?
     @State private var panelWidth: CGFloat = 500
     @State private var showCommitSheet = false
-
-    private var repo: GitRepository {
-        GitRepository(path: folder)
-    }
 
     private var backgroundColor: Color {
         settings.effectiveBackgroundColor
@@ -27,69 +17,59 @@ struct GitPanelView: View {
 
     var body: some View {
         HStack(spacing: 0) {
-            // Resize handle
             resizeHandle
 
             VStack(spacing: 0) {
-                // Header
                 header
 
                 Divider()
                     .background(Color.primary.opacity(0.2))
 
-                if isLoading {
-                    loadingView
-                } else if let error = errorMessage {
-                    errorView(error)
-                } else if let status = status {
-                    if status.isClean {
-                        cleanView
-                    } else {
-                        VSplitView {
-                            // File list at top
-                            fileListView(status: status)
-                                .frame(minHeight: 150, idealHeight: 200)
-
-                            // Diff view at bottom
-                            diffDetailView
-                                .frame(minHeight: 200)
-                        }
-                    }
+                if let vm = viewModel {
+                    contentView(vm)
                 }
             }
             .frame(width: panelWidth)
         }
         .background(backgroundColor)
         .onAppear {
-            refresh()
-            startWatching()
+            let vm = GitPanelViewModel(folder: folder) { [weak agentManager] in
+                agentManager?.refreshGitStats(forFolder: folder)
+            }
+            viewModel = vm
+            vm.onAppear()
         }
         .onDisappear {
-            stopWatching()
+            viewModel?.onDisappear()
         }
         .sheet(isPresented: $showCommitSheet) {
             CommitSheet(folder: folder) {
-                refresh()
+                viewModel?.refresh()
             }
         }
     }
 
-    // MARK: - File Watching
+    // MARK: - Content
 
-    private func startWatching() {
-        fileWatcher = GitFileWatcher(path: folder) {
-            DispatchQueue.main.async { [weak fileWatcher] in
-                // Double-check we're not paused before refreshing
-                guard fileWatcher != nil else { return }
-                self.refresh()
+    @ViewBuilder
+    private func contentView(_ vm: GitPanelViewModel) -> some View {
+        if vm.isLoading {
+            loadingView
+        } else if let error = vm.errorMessage {
+            errorView(error)
+        } else if let status = vm.status {
+            if status.isClean {
+                cleanView
+            } else {
+                VSplitView {
+                    fileListView(status: status, viewModel: vm)
+                        .frame(minHeight: 150, idealHeight: 200)
+
+                    diffDetailView(viewModel: vm)
+                        .frame(minHeight: 200)
+                }
             }
         }
-        fileWatcher?.start()
-    }
-
-    private func stopWatching() {
-        fileWatcher?.stop()
-        fileWatcher = nil
     }
 
     // MARK: - Resize Handle
@@ -125,8 +105,7 @@ struct GitPanelView: View {
 
             Spacer()
 
-            // Commit button (only when staged changes exist)
-            if let status = status, status.hasStaged {
+            if let status = viewModel?.status, status.hasStaged {
                 Button {
                     showCommitSheet = true
                 } label: {
@@ -146,7 +125,7 @@ struct GitPanelView: View {
             }
 
             Button {
-                refresh()
+                viewModel?.refresh()
             } label: {
                 Image(systemName: "arrow.triangle.2.circlepath")
                     .foregroundColor(.secondary)
@@ -203,51 +182,50 @@ struct GitPanelView: View {
 
     // MARK: - File List
 
-    private func fileListView(status: RepositoryStatus) -> some View {
+    private func fileListView(status: RepositoryStatus, viewModel: GitPanelViewModel) -> some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
-                // Branch info
                 if let branch = status.branch {
                     branchInfoView(branch: branch, status: status)
                 }
 
-                // Staged files
                 if !status.stagedFiles.isEmpty {
                     fileSection(
                         title: "Staged Changes",
                         files: status.stagedFiles,
                         isStaged: true,
-                        color: .green
+                        color: .green,
+                        viewModel: viewModel
                     )
                 }
 
-                // Modified files
                 if !status.modifiedFiles.isEmpty {
                     fileSection(
                         title: "Changes",
                         files: status.modifiedFiles,
                         isStaged: false,
-                        color: .orange
+                        color: .orange,
+                        viewModel: viewModel
                     )
                 }
 
-                // Untracked files
                 if !status.untrackedFiles.isEmpty {
                     fileSection(
                         title: "Untracked",
                         files: status.untrackedFiles,
                         isStaged: false,
-                        color: .gray
+                        color: .gray,
+                        viewModel: viewModel
                     )
                 }
 
-                // Conflicts
                 if !status.conflictedFiles.isEmpty {
                     fileSection(
                         title: "Conflicts",
                         files: status.conflictedFiles,
                         isStaged: false,
-                        color: .red
+                        color: .red,
+                        viewModel: viewModel
                     )
                 }
             }
@@ -283,9 +261,14 @@ struct GitPanelView: View {
         .background(Color.primary.opacity(0.05))
     }
 
-    private func fileSection(title: String, files: [FileStatus], isStaged: Bool, color: Color) -> some View {
+    private func fileSection(
+        title: String,
+        files: [FileStatus],
+        isStaged: Bool,
+        color: Color,
+        viewModel: GitPanelViewModel
+    ) -> some View {
         VStack(alignment: .leading, spacing: 0) {
-            // Section header
             HStack {
                 Text(title)
                     .font(.caption)
@@ -298,17 +281,16 @@ struct GitPanelView: View {
 
                 Spacer()
 
-                // Stage/unstage all
                 if isStaged {
                     Button("Unstage All") {
-                        unstageAll()
+                        viewModel.unstageAll()
                     }
                     .font(.caption)
                     .buttonStyle(.plain)
                     .foregroundColor(.blue)
                 } else if title == "Changes" {
                     Button("Stage All") {
-                        stageAll()
+                        viewModel.stageAll()
                     }
                     .font(.caption)
                     .buttonStyle(.plain)
@@ -318,23 +300,22 @@ struct GitPanelView: View {
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
 
-            // Files
             ForEach(files) { file in
                 FileRowView(
                     file: file,
-                    isSelected: selectedFile?.path == file.path && showStagedDiff == isStaged,
+                    isSelected: viewModel.selectedFile?.path == file.path && viewModel.showStagedDiff == isStaged,
                     color: color,
                     onSelect: {
-                        selectFile(file, staged: isStaged)
+                        viewModel.selectFile(file, staged: isStaged)
                     },
                     onStage: isStaged ? nil : {
-                        stage([file.path])
+                        viewModel.stage([file.path])
                     },
                     onUnstage: isStaged ? {
-                        unstage([file.path])
+                        viewModel.unstage([file.path])
                     } : nil,
                     onDiscard: !isStaged && !file.isUntracked ? {
-                        discard([file.path])
+                        viewModel.discard([file.path])
                     } : nil
                 )
             }
@@ -343,11 +324,10 @@ struct GitPanelView: View {
 
     // MARK: - Diff Detail
 
-    private var diffDetailView: some View {
+    private func diffDetailView(viewModel: GitPanelViewModel) -> some View {
         Group {
-            if let diff = selectedDiff {
+            if let diff = viewModel.selectedDiff {
                 VStack(spacing: 0) {
-                    // File header
                     HStack {
                         Text(diff.path)
                             .font(.system(.body, design: .monospaced))
@@ -385,103 +365,6 @@ struct GitPanelView: View {
             }
         }
     }
-
-    // MARK: - Actions
-
-    private func refresh() {
-        // Pause watcher during refresh to avoid feedback loop
-        fileWatcher?.pause()
-
-        // Only show loading on first load
-        if status == nil {
-            isLoading = true
-        }
-        errorMessage = nil
-
-        DispatchQueue.global(qos: .userInitiated).async {
-            let newStatus = repo.status()
-
-            DispatchQueue.main.async {
-                self.status = newStatus
-                self.isLoading = false
-                self.refreshGitStats()
-
-                // Clear selection if file no longer exists
-                if let selected = selectedFile,
-                   !newStatus.files.contains(where: { $0.path == selected.path }) {
-                    selectedFile = nil
-                    selectedDiff = nil
-                }
-
-                // Resume watching after a short delay
-                AsyncDelay.dispatch(after: TimingConstants.gitFileWatcherResume) {
-                    self.fileWatcher?.resume()
-                }
-            }
-        }
-    }
-
-    private func refreshGitStats() {
-        agentManager.refreshGitStats(forFolder: folder)
-    }
-
-    private func selectFile(_ file: FileStatus, staged: Bool) {
-        selectedFile = file
-        showStagedDiff = staged
-
-        DispatchQueue.global(qos: .userInitiated).async {
-            let diffs = repo.diff(for: file.path, staged: staged)
-
-            DispatchQueue.main.async {
-                self.selectedDiff = diffs.first
-            }
-        }
-    }
-
-    private func stage(_ paths: [String]) {
-        do {
-            try repo.stage(paths)
-            refresh()
-        } catch {
-            errorMessage = error.localizedDescription
-        }
-    }
-
-    private func unstage(_ paths: [String]) {
-        do {
-            try repo.unstage(paths)
-            refresh()
-        } catch {
-            errorMessage = error.localizedDescription
-        }
-    }
-
-    private func stageAll() {
-        do {
-            try repo.stageAll()
-            refresh()
-        } catch {
-            errorMessage = error.localizedDescription
-        }
-    }
-
-    private func unstageAll() {
-        do {
-            try repo.unstageAll()
-            refresh()
-        } catch {
-            errorMessage = error.localizedDescription
-        }
-    }
-
-    private func discard(_ paths: [String]) {
-        do {
-            try repo.discardChanges(paths)
-            refresh()
-        } catch {
-            errorMessage = error.localizedDescription
-        }
-    }
 }
 
 // MARK: - File Row
@@ -499,14 +382,12 @@ struct FileRowView: View {
 
     var body: some View {
         HStack(spacing: 8) {
-            // Status indicator
             Text(statusSymbol)
                 .font(.system(.caption, design: .monospaced))
                 .fontWeight(.bold)
                 .foregroundColor(color)
                 .frame(width: 16)
 
-            // Filename
             VStack(alignment: .leading, spacing: 1) {
                 Text(file.fileName)
                     .foregroundColor(.primary)
@@ -522,7 +403,6 @@ struct FileRowView: View {
 
             Spacer()
 
-            // Action buttons (on hover)
             if isHovering {
                 HStack(spacing: 4) {
                     if let onStage = onStage {
