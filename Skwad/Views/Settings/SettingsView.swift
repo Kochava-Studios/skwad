@@ -5,6 +5,41 @@ enum SettingsTab: Int, CaseIterable {
   case general, coding, terminal, voice, mcp
 }
 
+/// Modifier key codes used for push-to-talk configuration
+enum ModifierKeyCode: UInt16, CaseIterable {
+  case rightCommand = 54
+  case leftCommand = 55
+  case leftShift = 56
+  case capsLock = 57
+  case leftOption = 58
+  case leftControl = 59
+  case rightShift = 60
+  case rightOption = 61
+  case rightControl = 62
+  case function = 63
+
+  var displayName: String {
+    switch self {
+    case .rightCommand: "Right Command"
+    case .leftCommand: "Left Command"
+    case .leftShift: "Left Shift"
+    case .rightShift: "Right Shift"
+    case .leftOption: "Left Option"
+    case .rightOption: "Right Option"
+    case .leftControl: "Left Control"
+    case .rightControl: "Right Control"
+    case .capsLock: "Caps Lock"
+    case .function: "Fn"
+    }
+  }
+
+  static func name(for keyCode: Int) -> String {
+    ModifierKeyCode(rawValue: UInt16(keyCode))?.displayName ?? "Key \(keyCode)"
+  }
+
+  static let allKeyCodes: Set<UInt16> = Set(allCases.map(\.rawValue))
+}
+
 struct SettingsView: View {
   @ObservedObject private var settings = AppSettings.shared
   @State private var selectedTab: SettingsTab = .general
@@ -143,22 +178,25 @@ struct CodingSettingsView: View {
 
   private var commandBinding: Binding<String> {
     Binding(
-      get: {
-        if selectedAgentType == "custom1" {
-          return settings.customAgent1Command
-        } else if selectedAgentType == "custom2" {
-          return settings.customAgent2Command
-        }
-        return selectedAgentType
-      },
-      set: { newValue in
-        if selectedAgentType == "custom1" {
-          settings.customAgent1Command = newValue
-        } else if selectedAgentType == "custom2" {
-          settings.customAgent2Command = newValue
-        }
-      }
+      get: { customCommand(for: selectedAgentType) },
+      set: { setCustomCommand($0, for: selectedAgentType) }
     )
+  }
+
+  private func customCommand(for agentType: String) -> String {
+    switch agentType {
+    case "custom1": settings.customAgent1Command
+    case "custom2": settings.customAgent2Command
+    default: agentType
+    }
+  }
+
+  private func setCustomCommand(_ value: String, for agentType: String) {
+    switch agentType {
+    case "custom1": settings.customAgent1Command = value
+    case "custom2": settings.customAgent2Command = value
+    default: break
+    }
   }
 
   private var optionsBinding: Binding<String> {
@@ -553,19 +591,7 @@ struct VoiceSettingsView: View {
   }
   
   private func keyName(for keyCode: Int) -> String {
-    switch keyCode {
-    case 54: return "Right Command"
-    case 55: return "Left Command"
-    case 56: return "Left Shift"
-    case 60: return "Right Shift"
-    case 58: return "Left Option"
-    case 61: return "Right Option"
-    case 59: return "Left Control"
-    case 62: return "Right Control"
-    case 57: return "Caps Lock"
-    case 63: return "Fn"
-    default: return "Key \(keyCode)"
-    }
+    ModifierKeyCode.name(for: keyCode)
   }
 }
 
@@ -595,28 +621,17 @@ struct KeyRecorderView: NSViewRepresentable {
 class KeyRecorderNSView: NSView {
   var isRecording = false
   var onKeyRecorded: ((UInt16) -> Void)?
-  
+
   override var acceptsFirstResponder: Bool { isRecording }
-  
+
   override func keyDown(with event: NSEvent) {
-    if isRecording {
-      // Only accept modifier keys
-      let modifierKeyCodes: Set<UInt16> = [54, 55, 56, 60, 58, 61, 59, 62, 57, 63]
-      if modifierKeyCodes.contains(event.keyCode) {
-        onKeyRecorded?(event.keyCode)
-      }
-    }
+    guard isRecording, ModifierKeyCode.allKeyCodes.contains(event.keyCode) else { return }
+    onKeyRecorded?(event.keyCode)
   }
-  
+
   override func flagsChanged(with event: NSEvent) {
-    if isRecording {
-      // Detect modifier key press
-      let keyCode = event.keyCode
-      let modifierKeyCodes: Set<UInt16> = [54, 55, 56, 60, 58, 61, 59, 62, 57, 63]
-      if modifierKeyCodes.contains(keyCode) {
-        onKeyRecorded?(keyCode)
-      }
-    }
+    guard isRecording, ModifierKeyCode.allKeyCodes.contains(event.keyCode) else { return }
+    onKeyRecorded?(event.keyCode)
   }
 }
 
