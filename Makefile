@@ -179,9 +179,10 @@ notarize: zip
 	@echo "   Appcast: $(APPCAST_PATH)"
 
 get-version:
-	@VERSION=$$(grep -m1 "MARKETING_VERSION = " Skwad.xcodeproj/project.pbxproj | sed 's/.*= \(.*\);/\1/'); \
-	BUILD=$$(grep -m1 "CURRENT_PROJECT_VERSION = " Skwad.xcodeproj/project.pbxproj | sed 's/.*= \(.*\);/\1/'); \
-	echo "$$VERSION.$$BUILD"
+	@grep -m1 "MARKETING_VERSION = " Skwad.xcodeproj/project.pbxproj | sed 's/.*= \(.*\);/\1/'
+
+get-build:
+	@grep -m1 "CURRENT_PROJECT_VERSION = " Skwad.xcodeproj/project.pbxproj | sed 's/.*= \(.*\);/\1/'
 
 set-version:
 	@if [ -z "$(VERSION)" ]; then \
