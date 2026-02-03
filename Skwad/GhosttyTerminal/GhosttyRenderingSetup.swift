@@ -19,16 +19,16 @@ import SwiftUI
 class GhosttyRenderingSetup {
     nonisolated private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "fr.bonamy.skwad", category: "GhosttyRendering")
 
-    // MARK: - Terminal Settings from AppStorage
-
-    @AppStorage("terminalFontName") private var terminalFontName = "Menlo"
-    @AppStorage("terminalFontSize") private var terminalFontSize = 12.0
-    @AppStorage("terminalBackgroundColor") private var terminalBackgroundColor = "#1e1e2e"
-    @AppStorage("terminalForegroundColor") private var terminalForegroundColor = "#cdd6f4"
-    @AppStorage("terminalCursorColor") private var terminalCursorColor = "#f5e0dc"
-    @AppStorage("terminalSelectionBackground") private var terminalSelectionBackground = "#585b70"
-    @AppStorage("terminalPalette") private var terminalPalette = "#45475a,#f38ba8,#a6e3a1,#f9e2af,#89b4fa,#f5c2e7,#94e2d5,#a6adc8,#585b70,#f37799,#89d88b,#ebd391,#74a8fc,#f2aede,#6bd7ca,#bac2de"
-    @AppStorage("terminalSessionPersistence") private var sessionPersistence = false
+//    // MARK: - Terminal Settings from AppStorage
+//
+//    @AppStorage("terminalFontName") private var terminalFontName = "Menlo"
+//    @AppStorage("terminalFontSize") private var terminalFontSize = 12.0
+//    @AppStorage("terminalBackgroundColor") private var terminalBackgroundColor = "#1e1e2e"
+//    @AppStorage("terminalForegroundColor") private var terminalForegroundColor = "#cdd6f4"
+//    @AppStorage("terminalCursorColor") private var terminalCursorColor = "#f5e0dc"
+//    @AppStorage("terminalSelectionBackground") private var terminalSelectionBackground = "#585b70"
+//    @AppStorage("terminalPalette") private var terminalPalette = "#45475a,#f38ba8,#a6e3a1,#f9e2af,#89b4fa,#f5c2e7,#94e2d5,#a6adc8,#585b70,#f37799,#89d88b,#ebd391,#74a8fc,#f2aede,#6bd7ca,#bac2de"
+//    @AppStorage("terminalSessionPersistence") private var sessionPersistence = false
 
     // MARK: - Layer Setup
 
@@ -77,8 +77,8 @@ class GhosttyRenderingSetup {
         // Set scale factor for retina displays
         surfaceConfig.scale_factor = Double(window?.backingScaleFactor ?? 2.0)
 
-        // Set font size from Aizen settings
-        surfaceConfig.font_size = Float(terminalFontSize)
+//        // Set font size from Aizen settings
+//        surfaceConfig.font_size = Float(terminalFontSize)
 
         // Set working directory
         var workingDirPtr: UnsafeMutablePointer<CChar>?
