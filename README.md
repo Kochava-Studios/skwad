@@ -9,6 +9,7 @@ Meet your new, slightly revolutionary coding crew. Skwad is a macOS app that run
 ![macOS](https://img.shields.io/badge/macOS-14.0+-blue)
 ![Swift](https://img.shields.io/badge/Swift-5.9+-orange)
 ![License](https://img.shields.io/badge/License-MIT-green)
+[![Downloads](https://img.shields.io/github/downloads/Kochava-Studios/skwad/total.svg?color=orange)](https://tooomm.github.io/github-release-stats/?username=Kochava-Studios&repository=skwad)
 
 ## Why Skwad
 
