@@ -17,6 +17,13 @@ jobs:
       - name: Select Xcode
         run: sudo xcode-select -s /Applications/Xcode_26.2.app/Contents/Developer
 
+      - name: Download libghostty
+        run: |
+          mkdir -p Vendor/libghostty/lib
+          gh release download libs-v1 -p 'libghostty.a' -D Vendor/libghostty/lib
+        env:
+          GH_TOKEN: ${{ github.token }}
+
       - name: Build and Test
         run: |
           xcodebuild test \
