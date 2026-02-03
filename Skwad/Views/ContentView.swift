@@ -246,7 +246,24 @@ struct ContentView: View {
                 y: isVertical ? 0 : pos - dividerWidth / 2
               )
             } else {
-              gridFourPaneDividers(in: geo.size)
+              // Grid mode: vertical and horizontal dividers at center (not draggable)
+              let dividerWidth: CGFloat = 12
+              // Vertical divider
+              SplitDividerView(
+                isVertical: true,
+                onDrag: { _ in },
+                onDragEnd: { }
+              )
+              .frame(width: dividerWidth, height: geo.size.height)
+              .offset(x: geo.size.width / 2 - dividerWidth / 2)
+              // Horizontal divider
+              SplitDividerView(
+                isVertical: false,
+                onDrag: { _ in },
+                onDragEnd: { }
+              )
+              .frame(width: geo.size.width, height: dividerWidth)
+              .offset(y: geo.size.height / 2 - dividerWidth / 2)
             }
           }
         }
@@ -387,67 +404,6 @@ struct ContentView: View {
     }
   }
 
-  /// Draggable split divider
-  private func splitDivider(in size: CGSize) -> some View {
-    let isVertical = agentManager.layoutMode == .splitVertical
-    let pos = isVertical ? size.width * agentManager.splitRatio : size.height * agentManager.splitRatio
-
-    return Rectangle()
-      .fill(Color.clear)
-      .frame(
-        width: isVertical ? 6 : size.width,
-        height: isVertical ? size.height : 6
-      )
-      .overlay(
-        Rectangle()
-          .fill(Color.primary.opacity(0.15))
-          .frame(
-            width: isVertical ? 1 : size.width,
-            height: isVertical ? size.height : 1
-          )
-      )
-      .offset(
-        x: isVertical ? pos - 3 : 0,
-        y: isVertical ? 0 : pos - 3
-      )
-      .contentShape(Rectangle())
-      .onHover { hovering in
-        if hovering {
-          (isVertical ? NSCursor.resizeLeftRight : NSCursor.resizeUpDown).push()
-        } else {
-          NSCursor.pop()
-        }
-      }
-      .gesture(
-        DragGesture()
-          .onChanged { value in
-            let newRatio: CGFloat
-            if isVertical {
-              newRatio = (pos + value.translation.width) / size.width
-            } else {
-              newRatio = (pos + value.translation.height) / size.height
-            }
-            agentManager.splitRatio = max(0.25, min(0.75, newRatio))
-          }
-      )
-  }
-
-  /// Grid dividers for 4-pane layout
-  private func gridFourPaneDividers(in size: CGSize) -> some View {
-    Group {
-      // Vertical divider (middle)
-      Rectangle()
-        .fill(Color.primary.opacity(0.15))
-        .frame(width: 1, height: size.height)
-        .offset(x: size.width / 2 - 0.5)
-      
-      // Horizontal divider (middle)
-      Rectangle()
-        .fill(Color.primary.opacity(0.15))
-        .frame(width: size.width, height: 1)
-        .offset(y: size.height / 2 - 0.5)
-    }
-  }
 
 
 
