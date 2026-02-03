@@ -135,8 +135,6 @@ struct SidebarView: View {
     var body: some View {
         VStack() {
           
-          Spacer(minLength: 40)
-
           VStack {
               HStack {
                 Text(agentManager.currentWorkspace?.name.uppercased() ?? "AGENTS")
@@ -159,9 +157,9 @@ struct SidebarView: View {
                   .help("Collapse sidebar")
               }
             }
-            .padding(.horizontal, 8)
-            .padding(.top, 0)
-            .padding(.bottom, 8)
+            .frame(height: 32)
+            .padding(.leading, 32)
+            .padding(.trailing, 12)
 
             // Agent list
             ScrollView {
@@ -281,7 +279,7 @@ struct SidebarView: View {
             .buttonStyle(.borderedProminent)
             .focusable(false)
             .padding(.horizontal, 16)
-            .padding(.vertical, 20)
+            .padding(.bottom, 16)
         }
         .frame(minWidth: 200)
         .ignoresSafeArea()
