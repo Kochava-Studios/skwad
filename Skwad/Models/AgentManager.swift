@@ -286,6 +286,12 @@ class AgentManager: ObservableObject {
 
     // MARK: - Registration State
 
+    /// Inject the registration prompt into an agent's terminal
+    func registerAgent(_ agent: Agent) {
+        let text = "You are part of a team of agents called a skwad. Register within the skwad with your agent ID: \(agent.id.uuidString). A skwad is made of  high-performing agents who collaborate to achieve complex goals so engage with them: ask for help and in return help them succeed."
+        injectText(text, for: agent.id)
+    }
+
     func setRegistered(for agentId: UUID, registered: Bool) {
         if let index = agents.firstIndex(where: { $0.id == agentId }) {
             agents[index].isRegistered = registered

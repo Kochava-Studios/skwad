@@ -106,6 +106,12 @@ struct AgentContextMenu<Content: View>: View {
             Divider()
 
             Button {
+                agentManager.registerAgent(agent)
+            } label: {
+                Label("Register Agent", systemImage: "person.badge.plus")
+            }
+
+            Button {
                 agentManager.restartAgent(agent)
             } label: {
                 Label("Restart Agent", systemImage: "arrow.clockwise")
