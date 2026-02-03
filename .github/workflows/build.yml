@@ -2,11 +2,6 @@ name: Build Release
 
 on:
   workflow_dispatch:
-    inputs:
-      version:
-        description: 'Version to release (e.g., 1.0.0)'
-        required: false
-        type: string
 
 jobs:
   build:
@@ -51,10 +46,6 @@ jobs:
 
           # Cleanup
           rm -f $CERTIFICATE_PATH
-
-      - name: Set version
-        if: ${{ inputs.version != '' }}
-        run: make set-version VERSION=${{ inputs.version }}
 
       - name: Get version
         id: version
