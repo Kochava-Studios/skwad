@@ -79,6 +79,9 @@ archive:
 	xcodebuild -scheme $(SCHEME) \
 		-configuration Release \
 		-archivePath $(ARCHIVE_PATH) \
+		DEVELOPMENT_TEAM=$(TEAM_ID) \
+		CODE_SIGN_IDENTITY="$(SIGNING_CERTIFICATE)" \
+		CODE_SIGN_STYLE=Manual \
 		clean archive
 	@echo "Archive created at $(ARCHIVE_PATH)"
 
