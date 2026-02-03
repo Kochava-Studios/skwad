@@ -2,14 +2,21 @@ import SwiftUI
 import SwiftTerm
 import Carbon.HIToolbox
 
-// Custom terminal view that detects activity via dataReceived
+// Custom terminal view that detects activity via dataReceived and user input
 class ActivityDetectingTerminalView: LocalProcessTerminalView {
     var onActivity: (() -> Void)?
+    var onUserInput: (() -> Void)?
 
     // Called when data is received from the process (output)
     override func dataReceived(slice: ArraySlice<UInt8>) {
         super.dataReceived(slice: slice)
         onActivity?()
+    }
+
+    // Called when user sends data (input) - e.g., typing
+    override func send(source: Terminal, data: ArraySlice<UInt8>) {
+        super.send(source: source, data: data)
+        onUserInput?()
     }
 }
 

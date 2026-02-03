@@ -103,7 +103,10 @@ class TerminalSessionController: ObservableObject {
 
         // Wire adapter events to controller methods
         adapter.onActivity = { [weak self] in
-            self?.activityDetected()
+            self?.activityDetected(fromUserInput: false)
+        }
+        adapter.onUserInput = { [weak self] in
+            self?.activityDetected(fromUserInput: true)
         }
         adapter.onReady = { [weak self] in
             self?.terminalDidBecomeReady()
@@ -195,14 +198,18 @@ class TerminalSessionController: ObservableObject {
 
     /// Signals that activity has been detected in the terminal
     /// This resets the idle timer and sets status to running
-    private func activityDetected() {
+    /// - Parameter fromUserInput: If true, uses longer timeout for user typing
+    private func activityDetected(fromUserInput: Bool) {
         guard !isDisposed else { return }
 
         // Set status to running
         status = .running
 
+        // Use longer timeout for user input (typing/thinking) vs terminal output
+        let timeout = fromUserInput ? TimingConstants.userInputIdleTimeout : idleTimeout
+
         // Start new timer for idle state (automatically cancels existing timer)
-        idleTimer.schedule(after: idleTimeout) { [weak self] in
+        idleTimer.schedule(after: timeout) { [weak self] in
             self?.markIdle()
         }
     }

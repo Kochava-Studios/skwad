@@ -44,6 +44,7 @@ protocol TerminalAdapter: AnyObject {
 
     // Events emitted to controller
     var onActivity: (() -> Void)? { get set }
+    var onUserInput: (() -> Void)? { get set }
     var onReady: (() -> Void)? { get set }
     var onProcessExit: ((Int32?) -> Void)? { get set }
     var onTitleChange: ((String) -> Void)? { get set }
@@ -76,6 +77,7 @@ class GhosttyTerminalAdapter: TerminalAdapter {
     let commandMode: TerminalCommandMode = .atCreation
 
     var onActivity: (() -> Void)?
+    var onUserInput: (() -> Void)?
     var onReady: (() -> Void)?
     var onProcessExit: ((Int32?) -> Void)?
     var onTitleChange: ((String) -> Void)?
@@ -91,6 +93,9 @@ class GhosttyTerminalAdapter: TerminalAdapter {
         activateCallbacks(terminal: terminal, callbacksWired: &callbacksWired) { [weak self] terminal in
             terminal.onActivity = { [weak self] in
                 self?.onActivity?()
+            }
+            terminal.onUserInput = { [weak self] in
+                self?.onUserInput?()
             }
             terminal.onReady = { [weak self] in
                 self?.onReady?()
@@ -150,6 +155,7 @@ class SwiftTermAdapter: TerminalAdapter {
     let commandMode: TerminalCommandMode = .afterReady
 
     var onActivity: (() -> Void)?
+    var onUserInput: (() -> Void)?
     var onReady: (() -> Void)?
     var onProcessExit: ((Int32?) -> Void)?
     var onTitleChange: ((String) -> Void)?  // SwiftTerm ignores this
@@ -165,6 +171,9 @@ class SwiftTermAdapter: TerminalAdapter {
         activateCallbacks(terminal: terminal, callbacksWired: &callbacksWired) { [weak self] terminal in
             terminal.onActivity = { [weak self] in
                 self?.onActivity?()
+            }
+            terminal.onUserInput = { [weak self] in
+                self?.onUserInput?()
             }
             // Note: SwiftTerm doesn't have onReady/onProcessExit callbacks on the view
             // These are handled via LocalProcessTerminalViewDelegate and notifyReady/notifyProcessExit

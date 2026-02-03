@@ -12,8 +12,11 @@ enum TimingConstants {
     /// Delay for SwiftTerm to initialize shell before marking ready
     static let terminalReadyDelay: TimeInterval = 0.5
 
-    /// Timeout for marking terminal as idle after last activity
+    /// Timeout for marking terminal as idle after last terminal output
     static let idleTimeout: TimeInterval = 2.0
+
+    /// Timeout for marking terminal as idle after last user input (keypress)
+    static let userInputIdleTimeout: TimeInterval = 10.0
 
     /// First idle delay for fast-starting agents  
     static let registrationFirstIdleDelayShort: TimeInterval = 1.5

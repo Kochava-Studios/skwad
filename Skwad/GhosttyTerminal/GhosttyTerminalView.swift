@@ -48,6 +48,9 @@ class GhosttyTerminalView: NSView {
     /// Callback invoked when terminal content changes (for activity detection)
     var onActivity: (() -> Void)?
 
+    /// Callback invoked when user presses a key (for user input activity detection)
+    var onUserInput: (() -> Void)?
+
     private(set) var didSignalReady = false
 
     /// Cell size in points for row-to-pixel conversion (used by scroll view)
@@ -269,6 +272,9 @@ class GhosttyTerminalView: NSView {
     // MARK: - Keyboard Input
 
     override func keyDown(with event: NSEvent) {
+        // Notify user input activity (uses longer timeout than terminal output)
+        onUserInput?()
+
         inputHandler.handleKeyDown(with: event) { [weak self] events in
             self?.interpretKeyEvents(events)
         }
