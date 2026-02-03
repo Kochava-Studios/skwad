@@ -43,7 +43,7 @@ gh release download libs-v1 -p 'libghostty.a' -D Vendor/libghostty/lib
 
 # Or build from source (requires Zig 0.15+)
 brew install zig
-xcodebuild -downloadComponent MetalToolchain
+sudo xcodebuild -downloadComponent MetalToolchain
 ./scripts/build-libghostty.sh
 
 # Open and build in Xcode
