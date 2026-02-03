@@ -50,6 +50,7 @@
 		F8001005 /* SidebarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8000005 /* SidebarView.swift */; };
 		F8001007 /* TerminalHostView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8000007 /* TerminalHostView.swift */; };
 		F8001008 /* AgentTerminalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8000008 /* AgentTerminalView.swift */; };
+		SD000001 /* SplitDividerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = SD100001 /* SplitDividerView.swift */; };
 		F8001009 /* SwiftTerm in Frameworks */ = {isa = PBXBuildFile; productRef = F8002001 /* SwiftTerm */; };
 		F8001010 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8000009 /* AppSettings.swift */; };
 		F8001011 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F800000A /* SettingsView.swift */; };
@@ -179,6 +180,7 @@
 		F8000005 /* SidebarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarView.swift; sourceTree = "<group>"; };
 		F8000007 /* TerminalHostView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalHostView.swift; sourceTree = "<group>"; };
 		F8000008 /* AgentTerminalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentTerminalView.swift; sourceTree = "<group>"; };
+		SD100001 /* SplitDividerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplitDividerView.swift; sourceTree = "<group>"; };
 		F8000009 /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
 		F800000A /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		F800000B /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
@@ -422,6 +424,7 @@
 				F8000007 /* TerminalHostView.swift */,
 				F800000D /* GhosttyHostView.swift */,
 				F8000008 /* AgentTerminalView.swift */,
+				SD100001 /* SplitDividerView.swift */,
 			);
 			path = Terminal;
 			sourceTree = "<group>";
@@ -820,6 +823,7 @@
 				F8001007 /* TerminalHostView.swift in Sources */,
 				8D6B97222F2DC17900CE877E /* MCPMessageStore.swift in Sources */,
 				F8001008 /* AgentTerminalView.swift in Sources */,
+				SD000001 /* SplitDividerView.swift in Sources */,
 				F8001010 /* AppSettings.swift in Sources */,
 				F8001011 /* SettingsView.swift in Sources */,
 				8D2673C92F31592C0043E3A6 /* VoiceInputManager.swift in Sources */,

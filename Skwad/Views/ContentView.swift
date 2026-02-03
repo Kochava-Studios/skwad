@@ -11,6 +11,7 @@ struct ContentView: View {
   @State private var showVoiceOverlay = false
   @State private var escapeMonitor: Any?
   @State private var sidebarVisible = true
+  @State private var dragStartRatio: CGFloat?
 
   // Bindings from SkwadApp for menu commands
   @Binding var showNewAgentSheet: Bool
@@ -214,7 +215,36 @@ struct ContentView: View {
             }
 
             if agentManager.layoutMode != .gridFourPane {
-              splitDivider(in: geo.size)
+              // Use NSView-based divider to sit above terminal NSViews
+              let isVertical = agentManager.layoutMode == .splitVertical
+              let pos = isVertical ? geo.size.width * agentManager.splitRatio : geo.size.height * agentManager.splitRatio
+              let dividerWidth: CGFloat = 12
+              SplitDividerView(
+                isVertical: isVertical,
+                onDrag: { delta in
+                  if dragStartRatio == nil {
+                    dragStartRatio = agentManager.splitRatio
+                  }
+                  let totalSize = isVertical ? geo.size.width : geo.size.height
+                  let startPos = totalSize * dragStartRatio!
+                  let newRatio = (startPos + delta) / totalSize
+                  agentManager.splitRatio = max(0.25, min(0.75, newRatio))
+                },
+                onDragEnd: {
+                  dragStartRatio = nil
+                  for id in agentManager.activeAgentIds {
+                    agentManager.notifyTerminalResize(for: id)
+                  }
+                }
+              )
+              .frame(
+                width: isVertical ? dividerWidth : geo.size.width,
+                height: isVertical ? geo.size.height : dividerWidth
+              )
+              .offset(
+                x: isVertical ? pos - dividerWidth / 2 : 0,
+                y: isVertical ? 0 : pos - dividerWidth / 2
+              )
             } else {
               gridFourPaneDividers(in: geo.size)
             }
