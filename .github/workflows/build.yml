@@ -2,6 +2,15 @@ name: Build Release
 
 on:
   workflow_dispatch:
+    inputs:
+      release_type:
+        description: 'Release type'
+        required: true
+        default: 'prerelease'
+        type: choice
+        options:
+          - prerelease
+          - latest
 
 jobs:
   build:
@@ -84,11 +93,26 @@ jobs:
           git commit -m "chore: increment build number [skip ci]"
           git push
 
-      - name: Create GitHub Release
+      - name: Create GitHub Release (prerelease)
+        if: ${{ inputs.release_type == 'prerelease' }}
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.version.outputs.version }}.${{ steps.version.outputs.build }}
           name: Skwad v${{ steps.version.outputs.version }} (build ${{ steps.version.outputs.build }})
+          prerelease: true
+          files: |
+            build/Skwad.zip
+            build/Skwad.dmg
+            build/appcast.xml
+          generate_release_notes: true
+
+      - name: Create GitHub Release (latest)
+        if: ${{ inputs.release_type == 'latest' }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.version }}.${{ steps.version.outputs.build }}
+          name: Skwad v${{ steps.version.outputs.version }} (build ${{ steps.version.outputs.build }})
+          make_latest: true
           files: |
             build/Skwad.zip
             build/Skwad.dmg

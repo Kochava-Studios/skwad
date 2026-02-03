@@ -1,4 +1,4 @@
-.PHONY: help build clean archive export notarize dmg release install increment-build appcast get-version get-build set-version
+.PHONY: help build clean archive export notarize dmg release install increment-build appcast get-version get-build set-version prerelease latest
 
 # Load .env file if it exists
 -include .env
@@ -13,6 +13,7 @@ EXPORT_PATH := $(BUILD_DIR)/export
 DMG_PATH := $(BUILD_DIR)/$(APP_NAME).dmg
 ZIP_PATH := $(BUILD_DIR)/$(APP_NAME).zip
 APPCAST_PATH := $(BUILD_DIR)/appcast.xml
+CURRENT_BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
 
 # Download URL for updates
 DOWNLOAD_URL ?= https://github.com/Kochava-Studios/skwad/releases/latest/download/Skwad.zip
@@ -22,10 +23,18 @@ TEAM_ID ?= $(shell /usr/libexec/PlistBuddy -c "Print :TeamIdentifier:0" ~/Librar
 APPLE_ID ?= $(shell /usr/libexec/PlistBuddy -c "Print :IDEKit:PreviousAccount" ~/Library/Preferences/com.apple.dt.Xcode.plist 2>/dev/null)
 SIGNING_CERTIFICATE ?= Developer ID Application
 
+# Default target: local build with signing and notarization
+default: release
+
 help:
 	@echo "Skwad Build and Distribution Makefile"
 	@echo ""
 	@echo "Usage:"
+	@echo "  make              - Local build with signing and notarization"
+	@echo "  make prerelease   - Trigger GitHub Action build (prerelease)"
+	@echo "  make latest       - Trigger GitHub Action build (latest release)"
+	@echo ""
+	@echo "Other targets:"
 	@echo "  make build        - Build the app in Release configuration"
 	@echo "  make archive      - Create an archive for distribution"
 	@echo "  make export       - Export and sign the app (requires archive)"
@@ -151,7 +160,7 @@ notarize: zip
 	@echo "Generating appcast..."
 	@./scripts/generate-appcast.sh "$(ZIP_PATH)" "$(EXPORT_PATH)/$(APP_NAME).app" "$(APPCAST_PATH)" "$(DOWNLOAD_URL)"
 	@echo ""
-	@echo "✅ Notarization complete!"
+	@echo "Notarization complete!"
 	@echo "   App: $(EXPORT_PATH)/$(APP_NAME).app (stapled)"
 	@echo "   ZIP: $(ZIP_PATH) (contains stapled app)"
 	@echo "   DMG: $(DMG_PATH) (contains stapled app)"
@@ -181,7 +190,7 @@ appcast:
 
 release: increment-build notarize
 	@echo ""
-	@echo "🎉 Release build complete!"
+	@echo "Release build complete!"
 	@echo "   Distribution package: $(DMG_PATH)"
 	@ls -lh $(DMG_PATH)
 
@@ -195,5 +204,17 @@ install:
 	@sudo rm -rf /Applications/$(APP_NAME).app
 	@echo "Copying notarized app..."
 	@sudo cp -R "$(EXPORT_PATH)/$(APP_NAME).app" /Applications/
-	@echo "✅ $(APP_NAME).app installed to /Applications"
+	@echo "$(APP_NAME).app installed to /Applications"
 
+# GitHub Actions release targets
+prerelease:
+	@git diff --quiet || (echo "Error: There are uncommitted changes. Commit or stash them first." && exit 1)
+	@echo "Triggering GitHub Action for prerelease build..."
+	gh workflow run build.yml --ref $(CURRENT_BRANCH) -f release_type=prerelease
+	@echo "Workflow triggered. Monitor at: https://github.com/Kochava-Studios/skwad/actions"
+
+latest:
+	@git diff --quiet || (echo "Error: There are uncommitted changes. Commit or stash them first." && exit 1)
+	@echo "Triggering GitHub Action for latest release build..."
+	gh workflow run build.yml --ref $(CURRENT_BRANCH) -f release_type=latest
+	@echo "Workflow triggered. Monitor at: https://github.com/Kochava-Studios/skwad/actions"
