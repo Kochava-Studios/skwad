@@ -28,7 +28,7 @@ Meet your new, slightly revolutionary coding crew. Skwad is a macOS app that run
 ## Requirements
 
 - macOS 14.0 (Sonoma) or later
-- [Zig](https://ziglang.org/) (for building libghostty)
+- [Zig](https://ziglang.org/) (only if building libghostty from source)
 - An AI coding CLI (e.g., [Claude Code](https://github.com/anthropics/claude-code))
 
 ## Building
@@ -37,7 +37,11 @@ Meet your new, slightly revolutionary coding crew. Skwad is a macOS app that run
 git clone https://github.com/anthropics/skwad.git
 cd skwad
 
-# Build libghostty (universal arm64 + x86_64)
+# Download prebuilt libghostty (recommended)
+mkdir -p Vendor/libghostty/lib
+gh release download libs-v1 -p 'libghostty.a' -D Vendor/libghostty/lib
+
+# Or build from source (requires Zig)
 brew install zig
 ./scripts/build-libghostty.sh
 
