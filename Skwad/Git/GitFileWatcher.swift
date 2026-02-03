@@ -1,14 +1,17 @@
 import Foundation
 
 /// Watches a directory for file system changes using FSEvents
-class GitFileWatcher {
+final class GitFileWatcher {
     private var stream: FSEventStreamRef?
     private let path: String
     private let callback: () -> Void
 
-    private var debounceWorkItem: DispatchWorkItem?
+    private var debounceTask: Task<Void, Never>?
     private var isPaused = false
     private let queue = DispatchQueue(label: "GitFileWatcher", qos: .utility)
+
+    /// Strong reference holder for FSEvents callback - prevents use-after-free
+    private var callbackContext: Unmanaged<GitFileWatcher>?
 
     init(path: String, onChange: @escaping () -> Void) {
         self.path = path
@@ -24,9 +27,12 @@ class GitFileWatcher {
 
         let pathsToWatch = [path] as CFArray
 
+        // Use passRetained to ensure the watcher stays alive during callbacks
+        callbackContext = Unmanaged.passRetained(self)
+
         var context = FSEventStreamContext(
             version: 0,
-            info: Unmanaged.passUnretained(self).toOpaque(),
+            info: callbackContext?.toOpaque(),
             retain: nil,
             release: nil,
             copyDescription: nil
@@ -40,7 +46,7 @@ class GitFileWatcher {
             { _, info, numEvents, eventPaths, _, _ in
                 guard let info = info else { return }
                 let watcher = Unmanaged<GitFileWatcher>.fromOpaque(info).takeUnretainedValue()
-                watcher.handleEvents(numEvents: numEvents, paths: eventPaths)
+                watcher.handleEventsFromCallback(numEvents: numEvents, paths: eventPaths)
             },
             &context,
             pathsToWatch,
@@ -49,15 +55,19 @@ class GitFileWatcher {
             flags
         )
 
-        guard let stream = stream else { return }
+        guard let stream = stream else {
+            callbackContext?.release()
+            callbackContext = nil
+            return
+        }
 
         FSEventStreamSetDispatchQueue(stream, queue)
         FSEventStreamStart(stream)
     }
 
     func stop() {
-        debounceWorkItem?.cancel()
-        debounceWorkItem = nil
+        debounceTask?.cancel()
+        debounceTask = nil
 
         guard let stream = stream else { return }
 
@@ -65,6 +75,10 @@ class GitFileWatcher {
         FSEventStreamInvalidate(stream)
         FSEventStreamRelease(stream)
         self.stream = nil
+
+        // Release the retained reference
+        callbackContext?.release()
+        callbackContext = nil
     }
 
     /// Temporarily pause watching (e.g., during refresh)
@@ -77,12 +91,16 @@ class GitFileWatcher {
         isPaused = false
     }
 
-    private func handleEvents(numEvents: Int, paths: UnsafeMutableRawPointer) {
+    /// Called from FSEvents callback (off main thread)
+    private func handleEventsFromCallback(numEvents: Int, paths: UnsafeMutableRawPointer) {
         guard !isPaused else { return }
-        guard let paths = unsafeBitCast(paths, to: NSArray.self) as? [String] else { return }
+
+        // Safely extract paths from CF types
+        let cfArray = Unmanaged<CFArray>.fromOpaque(paths).takeUnretainedValue()
+        guard let pathArray = cfArray as? [String] else { return }
 
         // Filter out .git internal changes that don't affect status
-        let relevantChange = paths.contains { path in
+        let relevantChange = pathArray.contains { path in
             // Ignore most .git internals
             if path.contains("/.git/") {
                 // Only care about index changes (staging) and HEAD changes (commits/checkouts)
@@ -100,15 +118,14 @@ class GitFileWatcher {
 
         guard relevantChange else { return }
 
-        // Cancel any pending work
-        debounceWorkItem?.cancel()
-
-        // Schedule new callback with longer debounce
-        let workItem = DispatchWorkItem { [weak self] in
-            self?.callback()
+        // Cancel any pending work and schedule new callback with debounce
+        debounceTask?.cancel()
+        debounceTask = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(TimingConstants.gitFileWatcherDebounce))
+            guard !Task.isCancelled else { return }
+            await MainActor.run {
+                self?.callback()
+            }
         }
-        debounceWorkItem = workItem
-
-        DispatchQueue.main.asyncAfter(deadline: .now() + TimingConstants.gitFileWatcherDebounce, execute: workItem)
     }
 }

@@ -85,7 +85,10 @@ class AppSettings: ObservableObject {
         didSet {
             // Skip in Xcode Previews
             guard ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] != "1" else { return }
-            RepoDiscoveryService.shared.updateBaseFolder(sourceBaseFolder)
+            let folder = sourceBaseFolder
+            Task { @MainActor in
+                RepoDiscoveryService.shared.updateBaseFolder(folder)
+            }
         }
     }
     @AppStorage("sourceBaseFolderInitialized") private var sourceBaseFolderInitialized: Bool = false

@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct WorkspaceBarView: View {
-    @EnvironmentObject var agentManager: AgentManager
+    @Environment(AgentManager.self) var agentManager
     @ObservedObject private var settings = AppSettings.shared
     @Environment(\.colorScheme) private var colorScheme
     @Binding var sidebarVisible: Bool
@@ -183,7 +183,7 @@ private func previewAgentManager() -> AgentManager {
 #Preview {
     HStack(spacing: 0) {
         WorkspaceBarView(sidebarVisible: .constant(true))
-            .environmentObject(previewAgentManager())
+            .environment(previewAgentManager())
 
         Rectangle()
             .fill(Color(nsColor: .windowBackgroundColor))

@@ -10,7 +10,7 @@ final class WorkspaceSheetUITests: XCTestCase {
 
     func testNewWorkspaceTitle() throws {
         let view = WorkspaceSheet()
-            .environmentObject(AgentManager())
+            .environment(AgentManager())
         let texts = try view.inspect().findAll(ViewType.Text.self)
         let hasNewTitle = texts.contains { text in
             (try? text.string() == "New Workspace") ?? false
@@ -20,14 +20,14 @@ final class WorkspaceSheetUITests: XCTestCase {
 
     func testRendersNameField() throws {
         let view = WorkspaceSheet()
-            .environmentObject(AgentManager())
+            .environment(AgentManager())
         let textField = try? view.inspect().find(ViewType.TextField.self)
         XCTAssertNotNil(textField, "Should render name TextField")
     }
 
     func testRendersNameLabel() throws {
         let view = WorkspaceSheet()
-            .environmentObject(AgentManager())
+            .environment(AgentManager())
         let texts = try view.inspect().findAll(ViewType.Text.self)
         let hasNameLabel = texts.contains { text in
             (try? text.string() == "Name") ?? false
@@ -37,7 +37,7 @@ final class WorkspaceSheetUITests: XCTestCase {
 
     func testRendersColorLabel() throws {
         let view = WorkspaceSheet()
-            .environmentObject(AgentManager())
+            .environment(AgentManager())
         let texts = try view.inspect().findAll(ViewType.Text.self)
         let hasColorLabel = texts.contains { text in
             (try? text.string() == "Color") ?? false
@@ -47,7 +47,7 @@ final class WorkspaceSheetUITests: XCTestCase {
 
     func testRendersCancelButton() throws {
         let view = WorkspaceSheet()
-            .environmentObject(AgentManager())
+            .environment(AgentManager())
         let buttons = try view.inspect().findAll(ViewType.Button.self)
         let hasCancelButton = buttons.contains { button in
             let texts = try? button.findAll(ViewType.Text.self)
@@ -58,7 +58,7 @@ final class WorkspaceSheetUITests: XCTestCase {
 
     func testRendersCreateButton() throws {
         let view = WorkspaceSheet()
-            .environmentObject(AgentManager())
+            .environment(AgentManager())
         let buttons = try view.inspect().findAll(ViewType.Button.self)
         let hasCreateButton = buttons.contains { button in
             let texts = try? button.findAll(ViewType.Text.self)
@@ -72,7 +72,7 @@ final class WorkspaceSheetUITests: XCTestCase {
     func testEditWorkspaceTitle() throws {
         let workspace = Workspace(name: "Test", colorHex: WorkspaceColor.blue.rawValue)
         let view = WorkspaceSheet(workspace: workspace)
-            .environmentObject(AgentManager())
+            .environment(AgentManager())
         let texts = try view.inspect().findAll(ViewType.Text.self)
         let hasEditTitle = texts.contains { text in
             (try? text.string() == "Edit Workspace") ?? false
@@ -83,7 +83,7 @@ final class WorkspaceSheetUITests: XCTestCase {
     func testRendersSaveButtonInEditMode() throws {
         let workspace = Workspace(name: "Test", colorHex: WorkspaceColor.blue.rawValue)
         let view = WorkspaceSheet(workspace: workspace)
-            .environmentObject(AgentManager())
+            .environment(AgentManager())
         let buttons = try view.inspect().findAll(ViewType.Button.self)
         let hasSaveButton = buttons.contains { button in
             let texts = try? button.findAll(ViewType.Text.self)
@@ -96,7 +96,7 @@ final class WorkspaceSheetUITests: XCTestCase {
 
     func testRendersLazyVGrid() throws {
         let view = WorkspaceSheet()
-            .environmentObject(AgentManager())
+            .environment(AgentManager())
         let grid = try? view.inspect().find(ViewType.LazyVGrid.self)
         XCTAssertNotNil(grid, "Should use LazyVGrid for color picker")
     }
@@ -105,28 +105,28 @@ final class WorkspaceSheetUITests: XCTestCase {
 
     func testHasVStackLayout() throws {
         let view = WorkspaceSheet()
-            .environmentObject(AgentManager())
+            .environment(AgentManager())
         let vStack = try? view.inspect().find(ViewType.VStack.self)
         XCTAssertNotNil(vStack, "Should use VStack layout")
     }
 
     func testHasSpacer() throws {
         let view = WorkspaceSheet()
-            .environmentObject(AgentManager())
+            .environment(AgentManager())
         let spacer = try? view.inspect().find(ViewType.Spacer.self)
         XCTAssertNotNil(spacer, "Should have spacer")
     }
 
     func testHasHStackForButtons() throws {
         let view = WorkspaceSheet()
-            .environmentObject(AgentManager())
+            .environment(AgentManager())
         let hStacks = try view.inspect().findAll(ViewType.HStack.self)
         XCTAssertGreaterThan(hStacks.count, 0, "Should have HStack for button layout")
     }
 
     func testHasZStackForPreview() throws {
         let view = WorkspaceSheet()
-            .environmentObject(AgentManager())
+            .environment(AgentManager())
         let zStack = try? view.inspect().find(ViewType.ZStack.self)
         XCTAssertNotNil(zStack, "Should have ZStack for preview")
     }

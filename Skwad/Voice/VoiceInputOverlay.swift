@@ -2,8 +2,8 @@ import SwiftUI
 
 /// Overlay shown when voice input is active
 struct VoiceInputOverlay: View {
-    @ObservedObject var voiceManager: VoiceInputManager
-    @ObservedObject var settings = AppSettings.shared
+    var voiceManager: VoiceInputManager
+    @ObservedObject private var settings = AppSettings.shared
     let onInsert: (String) -> Void
     let onDismiss: () -> Void
 
@@ -78,9 +78,9 @@ struct VoiceInputOverlay: View {
 
 /// Container view that manages voice input state
 struct VoiceInputContainer: View {
-    @EnvironmentObject var agentManager: AgentManager
-    @StateObject private var voiceManager = VoiceInputManager.shared
-    @StateObject private var pushToTalk = PushToTalkMonitor.shared
+    @Environment(AgentManager.self) var agentManager
+    @State private var voiceManager = VoiceInputManager.shared
+    @State private var pushToTalk = PushToTalkMonitor.shared
     @ObservedObject private var settings = AppSettings.shared
 
     @State private var showOverlay = false

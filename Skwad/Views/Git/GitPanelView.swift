@@ -5,7 +5,7 @@ struct GitPanelView: View {
     let folder: String
     let onClose: () -> Void
 
-    @EnvironmentObject var agentManager: AgentManager
+    @Environment(AgentManager.self) var agentManager
     @ObservedObject private var settings = AppSettings.shared
     @State private var viewModel: GitPanelViewModel?
     @State private var panelWidth: CGFloat = 500

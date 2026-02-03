@@ -8,7 +8,7 @@ private var mcpServerInstance: MCPServer?
 @main
 struct SkwadApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
-    @StateObject private var agentManager = AgentManager()
+    @State private var agentManager = AgentManager()
     private let updaterManager = UpdaterManager.shared
     @State private var mcpInitialized = false
     @State private var alertMessage: String?
@@ -58,7 +58,7 @@ struct SkwadApp: App {
                 toggleGitPanel: $toggleGitPanel,
                 toggleSidebar: $toggleSidebar
             )
-                .environmentObject(agentManager)
+                .environment(agentManager)
                 .alert("Folder Not Found", isPresented: $showAlert) {
                     Button("OK", role: .cancel) {}
                 } message: {
@@ -79,7 +79,7 @@ struct SkwadApp: App {
                 }
                 .sheet(isPresented: $showNewWorkspaceSheet) {
                     WorkspaceSheet()
-                        .environmentObject(agentManager)
+                        .environment(agentManager)
                 }
                 .onAppear {
 

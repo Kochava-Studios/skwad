@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import Observation
 
 enum LayoutMode: String, Codable {
     case single
@@ -16,14 +17,15 @@ private class WeakTerminalRef {
     }
 }
 
+@Observable
 @MainActor
-class AgentManager: ObservableObject {
+final class AgentManager {
     // All agents across all workspaces
-    @Published var agents: [Agent] = []
+    var agents: [Agent] = []
 
     // Workspaces
-    @Published var workspaces: [Workspace] = []
-    @Published var currentWorkspaceId: UUID?
+    var workspaces: [Workspace] = []
+    var currentWorkspaceId: UUID?
 
     private let settings = AppSettings.shared
 
@@ -675,7 +677,7 @@ class AgentManager: ObservableObject {
         }
 
         let folder = agent.folder
-        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+        Task.detached(priority: .userInitiated) {
             let repo = GitRepository(path: folder)
             let unstaged = repo.diffStats()
             let staged = repo.diffStats(staged: true, includeUntracked: false)
@@ -686,8 +688,8 @@ class AgentManager: ObservableObject {
                 files: unstaged.files + staged.files
             )
 
-            DispatchQueue.main.async {
-                guard let self = self,
+            await MainActor.run { [weak self] in
+                guard let self,
                       let index = self.agents.firstIndex(where: { $0.id == agentId }) else { return }
                 self.agents[index].gitStats = stats
             }

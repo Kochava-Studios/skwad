@@ -2,7 +2,7 @@ import SwiftUI
 
 struct WorkspaceSheet: View {
     @Environment(\.dismiss) private var dismiss
-    @EnvironmentObject var agentManager: AgentManager
+    @Environment(AgentManager.self) var agentManager
 
     let workspace: Workspace?
 
@@ -121,10 +121,10 @@ struct WorkspaceSheet: View {
 
 #Preview("New Workspace") {
     WorkspaceSheet()
-        .environmentObject(AgentManager())
+        .environment(AgentManager())
 }
 
 #Preview("Edit Workspace") {
     WorkspaceSheet(workspace: Workspace(name: "My Project", colorHex: WorkspaceColor.purple.rawValue))
-        .environmentObject(AgentManager())
+        .environment(AgentManager())
 }

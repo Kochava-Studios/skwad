@@ -34,7 +34,7 @@ struct AgentContextMenu<Content: View>: View {
     let onFork: () -> Void
     @ViewBuilder let content: Content
 
-    @EnvironmentObject var agentManager: AgentManager
+    @Environment(AgentManager.self) var agentManager
 
     var body: some View {
         content.contextMenu {
@@ -114,7 +114,7 @@ struct AgentContextMenu<Content: View>: View {
 }
 
 struct SidebarView: View {
-    @EnvironmentObject var agentManager: AgentManager
+    @Environment(AgentManager.self) var agentManager
     @ObservedObject private var settings = AppSettings.shared
     @Binding var sidebarVisible: Bool
     @State private var showingNewAgentSheet = false
@@ -432,6 +432,6 @@ private func previewAgent(_ name: String, _ avatar: String, _ folder: String, st
 
 #Preview("Sidebar") {
     SidebarView(sidebarVisible: .constant(true))
-        .environmentObject(previewAgentManager())
+        .environment(previewAgentManager())
         .frame(width: 250, height: 500)
 }

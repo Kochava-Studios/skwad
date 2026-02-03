@@ -2,10 +2,10 @@ import SwiftUI
 import AppKit
 
 struct ContentView: View {
-  @EnvironmentObject var agentManager: AgentManager
+  @Environment(AgentManager.self) var agentManager
   @ObservedObject private var settings = AppSettings.shared
-  @StateObject private var voiceManager = VoiceInputManager.shared
-  @StateObject private var pushToTalk = PushToTalkMonitor.shared
+  @State private var voiceManager = VoiceInputManager.shared
+  @State private var pushToTalk = PushToTalkMonitor.shared
   @State private var showGitPanel = false
   @State private var sidebarWidth: CGFloat = 250
   @State private var showVoiceOverlay = false
@@ -299,7 +299,7 @@ struct ContentView: View {
     }
     .sheet(isPresented: $showNewAgentSheet) {
       AgentSheet()
-        .environmentObject(agentManager)
+        .environment(agentManager)
     }
     .onChange(of: toggleGitPanel) { _, _ in
       if canShowGitPanel {
@@ -658,13 +658,13 @@ struct ContentView: View {
     toggleGitPanel: $toggleGitPanel,
     toggleSidebar: $toggleSidebar
   )
-    .environmentObject(AgentManager())
+    .environment(AgentManager())
 }
 
 // MARK: - Split Pane Preview
 
 private struct SplitPanePreview: View {
-  @StateObject private var manager = previewSplitManager()
+  @State private var manager = previewSplitManager()
   @State private var focusedPane = 0
 
   var body: some View {
@@ -714,7 +714,7 @@ private struct SplitPanePreview: View {
           .offset(x: pos - 3)
       }
     }
-    .environmentObject(manager)
+    .environment(manager)
     .frame(width: 900, height: 600)
   }
 

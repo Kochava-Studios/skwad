@@ -43,7 +43,7 @@ class WindowDragNSView: NSView {
 }
 
 struct AgentTerminalView: View {
-    @EnvironmentObject var agentManager: AgentManager
+    @Environment(AgentManager.self) var agentManager
     @ObservedObject private var settings = AppSettings.shared
     let agent: Agent
     let paneIndex: Int
@@ -121,11 +121,11 @@ struct AgentTerminalView: View {
         }
         .sheet(item: $agentToEdit) { agent in
             AgentSheet(editing: agent)
-                .environmentObject(agentManager)
+                .environment(agentManager)
         }
         .sheet(item: $forkPrefill) { prefill in
             AgentSheet(prefill: prefill)
-                .environmentObject(agentManager)
+                .environment(agentManager)
         }
     }
 
@@ -139,7 +139,7 @@ struct AgentFullHeader: View {
     let onGitStatsTap: () -> Void
     let onPaneTap: () -> Void
 
-    @EnvironmentObject var agentManager: AgentManager
+    @Environment(AgentManager.self) var agentManager
     @ObservedObject private var settings = AppSettings.shared
 
     private var isUnfocusedInSplit: Bool {
@@ -360,7 +360,7 @@ private func previewAgent(_ name: String, _ avatar: String, _ folder: String, st
         AgentFullHeader(agent: manager.agents[2], isFocused: false, onGitStatsTap: {}, onPaneTap: {})
     }
     .frame(width: 600)
-    .environmentObject(manager)
+    .environment(manager)
 }
 
 #Preview("Compact Header") {

@@ -3,17 +3,19 @@ import AVFoundation
 import Speech
 import CoreVideo
 import QuartzCore
+import Observation
 
 /// Manages voice input using Apple's speech recognition
+@Observable
 @MainActor
-class VoiceInputManager: ObservableObject {
+final class VoiceInputManager {
     static let shared = VoiceInputManager()
 
-    @Published var isListening = false
-    @Published var transcribedText = ""
-    @Published var error: String?
-    @Published var audioLevel: Float = 0
-    @Published var waveformSamples: [Float] = Array(repeating: 0, count: 64)
+    var isListening = false
+    var transcribedText = ""
+    var error: String?
+    var audioLevel: Float = 0
+    var waveformSamples: [Float] = Array(repeating: 0, count: 64)
 
     private var audioEngine: AVAudioEngine?
     private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?

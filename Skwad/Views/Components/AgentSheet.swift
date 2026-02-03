@@ -11,10 +11,10 @@ struct AgentPrefill: Identifiable {
 }
 
 struct AgentSheet: View {
-    @EnvironmentObject var agentManager: AgentManager
+    @Environment(AgentManager.self) var agentManager
     @Environment(\.dismiss) private var dismiss
     @ObservedObject private var settings = AppSettings.shared
-    @ObservedObject private var repoDiscovery = RepoDiscoveryService.shared
+    @State private var repoDiscovery = RepoDiscoveryService.shared
 
     let editingAgent: Agent?
     let prefill: AgentPrefill?
@@ -210,12 +210,12 @@ struct AgentSheet: View {
             }
             applyPrefillWorktreeIfNeeded()
         }
-        .onReceive(repoDiscovery.$repos) { repos in
+        .onChange(of: repoDiscovery.repos) { _, repos in
             allRepos = repos
             updateRecentRepos(from: repos)
             applyPrefillWorktreeIfNeeded()
         }
-        .onReceive(repoDiscovery.$isLoading) { loading in
+        .onChange(of: repoDiscovery.isLoading) { _, loading in
             isLoadingRepos = loading
         }
     }
@@ -752,14 +752,14 @@ struct ScrollWheelView<Content: View>: NSViewRepresentable {
 
 #Preview("New Agent") {
     AgentSheet()
-        .environmentObject(AgentManager())
+        .environment(AgentManager())
 }
 
 #Preview("Edit Agent") {
     var agent = Agent(name: "skwad", avatar: "🐱", folder: "/Users/nbonamy/src/skwad")
     agent.status = .running
     return AgentSheet(editing: agent)
-        .environmentObject(AgentManager())
+        .environment(AgentManager())
 }
 
 #Preview("Fork Agent") {
@@ -771,7 +771,7 @@ struct ScrollWheelView<Content: View>: NSViewRepresentable {
         insertAfterId: nil
     )
     return AgentSheet(prefill: prefill)
-        .environmentObject(AgentManager())
+        .environment(AgentManager())
 }
 
 private class ScrollWheelHostingView<Content: View>: NSHostingView<Content> {

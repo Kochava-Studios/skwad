@@ -22,7 +22,7 @@ final class AgentSheetUITests: XCTestCase {
     func testNewModeRendersNewAgentTitle() throws {
         let prefill = AgentPrefill(name: "", avatar: nil, folder: "", agentType: "claude", insertAfterId: nil)
         let view = AgentSheet(prefill: prefill)
-            .environmentObject(createAgentManager())
+            .environment(createAgentManager())
         let texts = try view.inspect().findAll(ViewType.Text.self)
         let hasTitle = texts.contains { (try? $0.string() == "New Agent") ?? false }
         XCTAssertTrue(hasTitle, "Should show 'New Agent' title")
@@ -31,7 +31,7 @@ final class AgentSheetUITests: XCTestCase {
     func testNewModeRendersSubtitle() throws {
         let prefill = AgentPrefill(name: "", avatar: nil, folder: "", agentType: "claude", insertAfterId: nil)
         let view = AgentSheet(prefill: prefill)
-            .environmentObject(createAgentManager())
+            .environment(createAgentManager())
         let texts = try view.inspect().findAll(ViewType.Text.self)
         let hasSubtitle = texts.contains { (try? $0.string().contains("skwad")) ?? false }
         XCTAssertTrue(hasSubtitle, "Should show subtitle mentioning skwad")
@@ -40,7 +40,7 @@ final class AgentSheetUITests: XCTestCase {
     func testNewModeRendersNameField() throws {
         let prefill = AgentPrefill(name: "", avatar: nil, folder: "", agentType: "claude", insertAfterId: nil)
         let view = AgentSheet(prefill: prefill)
-            .environmentObject(createAgentManager())
+            .environment(createAgentManager())
         let textField = try? view.inspect().find(ViewType.TextField.self)
         XCTAssertNotNil(textField, "Should have a name TextField")
     }
@@ -48,7 +48,7 @@ final class AgentSheetUITests: XCTestCase {
     func testNewModeRendersNameLabel() throws {
         let prefill = AgentPrefill(name: "", avatar: nil, folder: "", agentType: "claude", insertAfterId: nil)
         let view = AgentSheet(prefill: prefill)
-            .environmentObject(createAgentManager())
+            .environment(createAgentManager())
         let texts = try view.inspect().findAll(ViewType.Text.self)
         let hasLabel = texts.contains { (try? $0.string() == "Name") ?? false }
         XCTAssertTrue(hasLabel, "Should show 'Name' label")
@@ -57,7 +57,7 @@ final class AgentSheetUITests: XCTestCase {
     func testNewModeRendersAvatarLabel() throws {
         let prefill = AgentPrefill(name: "", avatar: nil, folder: "", agentType: "claude", insertAfterId: nil)
         let view = AgentSheet(prefill: prefill)
-            .environmentObject(createAgentManager())
+            .environment(createAgentManager())
         let texts = try view.inspect().findAll(ViewType.Text.self)
         let hasLabel = texts.contains { (try? $0.string() == "Avatar") ?? false }
         XCTAssertTrue(hasLabel, "Should show 'Avatar' label")
@@ -66,7 +66,7 @@ final class AgentSheetUITests: XCTestCase {
     func testNewModeRendersCodingAgentLabel() throws {
         let prefill = AgentPrefill(name: "", avatar: nil, folder: "", agentType: "claude", insertAfterId: nil)
         let view = AgentSheet(prefill: prefill)
-            .environmentObject(createAgentManager())
+            .environment(createAgentManager())
         let texts = try view.inspect().findAll(ViewType.Text.self)
         let hasLabel = texts.contains { (try? $0.string() == "Coding Agent") ?? false }
         XCTAssertTrue(hasLabel, "Should show 'Coding Agent' label in new mode")
@@ -75,7 +75,7 @@ final class AgentSheetUITests: XCTestCase {
     func testNewModeRendersFolderOrRepositoryLabel() throws {
         let prefill = AgentPrefill(name: "", avatar: nil, folder: "", agentType: "claude", insertAfterId: nil)
         let view = AgentSheet(prefill: prefill)
-            .environmentObject(createAgentManager())
+            .environment(createAgentManager())
         let texts = try view.inspect().findAll(ViewType.Text.self)
         // Could be "Folder" or "Repository" depending on settings
         let hasLabel = texts.contains { text in
@@ -88,7 +88,7 @@ final class AgentSheetUITests: XCTestCase {
     func testNewModeRendersAvatarView() throws {
         let prefill = AgentPrefill(name: "", avatar: nil, folder: "", agentType: "claude", insertAfterId: nil)
         let view = AgentSheet(prefill: prefill)
-            .environmentObject(createAgentManager())
+            .environment(createAgentManager())
         let avatarView = try? view.inspect().find(AvatarView.self)
         XCTAssertNotNil(avatarView, "Should render AvatarView for avatar selection")
     }
@@ -96,7 +96,7 @@ final class AgentSheetUITests: XCTestCase {
     func testNewModeRendersFormLayout() throws {
         let prefill = AgentPrefill(name: "", avatar: nil, folder: "", agentType: "claude", insertAfterId: nil)
         let view = AgentSheet(prefill: prefill)
-            .environmentObject(createAgentManager())
+            .environment(createAgentManager())
         let form = try? view.inspect().find(ViewType.Form.self)
         XCTAssertNotNil(form, "Should use Form layout")
     }
@@ -106,7 +106,7 @@ final class AgentSheetUITests: XCTestCase {
     func testEditModeRendersEditTitle() throws {
         let agent = Agent(name: "Test", folder: "/tmp/test")
         let view = AgentSheet(editing: agent)
-            .environmentObject(createAgentManager())
+            .environment(createAgentManager())
         let texts = try view.inspect().findAll(ViewType.Text.self)
         let hasTitle = texts.contains { (try? $0.string() == "Edit Agent") ?? false }
         XCTAssertTrue(hasTitle, "Should show 'Edit Agent' title in edit mode")
@@ -115,7 +115,7 @@ final class AgentSheetUITests: XCTestCase {
     func testEditModeRendersUpdateSubtitle() throws {
         let agent = Agent(name: "Test", folder: "/tmp/test")
         let view = AgentSheet(editing: agent)
-            .environmentObject(createAgentManager())
+            .environment(createAgentManager())
         let texts = try view.inspect().findAll(ViewType.Text.self)
         let hasSubtitle = texts.contains { (try? $0.string().contains("Update")) ?? false }
         XCTAssertTrue(hasSubtitle, "Should show 'Update' in subtitle in edit mode")
@@ -124,7 +124,7 @@ final class AgentSheetUITests: XCTestCase {
     func testEditModeHidesCodingAgentPicker() throws {
         let agent = Agent(name: "Test", folder: "/tmp/test")
         let view = AgentSheet(editing: agent)
-            .environmentObject(createAgentManager())
+            .environment(createAgentManager())
         let texts = try view.inspect().findAll(ViewType.Text.self)
         let hasCodingAgentLabel = texts.contains { (try? $0.string() == "Coding Agent") ?? false }
         XCTAssertFalse(hasCodingAgentLabel, "Should NOT show 'Coding Agent' label in edit mode")
@@ -133,7 +133,7 @@ final class AgentSheetUITests: XCTestCase {
     func testEditModeShowsFolderPath() throws {
         let agent = Agent(name: "Test", folder: "/tmp/test")
         let view = AgentSheet(editing: agent)
-            .environmentObject(createAgentManager())
+            .environment(createAgentManager())
         let texts = try view.inspect().findAll(ViewType.Text.self)
         // Should show the folder path (possibly shortened)
         let hasFolderPath = texts.contains { (try? $0.string().contains("test")) ?? false }
@@ -145,7 +145,7 @@ final class AgentSheetUITests: XCTestCase {
     func testPrefillModeShowsNewAgentTitle() throws {
         let prefill = AgentPrefill(name: "Prefilled", avatar: "🚀", folder: "/tmp/prefill", agentType: "claude", insertAfterId: nil)
         let view = AgentSheet(prefill: prefill)
-            .environmentObject(createAgentManager())
+            .environment(createAgentManager())
         let texts = try view.inspect().findAll(ViewType.Text.self)
         let hasTitle = texts.contains { (try? $0.string() == "New Agent") ?? false }
         XCTAssertTrue(hasTitle, "Prefill mode should show 'New Agent' title")
@@ -154,7 +154,7 @@ final class AgentSheetUITests: XCTestCase {
     func testPrefillModeShowsCodingAgentPicker() throws {
         let prefill = AgentPrefill(name: "Prefilled", avatar: "🚀", folder: "/tmp/prefill", agentType: "claude", insertAfterId: nil)
         let view = AgentSheet(prefill: prefill)
-            .environmentObject(createAgentManager())
+            .environment(createAgentManager())
         let texts = try view.inspect().findAll(ViewType.Text.self)
         let hasLabel = texts.contains { (try? $0.string() == "Coding Agent") ?? false }
         XCTAssertTrue(hasLabel, "Prefill mode should show 'Coding Agent' picker")

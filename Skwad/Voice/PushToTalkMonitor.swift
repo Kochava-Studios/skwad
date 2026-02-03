@@ -1,12 +1,13 @@
 import Foundation
 import AppKit
-import Combine
+import Observation
 
 /// Monitors global key events for push-to-talk functionality
-class PushToTalkMonitor: ObservableObject {
+@Observable
+final class PushToTalkMonitor {
     static let shared = PushToTalkMonitor()
 
-    @Published var isKeyDown = false
+    var isKeyDown = false
 
     private var flagsMonitor: Any?
     private let settings = AppSettings.shared

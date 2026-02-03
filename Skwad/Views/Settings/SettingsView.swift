@@ -520,7 +520,7 @@ struct MCPSettingsView: View {
 
 struct VoiceSettingsView: View {
   @ObservedObject private var settings = AppSettings.shared
-  @StateObject private var pushToTalk = PushToTalkMonitor.shared
+  @State private var pushToTalk = PushToTalkMonitor.shared
   @State private var isRecordingKey = false
   
   private let voiceEngines = [
