@@ -1,4 +1,4 @@
-.PHONY: help build clean archive export notarize dmg release install upload all increment-build appcast get-version set-version
+.PHONY: help build clean archive export notarize dmg release install increment-build appcast get-version get-build set-version
 
 # Load .env file if it exists
 -include .env
@@ -22,12 +22,6 @@ TEAM_ID ?= $(shell /usr/libexec/PlistBuddy -c "Print :TeamIdentifier:0" ~/Librar
 APPLE_ID ?= $(shell /usr/libexec/PlistBuddy -c "Print :IDEKit:PreviousAccount" ~/Library/Preferences/com.apple.dt.Xcode.plist 2>/dev/null)
 SIGNING_CERTIFICATE ?= Developer ID Application
 
-# Upload settings
-SFTP_HOST ?=
-SFTP_PATH ?=
-SFTP_USER ?=
-SFTP_KEY ?= ~/.ssh/id_rsa
-
 help:
 	@echo "Skwad Build and Distribution Makefile"
 	@echo ""
@@ -40,8 +34,6 @@ help:
 	@echo "  make notarize     - Submit ZIP for notarization and staple"
 	@echo "  make release      - Full release pipeline (increment build + notarize)"
 	@echo "  make install      - Copy notarized app to /Applications"
-	@echo "  make upload       - Upload ZIP and appcast.xml (requires notarize)"
-	@echo "  make all          - Complete pipeline (release + install + upload)"
 	@echo "  make clean        - Clean build artifacts"
 	@echo ""
 	@echo "Environment variables (can be set in .env file):"
@@ -49,19 +41,6 @@ help:
 	@echo "  TEAM_ID               - Team ID (current: $(TEAM_ID))"
 	@echo "  APP_PASSWORD          - App-specific password for notarization"
 	@echo "  SIGNING_CERTIFICATE   - Code signing certificate name (current: $(SIGNING_CERTIFICATE))"
-	@echo "  SFTP_HOST             - SFTP hostname for upload"
-	@echo "  SFTP_PATH             - Remote path for upload"
-	@echo "  SFTP_USER             - SFTP username"
-	@echo "  SFTP_KEY              - SSH private key path (default: ~/.ssh/id_rsa)"
-	@echo ""
-	@echo "Example .env file:"
-	@echo "  APPLE_ID=your.email@example.com"
-	@echo "  TEAM_ID=ABCD123456"
-	@echo "  APP_PASSWORD=abcd-efgh-ijkl-mnop"
-	@echo "  SIGNING_CERTIFICATE=Developer ID Application"
-	@echo "  SFTP_HOST=home114960941.1and1-data.host"
-	@echo "  SFTP_PATH=/skwad"
-	@echo "  SFTP_USER=u37266564"
 
 build:
 	@echo "Building $(APP_NAME)..."
@@ -218,33 +197,3 @@ install:
 	@sudo cp -R "$(EXPORT_PATH)/$(APP_NAME).app" /Applications/
 	@echo "✅ $(APP_NAME).app installed to /Applications"
 
-upload:
-	@if [ -n "$(SFTP_HOST)" ] && [ -n "$(SFTP_PATH)" ] && [ -n "$(SFTP_USER)" ]; then \
-		echo "Uploading $(ZIP_PATH) to $(SFTP_HOST)$(SFTP_PATH)..."; \
-		if [ ! -f "$(ZIP_PATH)" ]; then \
-			echo "Error: ZIP file not found. Run 'make notarize' first."; \
-			exit 1; \
-		fi; \
-		if [ ! -f "$(APPCAST_PATH)" ]; then \
-			echo "Error: Appcast file not found. Run 'make notarize' first."; \
-			exit 1; \
-		fi; \
-		command -v duck >/dev/null 2>&1 || { echo "Error: duck CLI not installed. Run 'brew install duck'"; exit 1; }; \
-		duck --username "$(SFTP_USER)" --identity "$(SFTP_KEY)" --existing overwrite --upload "sftp://$(SFTP_HOST)$(SFTP_PATH)/" $(ZIP_PATH); \
-		echo "Uploading $(APPCAST_PATH) to $(SFTP_HOST)$(SFTP_PATH)..."; \
-		duck --username "$(SFTP_USER)" --identity "$(SFTP_KEY)" --existing overwrite --upload "sftp://$(SFTP_HOST)$(SFTP_PATH)/" $(APPCAST_PATH); \
-		echo ""; \
-		echo "✅ Upload complete!"; \
-		echo "   ZIP: $(SFTP_HOST)$(SFTP_PATH)/$(APP_NAME).zip"; \
-		echo "   Appcast: $(SFTP_HOST)$(SFTP_PATH)/appcast.xml"; \
-	else \
-		echo "Error: Upload not configured. Set SFTP_HOST, SFTP_PATH, SFTP_USER in .env file"; \
-		exit 1; \
-	fi
-
-all: release install upload
-	@echo ""
-	@echo "🚀 Complete pipeline finished!"
-	@echo "   ✅ Release built and notarized"
-	@echo "   ✅ Installed to /Applications"
-	@echo "   ✅ Uploaded to $(SFTP_HOST)$(SFTP_PATH)"
