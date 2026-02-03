@@ -160,6 +160,12 @@ actor MCPToolHandler {
             return errorResult("Missing required parameter: agentId")
         }
 
+        // Check if caller exists
+        let callerExists = await mcpService.findAgent(byNameOrId: agentId) != nil
+        if !callerExists {
+            return await agentNotFoundError(agentId)
+        }
+
         let agents = await mcpService.listAgents(callerAgentId: agentId)
         let response = ListAgentsResponse(agents: agents)
         return successResult(response)
@@ -179,6 +185,12 @@ actor MCPToolHandler {
             return errorResult("Missing required parameter: from (your agent ID)")
         }
 
+        // Check if sender exists before attempting to send
+        let senderExists = await mcpService.findAgent(byNameOrId: from) != nil
+        if !senderExists {
+            return await agentNotFoundError(from)
+        }
+
         let success = await mcpService.sendMessage(from: from, to: to, content: content)
 
         if success {
@@ -192,6 +204,12 @@ actor MCPToolHandler {
     private func handleCheckMessages(_ arguments: [String: Any]) async -> ToolCallResult {
         guard let agentId = arguments["agentId"] as? String else {
             return errorResult("Missing required parameter: agentId")
+        }
+
+        // Check if caller exists
+        let callerExists = await mcpService.findAgent(byNameOrId: agentId) != nil
+        if !callerExists {
+            return await agentNotFoundError(agentId)
         }
 
         let markAsRead = (arguments["markAsRead"] as? Bool) ?? true
@@ -220,6 +238,12 @@ actor MCPToolHandler {
         }
         guard let content = arguments["content"] as? String else {
             return errorResult("Missing required parameter: content")
+        }
+
+        // Check if sender exists
+        let senderExists = await mcpService.findAgent(byNameOrId: from) != nil
+        if !senderExists {
+            return await agentNotFoundError(from)
         }
 
         let count = await mcpService.broadcastMessage(from: from, content: content)
@@ -276,6 +300,25 @@ actor MCPToolHandler {
     }
 
     // MARK: - Helpers
+
+    private func agentNotFoundError(_ providedId: String) async -> ToolCallResult {
+        // Get all agents to help the caller find themselves
+        let agents = await mcpService.getAllAgentsForRecovery()
+
+        var message = "Agent ID '\(providedId)' not found. "
+
+        if agents.isEmpty {
+            message += "No agents are currently available. Ask the user to check if Skwad is running correctly."
+        } else {
+            message += "You may have forgotten your ID due to context loss. Here are all agents - find yourself by matching your working directory:\n\n"
+            for agent in agents {
+                message += "- \(agent.name): \(agent.folder) (ID: \(agent.id))\n"
+            }
+            message += "\nIf you're unsure which one you are, ask the user to right-click on your agent in Skwad and select 'Register'."
+        }
+
+        return errorResult(message)
+    }
 
     private func successResult<T: Codable>(_ result: T) -> ToolCallResult {
         do {

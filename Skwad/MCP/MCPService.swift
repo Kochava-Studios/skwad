@@ -288,6 +288,22 @@ actor MCPService: MCPServiceProtocol {
         return agent.name
     }
 
+    /// Get all agents for recovery purposes (when an agent forgets its ID)
+    func getAllAgentsForRecovery() async -> [AgentInfo] {
+        guard let provider = agentDataProvider else { return [] }
+
+        let agents = await provider.getAgents()
+        return agents.map { agent in
+            AgentInfo(
+                id: agent.id.uuidString,
+                name: agent.name,
+                folder: agent.folder,
+                status: agent.status.rawValue,
+                isRegistered: agent.isRegistered
+            )
+        }
+    }
+
     // MARK: - Repository Operations
 
     func listRepos() async -> [RepoInfoResponse] {
