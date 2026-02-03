@@ -57,9 +57,38 @@ struct BroadcastResponse: Codable {
     let recipientCount: Int
 }
 
+struct RepoInfoResponse: Codable {
+    let name: String
+    let path: String
+    let worktreeCount: Int
+}
+
+struct ListReposResponse: Codable {
+    let repos: [RepoInfoResponse]
+}
+
+struct WorktreeInfoResponse: Codable {
+    let path: String
+    let branch: String
+    let isMain: Bool
+}
+
+struct ListWorktreesResponse: Codable {
+    let repoPath: String
+    let worktrees: [WorktreeInfoResponse]
+}
+
+struct CreateAgentResponse: Codable {
+    let success: Bool
+    let agentId: String?
+    let message: String
+}
+
 struct RegisterAgentResponse: Codable {
     let success: Bool
     let message: String
+    let unreadMessageCount: Int
+    let skwadMembers: [AgentInfo]
 }
 
 // MARK: - JSON-RPC Types
@@ -303,6 +332,9 @@ enum MCPToolName: String {
     case sendMessage = "send-message"
     case checkMessages = "check-messages"
     case broadcastMessage = "broadcast-message"
+    case listRepos = "list-repos"
+    case listWorktrees = "list-worktrees"
+    case createAgent = "create-agent"
 }
 
 // MARK: - Tool Results

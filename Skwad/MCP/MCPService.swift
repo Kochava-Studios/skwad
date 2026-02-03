@@ -21,6 +21,7 @@ protocol AgentDataProvider: Sendable {
     func getAgentsInSameWorkspace(as agentId: UUID) async -> [Agent]
     func setRegistered(for agentId: UUID, registered: Bool) async
     func injectText(_ text: String, for agentId: UUID) async
+    func addAgent(folder: String, name: String, avatar: String?, agentType: String) async -> UUID?
 }
 
 // MARK: - MCP Service
@@ -287,6 +288,108 @@ actor MCPService: MCPServiceProtocol {
         return agent.name
     }
 
+    // MARK: - Repository Operations
+
+    func listRepos() async -> [RepoInfoResponse] {
+        let baseFolder = await MainActor.run {
+            AppSettings.shared.expandedSourceBaseFolder
+        }
+
+        guard !baseFolder.isEmpty else {
+            logger.warning("[skwad] Source base folder not configured")
+            return []
+        }
+
+        let repos = GitWorktreeManager.shared.discoverRepos(in: baseFolder)
+        return repos.map { repo in
+            RepoInfoResponse(
+                name: repo.name,
+                path: repo.path,
+                worktreeCount: repo.worktreeCount
+            )
+        }
+    }
+
+    func listWorktrees(for repoPath: String) -> [WorktreeInfoResponse] {
+        let worktrees = GitWorktreeManager.shared.listWorktrees(for: repoPath)
+        return worktrees.map { wt in
+            WorktreeInfoResponse(
+                path: wt.path,
+                branch: wt.branch,
+                isMain: wt.isMain
+            )
+        }
+    }
+
+    // MARK: - Agent Creation
+
+    func createAgent(
+        name: String,
+        icon: String?,
+        agentType: String,
+        repoPath: String,
+        createWorktree: Bool,
+        branchName: String?
+    ) async -> CreateAgentResponse {
+        guard let provider = agentDataProvider else {
+            return CreateAgentResponse(success: false, agentId: nil, message: "AgentDataProvider not available")
+        }
+
+        var folder = repoPath
+
+        // Create worktree if requested
+        if createWorktree {
+            guard let branch = branchName, !branch.isEmpty else {
+                return CreateAgentResponse(success: false, agentId: nil, message: "branchName is required when createWorktree is true")
+            }
+
+            // Verify repo exists
+            guard GitWorktreeManager.shared.isGitRepo(repoPath) else {
+                return CreateAgentResponse(success: false, agentId: nil, message: "Repository not found at path: \(repoPath)")
+            }
+
+            // Generate destination path for worktree
+            let destinationPath = GitWorktreeManager.shared.suggestedWorktreePath(repoPath: repoPath, branchName: branch)
+
+            // Check if destination already exists
+            if FileManager.default.fileExists(atPath: destinationPath) {
+                return CreateAgentResponse(success: false, agentId: nil, message: "Worktree destination already exists: \(destinationPath)")
+            }
+
+            // Check if branch exists locally or remotely
+            let localBranches = GitWorktreeManager.shared.listLocalBranches(for: repoPath)
+            let remoteBranches = GitWorktreeManager.shared.listRemoteBranches(for: repoPath)
+            let branchExists = localBranches.contains(branch) || remoteBranches.contains(branch)
+
+            do {
+                try GitWorktreeManager.shared.createWorktree(
+                    repoPath: repoPath,
+                    branchName: branch,
+                    destinationPath: destinationPath,
+                    createBranch: !branchExists
+                )
+                folder = destinationPath
+                logger.info("[skwad] Created worktree at \(destinationPath) for branch \(branch)")
+            } catch {
+                return CreateAgentResponse(success: false, agentId: nil, message: "Failed to create worktree: \(error.localizedDescription)")
+            }
+        } else {
+            // Verify folder exists
+            var isDirectory: ObjCBool = false
+            guard FileManager.default.fileExists(atPath: folder, isDirectory: &isDirectory), isDirectory.boolValue else {
+                return CreateAgentResponse(success: false, agentId: nil, message: "Folder not found: \(folder)")
+            }
+        }
+
+        // Create the agent via the provider
+        if let agentId = await provider.addAgent(folder: folder, name: name, avatar: icon, agentType: agentType) {
+            logger.info("[skwad] Created agent '\(name)' with ID \(agentId)")
+            return CreateAgentResponse(success: true, agentId: agentId.uuidString, message: "Agent created successfully")
+        } else {
+            return CreateAgentResponse(success: false, agentId: nil, message: "Failed to create agent")
+        }
+    }
+
     // MARK: - Cleanup
 
     func cleanup() async {
@@ -339,6 +442,19 @@ final class AgentManagerWrapper: AgentDataProvider, @unchecked Sendable {
     func injectText(_ text: String, for agentId: UUID) async {
         await MainActor.run {
             manager?.injectText(text, for: agentId)
+        }
+    }
+
+    func addAgent(folder: String, name: String, avatar: String?, agentType: String) async -> UUID? {
+        await MainActor.run {
+            guard let manager = manager else { return nil }
+            let countBefore = manager.agents.count
+            manager.addAgent(folder: folder, name: name, avatar: avatar, agentType: agentType)
+            // Return the ID of the newly added agent
+            if manager.agents.count > countBefore {
+                return manager.agents.last?.id
+            }
+            return nil
         }
     }
 }

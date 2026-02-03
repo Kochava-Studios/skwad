@@ -66,6 +66,39 @@ actor MCPToolHandler {
                     ],
                     required: ["from", "content"]
                 )
+            ),
+            ToolDefinition(
+                name: MCPToolName.listRepos.rawValue,
+                description: "List all git repositories in the configured source folder",
+                inputSchema: ToolInputSchema(
+                    properties: [:],
+                    required: []
+                )
+            ),
+            ToolDefinition(
+                name: MCPToolName.listWorktrees.rawValue,
+                description: "List all worktrees for a given repository",
+                inputSchema: ToolInputSchema(
+                    properties: [
+                        "repoPath": PropertySchema(type: "string", description: "Path to the repository")
+                    ],
+                    required: ["repoPath"]
+                )
+            ),
+            ToolDefinition(
+                name: MCPToolName.createAgent.rawValue,
+                description: "Create a new agent in Skwad. Can optionally create a new git worktree for the agent.",
+                inputSchema: ToolInputSchema(
+                    properties: [
+                        "name": PropertySchema(type: "string", description: "Name for the agent"),
+                        "icon": PropertySchema(type: "string", description: "Emoji icon for the agent (e.g., '🤖')"),
+                        "agentType": PropertySchema(type: "string", description: "Agent type: claude, codex, opencode, aider, goose, gemini, custom1, or custom2"),
+                        "repoPath": PropertySchema(type: "string", description: "Path to the repository or worktree folder"),
+                        "createWorktree": PropertySchema(type: "boolean", description: "If true, create a new worktree from repoPath"),
+                        "branchName": PropertySchema(type: "string", description: "Branch name for new worktree (required if createWorktree is true)")
+                    ],
+                    required: ["name", "agentType", "repoPath"]
+                )
             )
         ]
     }
@@ -88,6 +121,12 @@ actor MCPToolHandler {
             return await handleCheckMessages(arguments)
         case .broadcastMessage:
             return await handleBroadcastMessage(arguments)
+        case .listRepos:
+            return await handleListRepos(arguments)
+        case .listWorktrees:
+            return await handleListWorktrees(arguments)
+        case .createAgent:
+            return await handleCreateAgent(arguments)
         }
     }
 
@@ -101,9 +140,14 @@ actor MCPToolHandler {
         let success = await mcpService.registerAgent(agentId: agentId)
 
         if success {
+            // Get skwad members for context
+            let members = await mcpService.listAgents(callerAgentId: agentId)
+
             let response = RegisterAgentResponse(
                 success: true,
-                message: "Successfully registered with Skwad crew"
+                message: "Successfully registered with Skwad crew. Note: skwad members can change over time as agents join or leave. Use list-agents to get the current list.",
+                unreadMessageCount: 0,
+                skwadMembers: members
             )
             return successResult(response)
         } else {
@@ -181,6 +225,54 @@ actor MCPToolHandler {
         let count = await mcpService.broadcastMessage(from: from, content: content)
         let response = BroadcastResponse(success: count > 0, recipientCount: count)
         return successResult(response)
+    }
+
+    private func handleListRepos(_ arguments: [String: Any]) async -> ToolCallResult {
+        let repos = await mcpService.listRepos()
+        let response = ListReposResponse(repos: repos)
+        return successResult(response)
+    }
+
+    private func handleListWorktrees(_ arguments: [String: Any]) async -> ToolCallResult {
+        guard let repoPath = arguments["repoPath"] as? String else {
+            return errorResult("Missing required parameter: repoPath")
+        }
+
+        let worktrees = await mcpService.listWorktrees(for: repoPath)
+        let response = ListWorktreesResponse(repoPath: repoPath, worktrees: worktrees)
+        return successResult(response)
+    }
+
+    private func handleCreateAgent(_ arguments: [String: Any]) async -> ToolCallResult {
+        guard let name = arguments["name"] as? String else {
+            return errorResult("Missing required parameter: name")
+        }
+        guard let agentType = arguments["agentType"] as? String else {
+            return errorResult("Missing required parameter: agentType")
+        }
+        guard let repoPath = arguments["repoPath"] as? String else {
+            return errorResult("Missing required parameter: repoPath")
+        }
+
+        let icon = arguments["icon"] as? String
+        let createWorktree = arguments["createWorktree"] as? Bool ?? false
+        let branchName = arguments["branchName"] as? String
+
+        // Validate branch name is provided if creating worktree
+        if createWorktree && (branchName == nil || branchName!.isEmpty) {
+            return errorResult("branchName is required when createWorktree is true")
+        }
+
+        let result = await mcpService.createAgent(
+            name: name,
+            icon: icon,
+            agentType: agentType,
+            repoPath: repoPath,
+            createWorktree: createWorktree,
+            branchName: branchName
+        )
+
+        return successResult(result)
     }
 
     // MARK: - Helpers
