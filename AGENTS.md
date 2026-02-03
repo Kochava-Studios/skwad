@@ -84,7 +84,8 @@ Skwad/
 - `AgentDataProvider` protocol bridges MainActor-isolated AgentManager safely
 - Server starts AFTER AgentManager is set to avoid race conditions
 - Registration prompt injected ~3s after terminal starts (if MCP enabled)
-- Tools: `register-agent`, `list-agents`, `send-message`, `check-messages`, `broadcast-message`
+- Communication tools: `register-agent`, `list-agents`, `send-message`, `check-messages`, `broadcast-message`
+- Management tools: `list-repos`, `list-worktrees`, `create-agent`
 
 ### Git Integration
 - `GitCLI` - Low-level command runner with 30s timeout
@@ -131,9 +132,13 @@ Skwad/
 3. Use the setting where needed via AppSettings.shared
 
 ### Adding a New MCP Tool
-1. Add tool schema to MCPTools.swift
-2. Add handler in MCPToolHandler.swift
-3. Add implementation in MCPService.swift if needed
+1. Add tool name to `MCPToolName` enum in MCPTypes.swift
+2. Add response struct in MCPTypes.swift if needed
+3. Add tool definition in `MCPToolHandler.listTools()` in MCPTools.swift
+4. Add switch case in `MCPToolHandler.callTool()` in MCPTools.swift
+5. Implement handler method in MCPTools.swift
+6. Add service method in MCPService.swift if needed
+7. If accessing AgentManager, extend `AgentDataProvider` protocol and `AgentManagerWrapper`
 
 ### Modifying Terminal Behavior
 - Ghostty: GhosttyHostView.swift callbacks (onReady, onActivity, etc.)
