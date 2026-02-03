@@ -3,20 +3,15 @@ import SwiftUI
 @testable import Skwad
 
 /// Tests for AgentManager that actually test the real implementation
-/// These tests use @MainActor to work with the MainActor-isolated AgentManager
 @Suite("AgentManager", .serialized)
-@MainActor
 struct AgentManagerTests {
 
     // MARK: - Test Setup
 
     /// Create a fresh AgentManager for testing
-    /// Note: We need to avoid triggering saved agent loading
+    @MainActor
     static func createTestManager() -> AgentManager {
-        // The manager checks for XCODE_RUNNING_FOR_PREVIEWS to skip loading
-        // For tests, we'll create it and manually set up state
         let manager = AgentManager()
-        // Clear any loaded state
         manager.agents = []
         manager.workspaces = []
         manager.currentWorkspaceId = nil
@@ -31,6 +26,7 @@ struct AgentManagerTests {
     }
 
     /// Set up a manager with a workspace and agents
+    @MainActor
     static func setupManager(agentCount: Int, mode: LayoutMode = .single) -> AgentManager {
         let manager = createTestManager()
         let agents = createTestAgents(count: agentCount)
@@ -55,7 +51,8 @@ struct AgentManagerTests {
     struct WorkspaceCRUDTests {
 
         @Test("addWorkspace creates new workspace")
-        func addWorkspaceCreatesNew() {
+        @MainActor
+        func addWorkspaceCreatesNew() async {
             let manager = AgentManagerTests.createTestManager()
 
             let workspace = manager.addWorkspace(name: "New Workspace", color: .blue)
@@ -66,7 +63,8 @@ struct AgentManagerTests {
         }
 
         @Test("addWorkspace sets as current")
-        func addWorkspaceSetsAsCurrent() {
+        @MainActor
+        func addWorkspaceSetsAsCurrent() async {
             let manager = AgentManagerTests.createTestManager()
 
             let ws1 = manager.addWorkspace(name: "First")
@@ -74,11 +72,12 @@ struct AgentManagerTests {
 
             #expect(manager.currentWorkspaceId == ws2.id)
             #expect(manager.workspaces.count == 2)
-            _ = ws1 // silence warning
+            _ = ws1
         }
 
         @Test("updateWorkspace changes name and color")
-        func updateWorkspaceChangesNameAndColor() {
+        @MainActor
+        func updateWorkspaceChangesNameAndColor() async {
             let manager = AgentManagerTests.createTestManager()
             let workspace = manager.addWorkspace(name: "Original", color: .blue)
 
@@ -89,7 +88,8 @@ struct AgentManagerTests {
         }
 
         @Test("switchToWorkspace changes current workspace")
-        func switchToWorkspaceChangesCurrent() {
+        @MainActor
+        func switchToWorkspaceChangesCurrent() async {
             let manager = AgentManagerTests.createTestManager()
             let ws1 = manager.addWorkspace(name: "First")
             _ = manager.addWorkspace(name: "Second")
@@ -100,18 +100,20 @@ struct AgentManagerTests {
         }
 
         @Test("switchToWorkspace ignores invalid id")
-        func switchToWorkspaceIgnoresInvalid() {
+        @MainActor
+        func switchToWorkspaceIgnoresInvalid() async {
             let manager = AgentManagerTests.createTestManager()
             _ = manager.addWorkspace(name: "First")
             let currentId = manager.currentWorkspaceId
 
-            manager.switchToWorkspace(UUID())  // Invalid ID
+            manager.switchToWorkspace(UUID())
 
             #expect(manager.currentWorkspaceId == currentId)
         }
 
         @Test("removeWorkspace removes and switches to another")
-        func removeWorkspaceSwitchesToAnother() {
+        @MainActor
+        func removeWorkspaceSwitchesToAnother() async {
             let manager = AgentManagerTests.createTestManager()
             let ws1 = manager.addWorkspace(name: "First")
             let ws2 = manager.addWorkspace(name: "Second")
@@ -123,7 +125,8 @@ struct AgentManagerTests {
         }
 
         @Test("moveWorkspace reorders workspaces")
-        func moveWorkspaceReorders() {
+        @MainActor
+        func moveWorkspaceReorders() async {
             let manager = AgentManagerTests.createTestManager()
             _ = manager.addWorkspace(name: "First")
             _ = manager.addWorkspace(name: "Second")
@@ -142,19 +145,21 @@ struct AgentManagerTests {
     struct AgentCRUDTests {
 
         @Test("addAgent creates agent and workspace if needed")
-        func addAgentCreatesAgentAndWorkspace() {
+        @MainActor
+        func addAgentCreatesAgentAndWorkspace() async {
             let manager = AgentManagerTests.createTestManager()
 
             manager.addAgent(folder: "/tmp/test", name: "TestAgent")
 
             #expect(manager.agents.count == 1)
             #expect(manager.agents[0].name == "TestAgent")
-            #expect(manager.workspaces.count == 1)  // Default workspace created
+            #expect(manager.workspaces.count == 1)
             #expect(manager.currentWorkspaceAgents.count == 1)
         }
 
         @Test("addAgent uses folder name if no name provided")
-        func addAgentUsesFolderName() {
+        @MainActor
+        func addAgentUsesFolderName() async {
             let manager = AgentManagerTests.createTestManager()
 
             manager.addAgent(folder: "/tmp/my-project")
@@ -163,7 +168,8 @@ struct AgentManagerTests {
         }
 
         @Test("addAgent with insertAfterId inserts at correct position")
-        func addAgentInsertsAtCorrectPosition() {
+        @MainActor
+        func addAgentInsertsAtCorrectPosition() async {
             let manager = AgentManagerTests.setupManager(agentCount: 2)
             let firstAgentId = manager.agents[0].id
 
@@ -174,7 +180,8 @@ struct AgentManagerTests {
         }
 
         @Test("updateAgent changes name and avatar")
-        func updateAgentChangesNameAndAvatar() {
+        @MainActor
+        func updateAgentChangesNameAndAvatar() async {
             let manager = AgentManagerTests.setupManager(agentCount: 1)
             let agentId = manager.agents[0].id
 
@@ -185,7 +192,8 @@ struct AgentManagerTests {
         }
 
         @Test("duplicateAgent creates copy with suffix")
-        func duplicateAgentCreatesCopy() {
+        @MainActor
+        func duplicateAgentCreatesCopy() async {
             let manager = AgentManagerTests.setupManager(agentCount: 1)
             let original = manager.agents[0]
 
@@ -197,7 +205,8 @@ struct AgentManagerTests {
         }
 
         @Test("moveAgent reorders in workspace")
-        func moveAgentReorders() {
+        @MainActor
+        func moveAgentReorders() async {
             let manager = AgentManagerTests.setupManager(agentCount: 3)
 
             manager.moveAgent(from: IndexSet(integer: 0), to: 2)
@@ -213,7 +222,8 @@ struct AgentManagerTests {
     struct NavigationTests {
 
         @Test("selectNextAgent cycles forward")
-        func selectNextAgentCyclesForward() {
+        @MainActor
+        func selectNextAgentCyclesForward() async {
             let manager = AgentManagerTests.setupManager(agentCount: 3)
             let agents = manager.currentWorkspaceAgents
 
@@ -227,11 +237,11 @@ struct AgentManagerTests {
         }
 
         @Test("selectNextAgent wraps around")
-        func selectNextAgentWrapsAround() {
+        @MainActor
+        func selectNextAgentWrapsAround() async {
             let manager = AgentManagerTests.setupManager(agentCount: 3)
             let agents = manager.currentWorkspaceAgents
 
-            // Go to last agent
             manager.activeAgentIds = [agents[2].id]
 
             manager.selectNextAgent()
@@ -239,7 +249,8 @@ struct AgentManagerTests {
         }
 
         @Test("selectPreviousAgent cycles backward")
-        func selectPreviousAgentCyclesBackward() {
+        @MainActor
+        func selectPreviousAgentCyclesBackward() async {
             let manager = AgentManagerTests.setupManager(agentCount: 3)
             let agents = manager.currentWorkspaceAgents
 
@@ -248,7 +259,8 @@ struct AgentManagerTests {
         }
 
         @Test("selectAgent sets active in single mode")
-        func selectAgentSetsActiveInSingleMode() {
+        @MainActor
+        func selectAgentSetsActiveInSingleMode() async {
             let manager = AgentManagerTests.setupManager(agentCount: 3)
             let agents = manager.currentWorkspaceAgents
 
@@ -258,7 +270,8 @@ struct AgentManagerTests {
         }
 
         @Test("selectAgentAtIndex selects correct agent")
-        func selectAgentAtIndexSelectsCorrect() {
+        @MainActor
+        func selectAgentAtIndexSelectsCorrect() async {
             let manager = AgentManagerTests.setupManager(agentCount: 4)
             let agents = manager.currentWorkspaceAgents
 
@@ -268,7 +281,8 @@ struct AgentManagerTests {
         }
 
         @Test("selectAgentAtIndex ignores out of bounds")
-        func selectAgentAtIndexIgnoresOutOfBounds() {
+        @MainActor
+        func selectAgentAtIndexIgnoresOutOfBounds() async {
             let manager = AgentManagerTests.setupManager(agentCount: 3)
             let original = manager.activeAgentIds
 
@@ -284,7 +298,8 @@ struct AgentManagerTests {
     struct LayoutTests {
 
         @Test("enterSplit sets up two panes")
-        func enterSplitSetsTwoPanes() {
+        @MainActor
+        func enterSplitSetsTwoPanes() async {
             let manager = AgentManagerTests.setupManager(agentCount: 3)
 
             manager.enterSplit(.splitVertical)
@@ -294,16 +309,18 @@ struct AgentManagerTests {
         }
 
         @Test("enterSplit requires at least 2 agents")
-        func enterSplitRequiresTwoAgents() {
+        @MainActor
+        func enterSplitRequiresTwoAgents() async {
             let manager = AgentManagerTests.setupManager(agentCount: 1)
 
             manager.enterSplit(.splitVertical)
 
-            #expect(manager.layoutMode == .single)  // Should remain single
+            #expect(manager.layoutMode == .single)
         }
 
         @Test("focusPane changes focused pane index")
-        func focusPaneChangesFocusedIndex() {
+        @MainActor
+        func focusPaneChangesFocusedIndex() async {
             let manager = AgentManagerTests.setupManager(agentCount: 3)
             manager.enterSplit(.splitVertical)
 
@@ -313,7 +330,8 @@ struct AgentManagerTests {
         }
 
         @Test("selectNextPane cycles through panes")
-        func selectNextPaneCycles() {
+        @MainActor
+        func selectNextPaneCycles() async {
             let manager = AgentManagerTests.setupManager(agentCount: 3)
             manager.enterSplit(.splitVertical)
 
@@ -323,31 +341,34 @@ struct AgentManagerTests {
             #expect(manager.focusedPaneIndex == 1)
 
             manager.selectNextPane()
-            #expect(manager.focusedPaneIndex == 0)  // Wraps
+            #expect(manager.focusedPaneIndex == 0)
         }
 
         @Test("selectPreviousPane cycles backward")
-        func selectPreviousPaneCycles() {
+        @MainActor
+        func selectPreviousPaneCycles() async {
             let manager = AgentManagerTests.setupManager(agentCount: 3)
             manager.enterSplit(.splitVertical)
 
             manager.selectPreviousPane()
-            #expect(manager.focusedPaneIndex == 1)  // Wraps to last
+            #expect(manager.focusedPaneIndex == 1)
         }
 
         @Test("paneIndex returns correct position")
-        func paneIndexReturnsCorrectPosition() {
+        @MainActor
+        func paneIndexReturnsCorrectPosition() async {
             let manager = AgentManagerTests.setupManager(agentCount: 4)
             let agents = manager.currentWorkspaceAgents
             manager.enterSplit(.splitVertical)
 
             #expect(manager.paneIndex(for: agents[0].id) == 0)
             #expect(manager.paneIndex(for: agents[1].id) == 1)
-            #expect(manager.paneIndex(for: agents[2].id) == nil)  // Not in pane
+            #expect(manager.paneIndex(for: agents[2].id) == nil)
         }
 
         @Test("splitRatio can be changed")
-        func splitRatioCanBeChanged() {
+        @MainActor
+        func splitRatioCanBeChanged() async {
             let manager = AgentManagerTests.setupManager(agentCount: 2)
             manager.enterSplit(.splitVertical)
 
@@ -363,7 +384,8 @@ struct AgentManagerTests {
     struct RegistrationTests {
 
         @Test("setRegistered updates agent state")
-        func setRegisteredUpdatesState() {
+        @MainActor
+        func setRegisteredUpdatesState() async {
             let manager = AgentManagerTests.setupManager(agentCount: 1)
             let agentId = manager.agents[0].id
 
@@ -374,7 +396,8 @@ struct AgentManagerTests {
         }
 
         @Test("isRegistered returns false for unregistered")
-        func isRegisteredReturnsFalseForUnregistered() {
+        @MainActor
+        func isRegisteredReturnsFalseForUnregistered() async {
             let manager = AgentManagerTests.setupManager(agentCount: 1)
             let agentId = manager.agents[0].id
 
@@ -382,7 +405,8 @@ struct AgentManagerTests {
         }
 
         @Test("isRegistered returns false for unknown agent")
-        func isRegisteredReturnsFalseForUnknown() {
+        @MainActor
+        func isRegisteredReturnsFalseForUnknown() async {
             let manager = AgentManagerTests.setupManager(agentCount: 1)
 
             #expect(manager.isRegistered(agentId: UUID()) == false)
@@ -395,7 +419,8 @@ struct AgentManagerTests {
     struct StatusTests {
 
         @Test("isWorkspaceActive returns true if any agent is running")
-        func isWorkspaceActiveReturnsTrueIfRunning() {
+        @MainActor
+        func isWorkspaceActiveReturnsTrueIfRunning() async {
             let manager = AgentManagerTests.setupManager(agentCount: 2)
             manager.agents[0].status = .running
 
@@ -405,9 +430,9 @@ struct AgentManagerTests {
         }
 
         @Test("isWorkspaceActive returns false if all agents idle")
-        func isWorkspaceActiveReturnsFalseIfAllIdle() {
+        @MainActor
+        func isWorkspaceActiveReturnsFalseIfAllIdle() async {
             let manager = AgentManagerTests.setupManager(agentCount: 2)
-            // Default status is .idle
 
             let isActive = manager.isWorkspaceActive(manager.currentWorkspace!)
 
@@ -421,7 +446,8 @@ struct AgentManagerTests {
     struct DerivedStateTests {
 
         @Test("currentWorkspaceAgents returns agents in workspace order")
-        func currentWorkspaceAgentsReturnsInOrder() {
+        @MainActor
+        func currentWorkspaceAgentsReturnsInOrder() async {
             let manager = AgentManagerTests.setupManager(agentCount: 3)
 
             let workspaceAgents = manager.currentWorkspaceAgents
@@ -431,14 +457,16 @@ struct AgentManagerTests {
         }
 
         @Test("selectedAgent returns first active agent")
-        func selectedAgentReturnsFirstActive() {
+        @MainActor
+        func selectedAgentReturnsFirstActive() async {
             let manager = AgentManagerTests.setupManager(agentCount: 3)
 
             #expect(manager.selectedAgent?.id == manager.agents[0].id)
         }
 
         @Test("activeAgentId returns focused pane agent in split mode")
-        func activeAgentIdReturnsFocusedInSplit() {
+        @MainActor
+        func activeAgentIdReturnsFocusedInSplit() async {
             let manager = AgentManagerTests.setupManager(agentCount: 3)
             let agents = manager.currentWorkspaceAgents
             manager.enterSplit(.splitVertical)
