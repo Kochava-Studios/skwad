@@ -27,6 +27,7 @@ sed -i '' "s/CURRENT_PROJECT_VERSION = $CURRENT_BUILD;/CURRENT_PROJECT_VERSION =
 
 echo "Build number incremented: $CURRENT_BUILD -> $NEW_BUILD"
 
-# Commit the change
+# Commit and push the change
 git add "$PROJECT_FILE"
 git commit -m "chore: increment build number"
+git push

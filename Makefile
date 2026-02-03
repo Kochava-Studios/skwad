@@ -209,12 +209,14 @@ install:
 # GitHub Actions release targets
 prerelease:
 	@git diff --quiet || (echo "Error: There are uncommitted changes. Commit or stash them first." && exit 1)
+	@$(MAKE) increment-build
 	@echo "Triggering GitHub Action for prerelease build..."
 	gh workflow run build.yml --ref $(CURRENT_BRANCH) -f release_type=prerelease
 	@echo "Workflow triggered. Monitor at: https://github.com/Kochava-Studios/skwad/actions"
 
 latest:
 	@git diff --quiet || (echo "Error: There are uncommitted changes. Commit or stash them first." && exit 1)
+	@$(MAKE) increment-build
 	@echo "Triggering GitHub Action for latest release build..."
 	gh workflow run build.yml --ref $(CURRENT_BRANCH) -f release_type=latest
 	@echo "Workflow triggered. Monitor at: https://github.com/Kochava-Studios/skwad/actions"
