@@ -99,6 +99,17 @@ actor MCPToolHandler {
                     ],
                     required: ["name", "agentType", "repoPath"]
                 )
+            ),
+            ToolDefinition(
+                name: MCPToolName.showMarkdown.rawValue,
+                description: "Display a markdown file in a panel for the user to review. Use this to show plans, documentation, or any markdown content that needs user attention.",
+                inputSchema: ToolInputSchema(
+                    properties: [
+                        "agentId": PropertySchema(type: "string", description: "Your agent ID"),
+                        "filePath": PropertySchema(type: "string", description: "Absolute path to the markdown file to display")
+                    ],
+                    required: ["agentId", "filePath"]
+                )
             )
         ]
     }
@@ -127,6 +138,8 @@ actor MCPToolHandler {
             return await handleListWorktrees(arguments)
         case .createAgent:
             return await handleCreateAgent(arguments)
+        case .showMarkdown:
+            return await handleShowMarkdown(arguments)
         }
     }
 
@@ -297,6 +310,38 @@ actor MCPToolHandler {
         )
 
         return successResult(result)
+    }
+
+    private func handleShowMarkdown(_ arguments: [String: Any]) async -> ToolCallResult {
+        guard let agentId = arguments["agentId"] as? String else {
+            return errorResult("Missing required parameter: agentId")
+        }
+        guard let filePath = arguments["filePath"] as? String else {
+            return errorResult("Missing required parameter: filePath")
+        }
+
+        // Verify agent exists
+        guard let agent = await mcpService.findAgent(byNameOrId: agentId) else {
+            return await agentNotFoundError(agentId)
+        }
+
+        // Verify file exists
+        guard FileManager.default.fileExists(atPath: filePath) else {
+            return errorResult("File not found: \(filePath)")
+        }
+
+        // Request the markdown panel to be shown
+        let success = await mcpService.showMarkdownPanel(filePath: filePath, agentId: agent.id)
+
+        if success {
+            let response = ShowMarkdownResponse(
+                success: true,
+                message: "Markdown panel opened for: \(filePath)"
+            )
+            return successResult(response)
+        } else {
+            return errorResult("Failed to open markdown panel")
+        }
     }
 
     // MARK: - Helpers

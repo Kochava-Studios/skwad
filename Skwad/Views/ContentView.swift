@@ -307,6 +307,16 @@ struct ContentView: View {
         }
         .transition(.move(edge: .trailing))
       }
+
+      // Markdown panel (sliding from right)
+      if let filePath = agentManager.markdownPanelFilePath {
+        MarkdownPanelView(filePath: filePath) {
+          withAnimation(.easeInOut(duration: 0.2)) {
+            agentManager.closeMarkdownPanel()
+          }
+        }
+        .transition(.move(edge: .trailing))
+      }
     }
     .background(settings.sidebarBackgroundColor)
     .frame(minWidth: 900, minHeight: 600)
@@ -321,12 +331,22 @@ struct ContentView: View {
     }
     .onChange(of: agentManager.activeAgentIds) { _, _ in
       if showGitPanel { showGitPanel = false }
+      agentManager.closeMarkdownPanel()
     }
     .onChange(of: agentManager.focusedPaneIndex) { _, _ in
       if showGitPanel { showGitPanel = false }
+      agentManager.closeMarkdownPanel()
     }
     .onChange(of: showGitPanel) { _, _ in
       // Notify terminal to resize when git panel toggles
+      DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+        if let activeId = agentManager.activeAgentId {
+          agentManager.notifyTerminalResize(for: activeId)
+        }
+      }
+    }
+    .onChange(of: agentManager.markdownPanelFilePath) { _, _ in
+      // Notify terminal to resize when markdown panel toggles
       DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
         if let activeId = agentManager.activeAgentId {
           agentManager.notifyTerminalResize(for: activeId)

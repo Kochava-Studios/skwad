@@ -27,6 +27,10 @@ final class AgentManager {
     var workspaces: [Workspace] = []
     var currentWorkspaceId: UUID?
 
+    // Markdown panel state
+    var markdownPanelFilePath: String?
+    var markdownPanelAgentId: UUID?
+
     private let settings = AppSettings.shared
 
     // Terminal references for each agent (keyed by agent ID)
@@ -699,5 +703,19 @@ final class AgentManager {
                 self.agents[index].gitStats = stats
             }
         }
+    }
+
+    // MARK: - Markdown Panel
+
+    /// Show the markdown panel for a specific file
+    func showMarkdownPanel(filePath: String, forAgent agentId: UUID) {
+        markdownPanelFilePath = filePath
+        markdownPanelAgentId = agentId
+    }
+
+    /// Close the markdown panel
+    func closeMarkdownPanel() {
+        markdownPanelFilePath = nil
+        markdownPanelAgentId = nil
     }
 }

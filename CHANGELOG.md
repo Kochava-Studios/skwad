@@ -2,10 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.2.0] - WIP
+## [1.2.0] - 2026-02-03
 
 ### Added
 - Draggable split pane dividers for 2-pane and 4-pane layouts
+- MCP tool `show-markdown` for agents to display markdown files in a panel
 
 ### Changed
 - N/A

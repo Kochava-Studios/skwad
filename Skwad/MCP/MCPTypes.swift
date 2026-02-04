@@ -91,6 +91,11 @@ struct RegisterAgentResponse: Codable {
     let skwadMembers: [AgentInfo]
 }
 
+struct ShowMarkdownResponse: Codable {
+    let success: Bool
+    let message: String
+}
+
 // MARK: - JSON-RPC Types
 
 struct JSONRPCRequest: Codable {
@@ -335,6 +340,7 @@ enum MCPToolName: String {
     case listRepos = "list-repos"
     case listWorktrees = "list-worktrees"
     case createAgent = "create-agent"
+    case showMarkdown = "show-markdown"
 }
 
 // MARK: - Tool Results

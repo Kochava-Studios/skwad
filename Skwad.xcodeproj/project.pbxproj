@@ -18,6 +18,8 @@
 		8D2673CA2F31592C0043E3A6 /* VoiceInputOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D2673C82F31592C0043E3A6 /* VoiceInputOverlay.swift */; };
 		8D2673CB2F31592C0043E3A6 /* PushToTalkMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D2673C62F31592C0043E3A6 /* PushToTalkMonitor.swift */; };
 		8D3F44C72F30EB2000407F17 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = SP000002 /* Sparkle */; };
+		MD000001 /* MarkdownPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MD100001 /* MarkdownPanelView.swift */; };
+		MD000002 /* MarkdownUI in Frameworks */ = {isa = PBXBuildFile; productRef = MD000003 /* MarkdownUI */; };
 		8D6B97222F2DC17900CE877E /* MCPMessageStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6B97212F2DC17900CE877E /* MCPMessageStore.swift */; };
 		8D6B97252F2DC47300CE877E /* AsyncDelay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6B97232F2DC47300CE877E /* AsyncDelay.swift */; };
 		8D6B97262F2DC47300CE877E /* TimingConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6B97242F2DC47300CE877E /* TimingConstants.swift */; };
@@ -146,6 +148,7 @@
 
 /* Begin PBXFileReference section */
 		137C060CFAE6151E52210D1A /* GitRepository.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GitRepository.swift; sourceTree = "<group>"; };
+		MD100001 /* MarkdownPanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownPanelView.swift; sourceTree = "<group>"; };
 		241FF0F3B6265925356C1479 /* GitFileWatcher.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GitFileWatcher.swift; sourceTree = "<group>"; };
 		52D95A7EFF9B22BB564BAFA4 /* GitWorktreeManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GitWorktreeManager.swift; sourceTree = "<group>"; };
 		5B074ACAD44D9FA064E28A16 /* NewWorktreeSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NewWorktreeSheet.swift; sourceTree = "<group>"; };
@@ -280,6 +283,7 @@
 				F8001009 /* SwiftTerm in Frameworks */,
 				8D7622952F2C652D006B6280 /* HummingbirdCore in Frameworks */,
 				8D7622902F2C6506006B6280 /* MCP in Frameworks */,
+				MD000002 /* MarkdownUI in Frameworks */,
 				LG000001 /* libghostty.a in Frameworks */,
 				SF000001 /* Metal.framework in Frameworks */,
 				SF000002 /* MetalKit.framework in Frameworks */,
@@ -403,10 +407,19 @@
 				F8000016 /* Settings */,
 				F8000017 /* Components */,
 				2EB8108896BD1402E4BDA10F /* Git */,
+				MD200001 /* Markdown */,
 				WS200001 /* Workspace */,
 				F8000002 /* ContentView.swift */,
 			);
 			path = Views;
+			sourceTree = "<group>";
+		};
+		MD200001 /* Markdown */ = {
+			isa = PBXGroup;
+			children = (
+				MD100001 /* MarkdownPanelView.swift */,
+			);
+			path = Markdown;
 			sourceTree = "<group>";
 		};
 		F8000014 /* Sidebar */ = {
@@ -779,6 +792,7 @@
 				8D7622962F2C6536006B6280 /* XCRemoteSwiftPackageReference "swift-log" */,
 				SP000001 /* XCRemoteSwiftPackageReference "Sparkle" */,
 				TS800000 /* XCRemoteSwiftPackageReference "ViewInspector" */,
+				MD300001 /* XCRemoteSwiftPackageReference "swift-markdown-ui" */,
 			);
 			productRefGroup = F8000101 /* Products */;
 			projectDirPath = "";
@@ -870,6 +884,7 @@
 				EC4663850678FAF77C0F1381 /* GitRepository.swift in Sources */,
 				0327FDF2A2ECDCE0DF53BE02 /* DiffView.swift in Sources */,
 				914A53BB8DBD66EC96B19BDA /* GitPanelView.swift in Sources */,
+				MD000001 /* MarkdownPanelView.swift in Sources */,
 				01716FCA29A8F9522A2F8A9A /* GitFileWatcher.swift in Sources */,
 				3FFD4CA0073309E4B34E6B66 /* CommitSheet.swift in Sources */,
 				8D6B97252F2DC47300CE877E /* AsyncDelay.swift in Sources */,
@@ -1090,7 +1105,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 1.1.0;
+				MARKETING_VERSION = 1.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.kochava.skwad;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -1122,7 +1137,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 1.1.0;
+				MARKETING_VERSION = 1.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.kochava.skwad;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -1140,7 +1155,7 @@
 				DEVELOPMENT_TEAM = S3Y2KVL7H7;
 				GENERATE_INFOPLIST_FILE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 1.1.0;
+				MARKETING_VERSION = 1.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.kochava.skwad.tests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
@@ -1158,7 +1173,7 @@
 				DEVELOPMENT_TEAM = S3Y2KVL7H7;
 				GENERATE_INFOPLIST_FILE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 1.1.0;
+				MARKETING_VERSION = 1.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.kochava.skwad.tests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
@@ -1248,6 +1263,14 @@
 				minimumVersion = 0.10.0;
 			};
 		};
+		MD300001 /* XCRemoteSwiftPackageReference "swift-markdown-ui" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/gonzalezreal/swift-markdown-ui";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.4.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -1290,6 +1313,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = TS800000 /* XCRemoteSwiftPackageReference "ViewInspector" */;
 			productName = ViewInspector;
+		};
+		MD000003 /* MarkdownUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = MD300001 /* XCRemoteSwiftPackageReference "swift-markdown-ui" */;
+			productName = MarkdownUI;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

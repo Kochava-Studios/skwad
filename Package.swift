@@ -13,6 +13,7 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-log.git", from: "1.6.0"),
         .package(url: "https://github.com/sparkle-project/Sparkle", from: "2.6.0"),
         .package(url: "https://github.com/nalexn/ViewInspector.git", from: "0.10.0"),
+        .package(url: "https://github.com/gonzalezreal/swift-markdown-ui", from: "2.4.0"),
     ],
     targets: [
         .executableTarget(
@@ -23,6 +24,7 @@ let package = Package(
                 .product(name: "Hummingbird", package: "hummingbird"),
                 .product(name: "Logging", package: "swift-log"),
                 .product(name: "Sparkle", package: "Sparkle"),
+                .product(name: "MarkdownUI", package: "swift-markdown-ui"),
             ],
             path: "Skwad"
         ),

@@ -7,7 +7,7 @@ Add a new MCP tool `show-markdown` that allows agents to display a markdown file
 
 ### Tool Behavior
 - **Tool name**: `show-markdown`
-- **Input**: `filePath` (required) - absolute path to a markdown file
+- **Input**: `filePath` (required) - absolute path to a markdown file, `agentId` (required) - caller's agent ID
 - **Output**: Success/error response indicating if panel was opened
 - **Side effect**: Opens a sliding panel showing the rendered markdown
 
@@ -17,7 +17,7 @@ Add a new MCP tool `show-markdown` that allows agents to display a markdown file
 - Header with:
   - File name/path
   - Close button (X)
-- Content area with Textual-rendered markdown
+- Content area with MarkdownUI-rendered markdown
 - Auto-scrolls to top when opened
 
 ### Architecture
@@ -27,41 +27,43 @@ Add a new MCP tool `show-markdown` that allows agents to display a markdown file
 4. **AgentDataProvider**: Add new method `showMarkdownPanel(filePath:agentId:)`
 5. **AgentManagerWrapper**: Implement the new protocol method
 6. **AgentManager**: Add published property for markdown panel state
-7. **MarkdownPanelView.swift**: New view for rendering markdown (using Textual)
+7. **MarkdownPanelView.swift**: New view for rendering markdown (using MarkdownUI)
 8. **ContentView.swift**: Integrate the panel (similar to GitPanelView)
 
 ## Implementation Steps
 
-### Phase 1: Add Textual dependency
-- [ ] Add Textual package to Package.swift
-- [ ] Commit: `feat: add textual package dependency for markdown rendering`
+### Phase 1: Add MarkdownUI dependency
+- [x] Add MarkdownUI package to Package.swift and Xcode project
+- [x] Commit: `feat: add markdownui package dependency for markdown rendering`
 
 ### Phase 2: Create MarkdownPanelView
-- [ ] Create `Skwad/Views/Markdown/MarkdownPanelView.swift`
+- [x] Create `Skwad/Views/Markdown/MarkdownPanelView.swift`
   - Sliding panel UI (reuse patterns from GitPanelView)
   - Header with file name and close button
-  - Textual markdown rendering
+  - MarkdownUI markdown rendering
   - Error state for file not found / not readable
-- [ ] Commit: `feat: add markdown panel view with textual rendering`
+- [x] Commit: `feat: add markdown panel view with markdownui rendering`
 
 ### Phase 3: Add MCP tool infrastructure
-- [ ] Add `showMarkdown` to `MCPToolName` enum
-- [ ] Add `ShowMarkdownResponse` struct
-- [ ] Add tool definition in `MCPToolHandler.listTools()`
-- [ ] Add handler method `handleShowMarkdown`
-- [ ] Commit: `feat: add show-markdown mcp tool definition`
+- [x] Add `showMarkdown` to `MCPToolName` enum
+- [x] Add `ShowMarkdownResponse` struct
+- [x] Add tool definition in `MCPToolHandler.listTools()`
+- [x] Add handler method `handleShowMarkdown`
+- [x] Commit: `feat: add show-markdown mcp tool definition`
 
 ### Phase 4: Wire up AgentManager and panel state
-- [ ] Add `showMarkdownPanel(filePath:agentId:)` to `AgentDataProvider` protocol
-- [ ] Implement in `AgentManagerWrapper`
-- [ ] Add `@Published` state in AgentManager for panel visibility + file path
-- [ ] Commit: `feat: wire show-markdown tool to agent manager`
+- [x] Add `showMarkdownPanel(filePath:agentId:)` to `AgentDataProvider` protocol
+- [x] Implement in `AgentManagerWrapper`
+- [x] Add state in AgentManager for panel visibility + file path
+- [x] Commit: `feat: wire show-markdown tool to agent manager`
 
 ### Phase 5: Integrate panel in ContentView
-- [ ] Add MarkdownPanelView to ContentView (similar to GitPanelView)
-- [ ] Add slide-in animation and transition
-- [ ] Handle close action
-- [ ] Commit: `feat: integrate markdown panel in main content view`
+- [x] Add MarkdownPanelView to ContentView (similar to GitPanelView)
+- [x] Add slide-in animation and transition
+- [x] Handle close action
+- [x] Close panel when switching agents
+- [x] Notify terminal to resize when panel toggles
+- [x] Commit: `feat: integrate markdown panel in main content view`
 
 ### Phase 6: Testing & polish
 - [ ] Test with various markdown files
@@ -69,15 +71,16 @@ Add a new MCP tool `show-markdown` that allows agents to display a markdown file
 - [ ] Verify panel closes when switching agents
 - [ ] Commit: `chore: polish markdown panel feature`
 
-## Key Files to Modify
+## Key Files Modified
 
 | File | Changes |
 |------|---------|
-| `Package.swift` | Add Textual dependency |
+| `Package.swift` | Add MarkdownUI dependency |
+| `Skwad.xcodeproj/project.pbxproj` | Add MarkdownUI package + MarkdownPanelView.swift |
 | `MCPTypes.swift` | Add enum case + response struct |
 | `MCPTools.swift` | Add tool definition + handler |
 | `MCPService.swift` | Add showMarkdownPanel method |
-| `AgentManager.swift` | Add published state for panel |
+| `AgentManager.swift` | Add state for panel |
 | `ContentView.swift` | Integrate MarkdownPanelView |
 
 ## New Files
@@ -87,7 +90,14 @@ Add a new MCP tool `show-markdown` that allows agents to display a markdown file
 | `Skwad/Views/Markdown/MarkdownPanelView.swift` | Markdown panel UI |
 
 ## Notes
-- The tool should return quickly (just signals to show panel)
+- The tool returns quickly (just signals to show panel)
 - File reading happens in the view, not the tool handler
 - Panel only shows for the agent that called the tool
 - Multiple calls replace the current panel content
+- Used MarkdownUI instead of Textual (MarkdownUI is mature and well-documented)
+
+## Key Learnings
+- Xcode projects require manual updates to project.pbxproj for new files and packages
+- MarkdownUI uses `.markdownTheme(.gitHub)` for GitHub-style rendering
+- Pattern for sliding panels: use `.transition(.move(edge: .trailing))` with animation
+- Close panels on agent switch via `.onChange(of: agentManager.activeAgentIds)`
