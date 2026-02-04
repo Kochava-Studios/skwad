@@ -5,13 +5,14 @@ All notable changes to this project will be documented in this file.
 ## [1.2.1] - 2026-02-04
 
 ### Added
-- N/A
+- File drop support: drag files onto terminal to inject their path
 
 ### Changed
 - Renamed MCP tool `show-markdown` to `display-markdown` with improved description
 
 ### Fixed
 - Context menu submenu flickering when terminal is active
+- Markdown panel now reloads when file path changes
 
 ### Removed
 - N/A

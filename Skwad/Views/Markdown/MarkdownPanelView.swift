@@ -39,6 +39,9 @@ struct MarkdownPanelView: View {
         .onAppear {
             loadContent()
         }
+        .onChange(of: filePath) { _, _ in
+            loadContent()
+        }
     }
 
     // MARK: - Content

@@ -1,5 +1,6 @@
 import SwiftUI
 import AppKit
+import UniformTypeIdentifiers
 
 struct ContentView: View {
   @Environment(AgentManager.self) var agentManager
@@ -13,6 +14,7 @@ struct ContentView: View {
   @State private var sidebarVisible = true
   @State private var dragStartRatio: CGFloat?
   @State private var dragStartRatioSecondary: CGFloat?
+  @State private var isDropTargeted = false
 
   // Bindings from SkwadApp for menu commands
   @Binding var showNewAgentSheet: Bool
@@ -323,6 +325,9 @@ struct ContentView: View {
     .ignoresSafeArea()
     .animation(.easeInOut(duration: 0.25), value: agentManager.currentWorkspaceAgents.count)
     .animation(.easeInOut(duration: 0.25), value: agentManager.currentWorkspaceId)
+    .onDrop(of: [.fileURL], isTargeted: $isDropTargeted) { providers in
+      handleFileDrop(providers: providers)
+    }
     .overlay {
       // Voice input overlay
       if showVoiceOverlay {
@@ -595,6 +600,29 @@ struct ContentView: View {
     voiceManager.transcribedText = ""
     voiceManager.error = nil
     showVoiceOverlay = false
+  }
+
+  private func handleFileDrop(providers: [NSItemProvider]) -> Bool {
+    guard let agentId = agentManager.activeAgentId else { return false }
+
+    for provider in providers {
+      if provider.hasItemConformingToTypeIdentifier(UTType.fileURL.identifier) {
+        provider.loadItem(forTypeIdentifier: UTType.fileURL.identifier, options: nil) { item, _ in
+          guard let data = item as? Data,
+                let url = URL(dataRepresentation: data, relativeTo: nil) else { return }
+
+          let path = url.path
+          // Quote the path if it contains spaces
+          let quotedPath = path.contains(" ") ? "\"\(path)\"" : path
+
+          DispatchQueue.main.async {
+            agentManager.sendText(quotedPath, for: agentId)
+          }
+        }
+        return true
+      }
+    }
+    return false
   }
 
   private var layoutToggleButton: some View {

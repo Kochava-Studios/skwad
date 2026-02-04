@@ -517,6 +517,7 @@ final class AgentManager {
     func updateStatus(for agentId: UUID, status: AgentStatus) {
         Task { @MainActor in
             if let index = agents.firstIndex(where: { $0.id == agentId }) {
+                guard agents[index].status != status else { return }
                 agents[index].status = status
                 if status == .idle {
                     refreshGitStats(for: agentId)
