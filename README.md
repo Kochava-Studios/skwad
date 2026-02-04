@@ -23,6 +23,7 @@ Meet your new, slightly revolutionary coding crew. Skwad is a macOS app that run
 - **Multi-agent management** - Run multiple AI coding agents simultaneously (Claude Code, Codex, OpenCode, Gemini CLI, GitHub Copilot, or custom)
 - **GPU-accelerated terminals** - Powered by [libghostty](https://github.com/ghostty-org/ghostty), with SwiftTerm fallback
 - **Agent-to-agent communication** - Built-in MCP server for inter-agent messaging and coordination
+- **Markdown preview** - View plans and documentation in a themed panel with dark mode support
 - **Git integration** - Worktree support, repo discovery, diff viewer, stage/commit panel
 - **Activity detection** - See which agents are working or idle at a glance
 
