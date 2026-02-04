@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.1] - 2026-02-04
+
+### Added
+- N/A
+
+### Changed
+- Renamed MCP tool `show-markdown` to `display-markdown` with improved description
+
+### Fixed
+- N/A
+
+### Removed
+- N/A
+
+
 ## [1.2.0] - 2026-02-03
 
 ### Added

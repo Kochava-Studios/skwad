@@ -101,8 +101,8 @@ actor MCPToolHandler {
                 )
             ),
             ToolDefinition(
-                name: MCPToolName.showMarkdown.rawValue,
-                description: "Display a markdown file in a panel for the user to review. Use this to show plans, documentation, or any markdown content that needs user attention.",
+                name: MCPToolName.displayMarkdown.rawValue,
+                description: "Display a markdown file in a panel for the user to review. Use this to show plans, documentation, or any markdown content that needs user attention. Never assume the panel is open or displaying the right file as the user may have closed it: call the tool again when relevant.",
                 inputSchema: ToolInputSchema(
                     properties: [
                         "agentId": PropertySchema(type: "string", description: "Your agent ID"),
@@ -138,8 +138,8 @@ actor MCPToolHandler {
             return await handleListWorktrees(arguments)
         case .createAgent:
             return await handleCreateAgent(arguments)
-        case .showMarkdown:
-            return await handleShowMarkdown(arguments)
+        case .displayMarkdown:
+            return await handleDisplayMarkdown(arguments)
         }
     }
 
@@ -312,7 +312,7 @@ actor MCPToolHandler {
         return successResult(result)
     }
 
-    private func handleShowMarkdown(_ arguments: [String: Any]) async -> ToolCallResult {
+    private func handleDisplayMarkdown(_ arguments: [String: Any]) async -> ToolCallResult {
         guard let agentId = arguments["agentId"] as? String else {
             return errorResult("Missing required parameter: agentId")
         }

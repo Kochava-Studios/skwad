@@ -340,7 +340,7 @@ enum MCPToolName: String {
     case listRepos = "list-repos"
     case listWorktrees = "list-worktrees"
     case createAgent = "create-agent"
-    case showMarkdown = "show-markdown"
+    case displayMarkdown = "display-markdown"
 }
 
 // MARK: - Tool Results
