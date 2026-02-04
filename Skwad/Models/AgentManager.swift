@@ -526,8 +526,17 @@ final class AgentManager {
     }
 
     func updateTitle(for agentId: UUID, title: String) {
+        // Strip leading spinner/status indicators (⠂, ⠐, ✳, ●, etc.)
+        var cleanTitle = title
+        while let first = cleanTitle.unicodeScalars.first,
+              !first.isASCII || first == " " {
+            cleanTitle = String(cleanTitle.dropFirst())
+        }
+        cleanTitle = cleanTitle.trimmingCharacters(in: .whitespaces)
+
         if let index = agents.firstIndex(where: { $0.id == agentId }) {
-            agents[index].terminalTitle = title
+            guard agents[index].terminalTitle != cleanTitle else { return }
+            agents[index].terminalTitle = cleanTitle
         }
     }
 

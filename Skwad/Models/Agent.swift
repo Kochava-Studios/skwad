@@ -58,15 +58,9 @@ struct Agent: Identifiable, Codable, Hashable {
         self.name = URL(fileURLWithPath: folder).lastPathComponent
     }
 
-    /// Terminal title with leading status indicators stripped
+    /// Terminal title (cleaned on update in AgentManager)
     var displayTitle: String {
-        var title = terminalTitle
-        // Strip leading emoji/status indicators like "✳ " or "● "
-        while let first = title.unicodeScalars.first,
-              !first.isASCII || first == " " {
-            title = String(title.dropFirst())
-        }
-        return title.trimmingCharacters(in: .whitespaces)
+        terminalTitle
     }
 
     /// Check if avatar is an image (base64 encoded)

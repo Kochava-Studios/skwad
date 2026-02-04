@@ -11,7 +11,7 @@ All notable changes to this project will be documented in this file.
 - Renamed MCP tool `show-markdown` to `display-markdown` with improved description
 
 ### Fixed
-- N/A
+- Context menu submenu flickering when terminal is active
 
 ### Removed
 - N/A
