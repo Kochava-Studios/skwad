@@ -21,6 +21,39 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     /// Observer for settings changes
     private var settingsObserver: NSObjectProtocol?
 
+    /// Monitor for keyboard events (Cmd+W interception)
+    private var keyEventMonitor: Any?
+
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        setupKeyEventMonitor()
+    }
+
+    /// Intercept Cmd+W to close the focused agent instead of the window
+    private func setupKeyEventMonitor() {
+        keyEventMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
+            // Check for Cmd+W (keyCode 13 is 'W')
+            if event.modifierFlags.contains(.command) && event.keyCode == 13 {
+                // Only intercept plain Cmd+W, not Cmd+Shift+W
+                if !event.modifierFlags.contains(.shift) {
+                    self?.closeCurrentAgent()
+                    return nil  // Consume the event
+                }
+            }
+            return event  // Pass through other events
+        }
+    }
+
+    private func closeCurrentAgent() {
+        DispatchQueue.main.async { [weak self] in
+            guard let manager = self?.agentManager,
+                  let activeId = manager.activeAgentId,
+                  let agent = manager.agents.first(where: { $0.id == activeId }) else {
+                return
+            }
+            manager.removeAgent(agent)
+        }
+    }
+
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
         // When keep in menu bar is enabled, don't quit when window closes
         return !AppSettings.shared.keepInMenuBar
