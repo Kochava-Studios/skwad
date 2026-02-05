@@ -277,7 +277,8 @@ final class MCPServiceTests: XCTestCase {
             repoPath: "/path/to/repo",
             createWorktree: true,
             branchName: nil,  // Missing branch name
-            createdBy: nil
+            createdBy: nil,
+            splitScreen: false
         )
 
         XCTAssertFalse(result.success)
@@ -296,7 +297,8 @@ final class MCPServiceTests: XCTestCase {
             repoPath: "/path/to/repo",
             createWorktree: true,
             branchName: "",  // Empty branch name
-            createdBy: nil
+            createdBy: nil,
+            splitScreen: false
         )
 
         XCTAssertFalse(result.success)

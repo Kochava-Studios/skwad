@@ -376,6 +376,146 @@ struct AgentManagerTests {
 
             #expect(manager.splitRatio == 0.7)
         }
+
+        // MARK: - enterSplitWithNewAgent Tests
+
+        @Test("enterSplitWithNewAgent from single creates dual vertical")
+        @MainActor
+        func enterSplitWithNewAgentFromSingleCreatesDualVertical() async {
+            let manager = AgentManagerTests.setupManager(agentCount: 1)
+            let creatorId = manager.agents[0].id
+
+            // Add a new agent
+            let newAgentId = manager.addAgent(folder: "/tmp/new", name: "NewAgent")!
+
+            manager.enterSplitWithNewAgent(newAgentId: newAgentId, creatorId: creatorId)
+
+            #expect(manager.layoutMode == .splitVertical)
+            #expect(manager.activeAgentIds.count == 2)
+            #expect(manager.activeAgentIds[0] == creatorId)
+            #expect(manager.activeAgentIds[1] == newAgentId)
+            #expect(manager.focusedPaneIndex == 1)  // New agent gets focus
+        }
+
+        @Test("enterSplitWithNewAgent from dual vertical creates four pane")
+        @MainActor
+        func enterSplitWithNewAgentFromDualCreatesGrid() async {
+            let manager = AgentManagerTests.setupManager(agentCount: 3)
+            let agents = manager.currentWorkspaceAgents
+            manager.enterSplit(.splitVertical)
+            let creatorId = agents[0].id
+
+            // Add a new agent
+            let newAgentId = manager.addAgent(folder: "/tmp/new", name: "NewAgent")!
+
+            manager.enterSplitWithNewAgent(newAgentId: newAgentId, creatorId: creatorId)
+
+            #expect(manager.layoutMode == .gridFourPane)
+            #expect(manager.activeAgentIds.count >= 3)
+            #expect(manager.activeAgentIds.contains(newAgentId))
+            // New agent should be focused
+            let newAgentPane = manager.paneIndex(for: newAgentId)
+            #expect(newAgentPane == manager.focusedPaneIndex)
+        }
+
+        @Test("enterSplitWithNewAgent from dual horizontal creates four pane")
+        @MainActor
+        func enterSplitWithNewAgentFromDualHorizontalCreatesGrid() async {
+            let manager = AgentManagerTests.setupManager(agentCount: 3)
+            let agents = manager.currentWorkspaceAgents
+            manager.enterSplit(.splitHorizontal)
+            let creatorId = agents[0].id
+
+            // Add a new agent
+            let newAgentId = manager.addAgent(folder: "/tmp/new", name: "NewAgent")!
+
+            manager.enterSplitWithNewAgent(newAgentId: newAgentId, creatorId: creatorId)
+
+            #expect(manager.layoutMode == .gridFourPane)
+            #expect(manager.activeAgentIds.contains(newAgentId))
+        }
+
+        @Test("enterSplitWithNewAgent in four pane replaces pane 4 (index 3)")
+        @MainActor
+        func enterSplitWithNewAgentInGridReplacesPane4() async {
+            let manager = AgentManagerTests.setupManager(agentCount: 5)
+            let agents = manager.currentWorkspaceAgents
+
+            // Set up four-pane with agents 0, 1, 2, 3
+            manager.activeAgentIds = [agents[0].id, agents[1].id, agents[2].id, agents[3].id]
+            manager.layoutMode = .gridFourPane
+            let creatorId = agents[0].id  // Creator in pane 0
+
+            // Add new agent
+            let newAgentId = manager.addAgent(folder: "/tmp/new", name: "NewAgent")!
+
+            manager.enterSplitWithNewAgent(newAgentId: newAgentId, creatorId: creatorId)
+
+            #expect(manager.layoutMode == .gridFourPane)
+            #expect(manager.activeAgentIds[3] == newAgentId)  // Replaced pane 4 (index 3)
+            #expect(manager.activeAgentIds[0] == creatorId)  // Creator preserved
+            #expect(manager.focusedPaneIndex == 3)
+        }
+
+        @Test("enterSplitWithNewAgent in four pane skips creator pane")
+        @MainActor
+        func enterSplitWithNewAgentInGridSkipsCreatorPane() async {
+            let manager = AgentManagerTests.setupManager(agentCount: 5)
+            let agents = manager.currentWorkspaceAgents
+
+            // Set up four-pane with creator in pane 4 (index 3)
+            manager.activeAgentIds = [agents[0].id, agents[1].id, agents[2].id, agents[3].id]
+            manager.layoutMode = .gridFourPane
+            let creatorId = agents[3].id  // Creator in pane 4
+
+            // Add new agent
+            let newAgentId = manager.addAgent(folder: "/tmp/new", name: "NewAgent")!
+
+            manager.enterSplitWithNewAgent(newAgentId: newAgentId, creatorId: creatorId)
+
+            #expect(manager.layoutMode == .gridFourPane)
+            #expect(manager.activeAgentIds[3] == creatorId)  // Creator still in pane 4
+            #expect(manager.activeAgentIds[2] == newAgentId)  // New agent in pane 3 (index 2)
+            #expect(manager.focusedPaneIndex == 2)
+        }
+
+        @Test("enterSplitWithNewAgent replacement follows priority 4-3-2-1")
+        @MainActor
+        func enterSplitWithNewAgentFollowsReplacementPriority() async {
+            let manager = AgentManagerTests.setupManager(agentCount: 5)
+            let agents = manager.currentWorkspaceAgents
+
+            // Set up four-pane with creator in pane 3 (index 2)
+            manager.activeAgentIds = [agents[0].id, agents[1].id, agents[2].id, agents[3].id]
+            manager.layoutMode = .gridFourPane
+            let creatorId = agents[2].id  // Creator in pane 3
+
+            // Add new agent
+            let newAgentId = manager.addAgent(folder: "/tmp/new", name: "NewAgent")!
+
+            manager.enterSplitWithNewAgent(newAgentId: newAgentId, creatorId: creatorId)
+
+            // Should replace pane 4 first (index 3) since creator is in pane 3
+            #expect(manager.activeAgentIds[3] == newAgentId)
+            #expect(manager.activeAgentIds[2] == creatorId)  // Creator preserved
+            #expect(manager.focusedPaneIndex == 3)
+        }
+
+        @Test("enterSplitWithNewAgent focuses new agent")
+        @MainActor
+        func enterSplitWithNewAgentFocusesNewAgent() async {
+            let manager = AgentManagerTests.setupManager(agentCount: 2)
+            let creatorId = manager.agents[0].id
+            manager.focusedPaneIndex = 0
+
+            let newAgentId = manager.addAgent(folder: "/tmp/new", name: "NewAgent")!
+
+            manager.enterSplitWithNewAgent(newAgentId: newAgentId, creatorId: creatorId)
+
+            // New agent should always be focused after split
+            let newAgentPane = manager.paneIndex(for: newAgentId)
+            #expect(newAgentPane == manager.focusedPaneIndex)
+        }
     }
 
     // MARK: - Registration Tests
