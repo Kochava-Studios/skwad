@@ -17,12 +17,12 @@
 		8D2673C92F31592C0043E3A6 /* VoiceInputManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D2673C72F31592C0043E3A6 /* VoiceInputManager.swift */; };
 		8D2673CA2F31592C0043E3A6 /* VoiceInputOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D2673C82F31592C0043E3A6 /* VoiceInputOverlay.swift */; };
 		8D2673CB2F31592C0043E3A6 /* PushToTalkMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D2673C62F31592C0043E3A6 /* PushToTalkMonitor.swift */; };
+		8D334BC82F35104700FB0E95 /* AgentContextMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D334BC72F35104700FB0E95 /* AgentContextMenu.swift */; };
 		8D3ED4ED2F344CB70023AA53 /* MenuBarManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D3ED4EC2F344CB70023AA53 /* MenuBarManager.swift */; };
 		8D3F44C72F30EB2000407F17 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = SP000002 /* Sparkle */; };
 		8D6B97222F2DC17900CE877E /* MCPMessageStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6B97212F2DC17900CE877E /* MCPMessageStore.swift */; };
 		8D6B97252F2DC47300CE877E /* AsyncDelay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6B97232F2DC47300CE877E /* AsyncDelay.swift */; };
 		8D6B97262F2DC47300CE877E /* TimingConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6B97242F2DC47300CE877E /* TimingConstants.swift */; };
-		FW000001 /* FileWatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = FW000002 /* FileWatcher.swift */; };
 		8D6B97282F2E316A00CE877E /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6B97272F2E316A00CE877E /* AppDelegate.swift */; };
 		8D6B972A2F2E317400CE877E /* GitOutputParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6B97292F2E317400CE877E /* GitOutputParser.swift */; };
 		8D6B972C2F2E32DD00CE877E /* NSImage+Scaling.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6B972B2F2E32DD00CE877E /* NSImage+Scaling.swift */; };
@@ -58,6 +58,7 @@
 		F8001012 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = F800000B /* Theme.swift */; };
 		F8001013 /* AvatarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F800000C /* AvatarView.swift */; };
 		F8001014 /* GhosttyHostView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F800000D /* GhosttyHostView.swift */; };
+		FW000001 /* FileWatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = FW000002 /* FileWatcher.swift */; };
 		GH000001 /* Ghostty.Action.swift in Sources */ = {isa = PBXBuildFile; fileRef = GH100001 /* Ghostty.Action.swift */; };
 		GH000002 /* Ghostty.App.swift in Sources */ = {isa = PBXBuildFile; fileRef = GH100002 /* Ghostty.App.swift */; };
 		GH000003 /* Ghostty.Input.swift in Sources */ = {isa = PBXBuildFile; fileRef = GH100003 /* Ghostty.Input.swift */; };
@@ -156,11 +157,11 @@
 		8D2673C62F31592C0043E3A6 /* PushToTalkMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushToTalkMonitor.swift; sourceTree = "<group>"; };
 		8D2673C72F31592C0043E3A6 /* VoiceInputManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceInputManager.swift; sourceTree = "<group>"; };
 		8D2673C82F31592C0043E3A6 /* VoiceInputOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceInputOverlay.swift; sourceTree = "<group>"; };
+		8D334BC72F35104700FB0E95 /* AgentContextMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentContextMenu.swift; sourceTree = "<group>"; };
 		8D3ED4EC2F344CB70023AA53 /* MenuBarManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarManager.swift; sourceTree = "<group>"; };
 		8D6B97212F2DC17900CE877E /* MCPMessageStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPMessageStore.swift; sourceTree = "<group>"; };
 		8D6B97232F2DC47300CE877E /* AsyncDelay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsyncDelay.swift; sourceTree = "<group>"; };
 		8D6B97242F2DC47300CE877E /* TimingConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimingConstants.swift; sourceTree = "<group>"; };
-		FW000002 /* FileWatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileWatcher.swift; sourceTree = "<group>"; };
 		8D6B97272F2E316A00CE877E /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		8D6B97292F2E317400CE877E /* GitOutputParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitOutputParser.swift; sourceTree = "<group>"; };
 		8D6B972B2F2E32DD00CE877E /* NSImage+Scaling.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSImage+Scaling.swift"; sourceTree = "<group>"; };
@@ -195,6 +196,7 @@
 		F8000200 /* Skwad.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Skwad.entitlements; sourceTree = "<group>"; };
 		FBECFB308DA186BC15E6AE50 /* GitPanelView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GitPanelView.swift; sourceTree = "<group>"; };
 		FCD187651343B17CF0D9CCCF /* GitCLI.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GitCLI.swift; sourceTree = "<group>"; };
+		FW000002 /* FileWatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileWatcher.swift; sourceTree = "<group>"; };
 		GH100001 /* Ghostty.Action.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ghostty.Action.swift; sourceTree = "<group>"; };
 		GH100002 /* Ghostty.App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ghostty.App.swift; sourceTree = "<group>"; };
 		GH100003 /* Ghostty.Input.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ghostty.Input.swift; sourceTree = "<group>"; };
@@ -407,12 +409,12 @@
 		F8000013 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				F8000014 /* Sidebar */,
-				F8000015 /* Terminal */,
-				F8000016 /* Settings */,
 				F8000017 /* Components */,
 				2EB8108896BD1402E4BDA10F /* Git */,
 				MD200001 /* Markdown */,
+				F8000016 /* Settings */,
+				F8000014 /* Sidebar */,
+				F8000015 /* Terminal */,
 				WS200001 /* Workspace */,
 				F8000002 /* ContentView.swift */,
 			);
@@ -450,6 +452,7 @@
 		F8000017 /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				8D334BC72F35104700FB0E95 /* AgentContextMenu.swift */,
 				8DD8074C2F2E52E900D7A935 /* AgentSheet.swift */,
 				SR100002 /* AgentTypePicker.swift */,
 				SR100003 /* AgentTypePickerContent.swift */,
@@ -856,6 +859,7 @@
 				8D7622B22F2C67CE006B6280 /* MCPTypes.swift in Sources */,
 				8D7622B32F2C67CE006B6280 /* MCPTools.swift in Sources */,
 				8D6B97282F2E316A00CE877E /* AppDelegate.swift in Sources */,
+				8D334BC82F35104700FB0E95 /* AgentContextMenu.swift in Sources */,
 				8D7622B42F2C67CE006B6280 /* MCPSessionManager.swift in Sources */,
 				F8001012 /* Theme.swift in Sources */,
 				F8001013 /* AvatarView.swift in Sources */,

@@ -722,6 +722,9 @@ final class AgentManager {
     func showMarkdownPanel(filePath: String, forAgent agentId: UUID) {
         if let index = agents.firstIndex(where: { $0.id == agentId }) {
             agents[index].markdownFilePath = filePath
+            // Add to history (remove if already present to move to front)
+            agents[index].markdownFileHistory.removeAll { $0 == filePath }
+            agents[index].markdownFileHistory.insert(filePath, at: 0)
         }
     }
 

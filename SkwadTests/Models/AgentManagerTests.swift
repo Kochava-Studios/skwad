@@ -476,4 +476,112 @@ struct AgentManagerTests {
             #expect(manager.activeAgentId == agents[1].id)
         }
     }
+
+    // MARK: - Markdown Panel Tests
+
+    @Suite("Markdown Panel")
+    struct MarkdownPanelTests {
+
+        @Test("showMarkdownPanel sets file path")
+        @MainActor
+        func showMarkdownPanelSetsFilePath() async {
+            let manager = AgentManagerTests.setupManager(agentCount: 1)
+            let agentId = manager.agents[0].id
+
+            manager.showMarkdownPanel(filePath: "/tmp/test.md", forAgent: agentId)
+
+            #expect(manager.agents[0].markdownFilePath == "/tmp/test.md")
+        }
+
+        @Test("showMarkdownPanel adds to history")
+        @MainActor
+        func showMarkdownPanelAddsToHistory() async {
+            let manager = AgentManagerTests.setupManager(agentCount: 1)
+            let agentId = manager.agents[0].id
+
+            manager.showMarkdownPanel(filePath: "/tmp/test.md", forAgent: agentId)
+
+            #expect(manager.agents[0].markdownFileHistory.count == 1)
+            #expect(manager.agents[0].markdownFileHistory[0] == "/tmp/test.md")
+        }
+
+        @Test("showMarkdownPanel maintains history order (most recent first)")
+        @MainActor
+        func showMarkdownPanelMaintainsHistoryOrder() async {
+            let manager = AgentManagerTests.setupManager(agentCount: 1)
+            let agentId = manager.agents[0].id
+
+            manager.showMarkdownPanel(filePath: "/tmp/first.md", forAgent: agentId)
+            manager.showMarkdownPanel(filePath: "/tmp/second.md", forAgent: agentId)
+            manager.showMarkdownPanel(filePath: "/tmp/third.md", forAgent: agentId)
+
+            #expect(manager.agents[0].markdownFileHistory.count == 3)
+            #expect(manager.agents[0].markdownFileHistory[0] == "/tmp/third.md")
+            #expect(manager.agents[0].markdownFileHistory[1] == "/tmp/second.md")
+            #expect(manager.agents[0].markdownFileHistory[2] == "/tmp/first.md")
+        }
+
+        @Test("showMarkdownPanel moves duplicate to front of history")
+        @MainActor
+        func showMarkdownPanelMovesDuplicateToFront() async {
+            let manager = AgentManagerTests.setupManager(agentCount: 1)
+            let agentId = manager.agents[0].id
+
+            manager.showMarkdownPanel(filePath: "/tmp/first.md", forAgent: agentId)
+            manager.showMarkdownPanel(filePath: "/tmp/second.md", forAgent: agentId)
+            manager.showMarkdownPanel(filePath: "/tmp/first.md", forAgent: agentId)
+
+            #expect(manager.agents[0].markdownFileHistory.count == 2)
+            #expect(manager.agents[0].markdownFileHistory[0] == "/tmp/first.md")
+            #expect(manager.agents[0].markdownFileHistory[1] == "/tmp/second.md")
+        }
+
+        @Test("showMarkdownPanel ignores unknown agent")
+        @MainActor
+        func showMarkdownPanelIgnoresUnknownAgent() async {
+            let manager = AgentManagerTests.setupManager(agentCount: 1)
+
+            manager.showMarkdownPanel(filePath: "/tmp/test.md", forAgent: UUID())
+
+            #expect(manager.agents[0].markdownFilePath == nil)
+            #expect(manager.agents[0].markdownFileHistory.isEmpty)
+        }
+
+        @Test("closeMarkdownPanel clears file path")
+        @MainActor
+        func closeMarkdownPanelClearsFilePath() async {
+            let manager = AgentManagerTests.setupManager(agentCount: 1)
+            let agentId = manager.agents[0].id
+            manager.showMarkdownPanel(filePath: "/tmp/test.md", forAgent: agentId)
+
+            manager.closeMarkdownPanel(for: agentId)
+
+            #expect(manager.agents[0].markdownFilePath == nil)
+        }
+
+        @Test("closeMarkdownPanel preserves history")
+        @MainActor
+        func closeMarkdownPanelPreservesHistory() async {
+            let manager = AgentManagerTests.setupManager(agentCount: 1)
+            let agentId = manager.agents[0].id
+            manager.showMarkdownPanel(filePath: "/tmp/test.md", forAgent: agentId)
+
+            manager.closeMarkdownPanel(for: agentId)
+
+            #expect(manager.agents[0].markdownFileHistory.count == 1)
+            #expect(manager.agents[0].markdownFileHistory[0] == "/tmp/test.md")
+        }
+
+        @Test("closeMarkdownPanel ignores unknown agent")
+        @MainActor
+        func closeMarkdownPanelIgnoresUnknownAgent() async {
+            let manager = AgentManagerTests.setupManager(agentCount: 1)
+            let agentId = manager.agents[0].id
+            manager.showMarkdownPanel(filePath: "/tmp/test.md", forAgent: agentId)
+
+            manager.closeMarkdownPanel(for: UUID())
+
+            #expect(manager.agents[0].markdownFilePath == "/tmp/test.md")
+        }
+    }
 }

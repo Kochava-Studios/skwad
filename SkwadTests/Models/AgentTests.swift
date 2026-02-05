@@ -41,4 +41,14 @@ final class AgentTests: XCTestCase {
         agent.terminalTitle = "claude"
         XCTAssertEqual(agent.displayTitle, "claude")
     }
+
+    func testMarkdownFileHistoryStartsEmpty() {
+        let agent = Agent(name: "Test", folder: "/tmp/test")
+        XCTAssertTrue(agent.markdownFileHistory.isEmpty)
+    }
+
+    func testMarkdownFilePathStartsNil() {
+        let agent = Agent(name: "Test", folder: "/tmp/test")
+        XCTAssertNil(agent.markdownFilePath)
+    }
 }

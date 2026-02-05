@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.0] - WIP
+
+### Added
+- Markdown preview history per agent
+
+### Changed
+- N/A
+
+### Fixed
+- N/A
+
+### Removed
+- N/A
+
+
 ## [1.3.0] - 2026-02-05
 
 ### Added
