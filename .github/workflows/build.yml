@@ -59,8 +59,9 @@ jobs:
       - name: Import Sparkle signing key
         run: |
           # Add EdDSA private key to Keychain for Sparkle signing
+          # Sparkle uses service "https://sparkle-project.org" and account "ed25519"
           KEYCHAIN_PATH=$RUNNER_TEMP/build.keychain-db
-          security add-generic-password -a "ed25519" -s "Sparkle Private Key" -w "${{ secrets.SPARKLE_PRIVATE_KEY }}" -U $KEYCHAIN_PATH
+          security add-generic-password -a "ed25519" -s "https://sparkle-project.org" -w "${{ secrets.SPARKLE_PRIVATE_KEY }}" -U $KEYCHAIN_PATH
 
       - name: Get version
         id: version
