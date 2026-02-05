@@ -58,12 +58,12 @@ jobs:
 
       - name: Import Sparkle signing key
         run: |
-          # Build first to get Sparkle tools
-          make build
+          # Download Sparkle release to get the tools
+          curl -L -o /tmp/Sparkle.tar.xz https://github.com/sparkle-project/Sparkle/releases/download/2.7.5/Sparkle-2.7.5.tar.xz
+          mkdir -p /tmp/Sparkle
+          tar -xf /tmp/Sparkle.tar.xz -C /tmp/Sparkle
           # Import the EdDSA private key for Sparkle signing
-          echo "${{ secrets.SPARKLE_PRIVATE_KEY }}" | ./build/DerivedData/SourcePackages/artifacts/sparkle/Sparkle/bin/generate_keys -f /dev/stdin
-        env:
-          SIGNING_CERTIFICATE: ${{ secrets.SIGNING_CERTIFICATE }}
+          echo "${{ secrets.SPARKLE_PRIVATE_KEY }}" | /tmp/Sparkle/bin/generate_keys -f /dev/stdin
 
       - name: Get version
         id: version
