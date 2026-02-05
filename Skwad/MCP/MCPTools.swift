@@ -114,7 +114,7 @@ actor MCPToolHandler {
             ),
             ToolDefinition(
                 name: MCPToolName.displayMarkdown.rawValue,
-                description: "Display a markdown file in a panel for the user to review. Use this to show plans, documentation, or any markdown content that needs user attention. Never assume the panel is open or displaying the right file as the user may have closed it: call the tool again when relevant.",
+                description: "Display a markdown file in a panel for the user to review. Use this to show plans, documentation, or any markdown content that needs user attention. Also use if the user asks you to show him a file. Never assume the panel is open or displaying the right file as the user may have closed it: call the tool again when relevant.",
                 inputSchema: ToolInputSchema(
                     properties: [
                         "agentId": PropertySchema(type: "string", description: "Your agent ID"),
