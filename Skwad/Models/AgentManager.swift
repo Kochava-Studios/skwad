@@ -317,9 +317,10 @@ final class AgentManager {
         name: String? = nil,
         avatar: String? = nil,
         agentType: String = "claude",
+        createdBy: UUID? = nil,
         insertAfterId: UUID? = nil
     ) {
-        var agent = Agent(folder: folder, avatar: avatar, agentType: agentType)
+        var agent = Agent(folder: folder, avatar: avatar, agentType: agentType, createdBy: createdBy)
         if let name = name {
             agent.name = name
         }
@@ -369,6 +370,9 @@ final class AgentManager {
         removeController(for: agent.id)
         unregisterTerminal(for: agent.id)
 
+        // Check if agent was in a pane BEFORE removing from workspace
+        let wasInActivePane = activeAgentIds.contains(agent.id)
+
         // Remove from current workspace
         removeAgentFromCurrentWorkspace(agent.id)
 
@@ -378,7 +382,7 @@ final class AgentManager {
         // Get workspace agents after removal for selection logic
         let workspaceAgents = currentWorkspaceAgents
 
-        if activeAgentIds.contains(agent.id) {
+        if wasInActivePane {
             // For 4-pane grid, just remove the agent from activeAgentIds but stay in grid mode
             if layoutMode == .gridFourPane {
                 activeAgentIds.removeAll { $0 == agent.id }

@@ -18,10 +18,12 @@ protocol MCPServiceProtocol {
 
 protocol AgentDataProvider: Sendable {
     func getAgents() async -> [Agent]
+    func getAgent(id: UUID) async -> Agent?
     func getAgentsInSameWorkspace(as agentId: UUID) async -> [Agent]
     func setRegistered(for agentId: UUID, registered: Bool) async
     func injectText(_ text: String, for agentId: UUID) async
-    func addAgent(folder: String, name: String, avatar: String?, agentType: String) async -> UUID?
+    func addAgent(folder: String, name: String, avatar: String?, agentType: String, createdBy: UUID?) async -> UUID?
+    func removeAgent(id: UUID) async -> Bool
     func showMarkdownPanel(filePath: String, agentId: UUID) async -> Bool
 }
 
@@ -346,7 +348,8 @@ actor MCPService: MCPServiceProtocol {
         agentType: String,
         repoPath: String,
         createWorktree: Bool,
-        branchName: String?
+        branchName: String?,
+        createdBy: UUID?
     ) async -> CreateAgentResponse {
         guard let provider = agentDataProvider else {
             return CreateAgentResponse(success: false, agentId: nil, message: "AgentDataProvider not available")
@@ -399,11 +402,38 @@ actor MCPService: MCPServiceProtocol {
         }
 
         // Create the agent via the provider
-        if let agentId = await provider.addAgent(folder: folder, name: name, avatar: icon, agentType: agentType) {
+        if let agentId = await provider.addAgent(folder: folder, name: name, avatar: icon, agentType: agentType, createdBy: createdBy) {
             logger.info("[skwad] Created agent '\(name)' with ID \(agentId)")
             return CreateAgentResponse(success: true, agentId: agentId.uuidString, message: "Agent created successfully")
         } else {
             return CreateAgentResponse(success: false, agentId: nil, message: "Failed to create agent")
+        }
+    }
+
+    // MARK: - Agent Closing
+
+    func closeAgent(callerAgentId: UUID, targetIdentifier: String) async -> CloseAgentResponse {
+        guard let provider = agentDataProvider else {
+            return CloseAgentResponse(success: false, message: "AgentDataProvider not available")
+        }
+
+        // Find the target agent in the same workspace as the caller
+        guard let targetAgent = await findAgentInSameWorkspace(callerAgentId: callerAgentId, identifier: targetIdentifier) else {
+            return CloseAgentResponse(success: false, message: "Target agent not found: \(targetIdentifier)")
+        }
+
+        // Verify the caller created the target agent
+        guard targetAgent.createdBy == callerAgentId else {
+            return CloseAgentResponse(success: false, message: "Permission denied: you can only close agents that you created")
+        }
+
+        // Close the agent
+        let success = await provider.removeAgent(id: targetAgent.id)
+        if success {
+            logger.info("[skwad] Agent '\(targetAgent.name)' closed by \(callerAgentId)")
+            return CloseAgentResponse(success: true, message: "Agent '\(targetAgent.name)' closed successfully")
+        } else {
+            return CloseAgentResponse(success: false, message: "Failed to close agent")
         }
     }
 
@@ -442,6 +472,12 @@ final class AgentManagerWrapper: AgentDataProvider, @unchecked Sendable {
         }
     }
 
+    func getAgent(id: UUID) async -> Agent? {
+        await MainActor.run {
+            manager?.agents.first { $0.id == id }
+        }
+    }
+
     func getAgentsInSameWorkspace(as agentId: UUID) async -> [Agent] {
         await MainActor.run {
             guard let manager = manager else { return [] }
@@ -472,16 +508,27 @@ final class AgentManagerWrapper: AgentDataProvider, @unchecked Sendable {
         }
     }
 
-    func addAgent(folder: String, name: String, avatar: String?, agentType: String) async -> UUID? {
+    func addAgent(folder: String, name: String, avatar: String?, agentType: String, createdBy: UUID?) async -> UUID? {
         await MainActor.run {
             guard let manager = manager else { return nil }
             let countBefore = manager.agents.count
-            manager.addAgent(folder: folder, name: name, avatar: avatar, agentType: agentType)
+            manager.addAgent(folder: folder, name: name, avatar: avatar, agentType: agentType, createdBy: createdBy)
             // Return the ID of the newly added agent
             if manager.agents.count > countBefore {
                 return manager.agents.last?.id
             }
             return nil
+        }
+    }
+
+    func removeAgent(id: UUID) async -> Bool {
+        await MainActor.run {
+            guard let manager = manager,
+                  let agent = manager.agents.first(where: { $0.id == id }) else {
+                return false
+            }
+            manager.removeAgent(agent)
+            return true
         }
     }
 

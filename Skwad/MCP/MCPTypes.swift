@@ -84,6 +84,11 @@ struct CreateAgentResponse: Codable {
     let message: String
 }
 
+struct CloseAgentResponse: Codable {
+    let success: Bool
+    let message: String
+}
+
 struct RegisterAgentResponse: Codable {
     let success: Bool
     let message: String
@@ -340,6 +345,7 @@ enum MCPToolName: String {
     case listRepos = "list-repos"
     case listWorktrees = "list-worktrees"
     case createAgent = "create-agent"
+    case closeAgent = "close-agent"
     case displayMarkdown = "display-markdown"
 }
 

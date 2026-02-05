@@ -28,6 +28,7 @@ struct Agent: Identifiable, Codable, Hashable {
     var avatar: String?  // Either emoji or "data:image/png;base64,..."
     var folder: String
     var agentType: String  // Agent type ID (claude, codex, aider, custom1, etc.)
+    var createdBy: UUID?  // Agent ID that created this agent (nil if created by user)
 
     // Runtime state (not persisted)
     var status: AgentStatus = .idle
@@ -39,23 +40,25 @@ struct Agent: Identifiable, Codable, Hashable {
 
     // Only persist these fields
     enum CodingKeys: String, CodingKey {
-        case id, name, avatar, folder, agentType
+        case id, name, avatar, folder, agentType, createdBy
     }
 
-    init(id: UUID = UUID(), name: String, avatar: String? = nil, folder: String, agentType: String = "claude") {
+    init(id: UUID = UUID(), name: String, avatar: String? = nil, folder: String, agentType: String = "claude", createdBy: UUID? = nil) {
         self.id = id
         self.name = name
         self.avatar = avatar
         self.folder = folder
         self.agentType = agentType
+        self.createdBy = createdBy
     }
 
     /// Create agent from folder path, deriving name from last path component
-    init(folder: String, avatar: String? = nil, agentType: String = "claude") {
+    init(folder: String, avatar: String? = nil, agentType: String = "claude", createdBy: UUID? = nil) {
         self.id = UUID()
         self.folder = folder
         self.avatar = avatar
         self.agentType = agentType
+        self.createdBy = createdBy
         self.name = URL(fileURLWithPath: folder).lastPathComponent
     }
 

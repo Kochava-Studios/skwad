@@ -90,6 +90,7 @@ actor MCPToolHandler {
                 description: "Create a new agent in Skwad. Can optionally create a new git worktree for the agent.",
                 inputSchema: ToolInputSchema(
                     properties: [
+                        "agentId": PropertySchema(type: "string", description: "Your agent ID (used to track who created the agent)"),
                         "name": PropertySchema(type: "string", description: "Name for the agent"),
                         "icon": PropertySchema(type: "string", description: "Emoji icon for the agent (e.g., '🤖')"),
                         "agentType": PropertySchema(type: "string", description: "Agent type: claude, codex, opencode, aider, goose, gemini, custom1, or custom2"),
@@ -98,6 +99,17 @@ actor MCPToolHandler {
                         "branchName": PropertySchema(type: "string", description: "Branch name for new worktree (required if createWorktree is true)")
                     ],
                     required: ["name", "agentType", "repoPath"]
+                )
+            ),
+            ToolDefinition(
+                name: MCPToolName.closeAgent.rawValue,
+                description: "Close an agent that you created. You can only close agents that you created, not agents created by the user or other agents.",
+                inputSchema: ToolInputSchema(
+                    properties: [
+                        "agentId": PropertySchema(type: "string", description: "Your agent ID"),
+                        "target": PropertySchema(type: "string", description: "The agent to close (name or ID)")
+                    ],
+                    required: ["agentId", "target"]
                 )
             ),
             ToolDefinition(
@@ -138,6 +150,8 @@ actor MCPToolHandler {
             return await handleListWorktrees(arguments)
         case .createAgent:
             return await handleCreateAgent(arguments)
+        case .closeAgent:
+            return await handleCloseAgent(arguments)
         case .displayMarkdown:
             return await handleDisplayMarkdown(arguments)
         }
@@ -300,15 +314,43 @@ actor MCPToolHandler {
             return errorResult("branchName is required when createWorktree is true")
         }
 
+        // Get the caller's agent ID to track who created this agent
+        let callerAgentIdString = arguments["agentId"] as? String
+        let createdBy = callerAgentIdString.flatMap { UUID(uuidString: $0) }
+
         let result = await mcpService.createAgent(
             name: name,
             icon: icon,
             agentType: agentType,
             repoPath: repoPath,
             createWorktree: createWorktree,
-            branchName: branchName
+            branchName: branchName,
+            createdBy: createdBy
         )
 
+        return successResult(result)
+    }
+
+    private func handleCloseAgent(_ arguments: [String: Any]) async -> ToolCallResult {
+        guard let agentIdString = arguments["agentId"] as? String else {
+            return errorResult("Missing required parameter: agentId")
+        }
+        guard let agentId = UUID(uuidString: agentIdString) else {
+            return errorResult("Invalid agentId format")
+        }
+        guard let target = arguments["target"] as? String else {
+            return errorResult("Missing required parameter: target")
+        }
+
+        // Check if caller exists and is registered
+        guard let caller = await mcpService.findAgent(byNameOrId: agentIdString) else {
+            return await agentNotFoundError(agentIdString)
+        }
+        guard caller.isRegistered else {
+            return errorResult("You must be registered to close agents")
+        }
+
+        let result = await mcpService.closeAgent(callerAgentId: agentId, targetIdentifier: target)
         return successResult(result)
     }
 
