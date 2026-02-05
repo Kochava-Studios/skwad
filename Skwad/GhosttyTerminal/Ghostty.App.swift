@@ -286,7 +286,7 @@ extension Ghostty {
                 // Window/tab title change
                 if let titlePtr = action.action.set_title.title {
                     let title = String(cString: titlePtr)
-                    Ghostty.logger.info("[skwad][ghostty] title changed: \(title)")
+                    //Ghostty.logger.info("[skwad][ghostty] title changed: \(title)")
 
                     // Propagate to terminal view callback
                     DispatchQueue.main.async {
