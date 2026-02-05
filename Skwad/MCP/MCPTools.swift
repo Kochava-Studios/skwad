@@ -93,7 +93,7 @@ actor MCPToolHandler {
                         "agentId": PropertySchema(type: "string", description: "Your agent ID (used to track who created the agent)"),
                         "name": PropertySchema(type: "string", description: "Name for the agent"),
                         "icon": PropertySchema(type: "string", description: "Emoji icon for the agent (e.g., '🤖')"),
-                        "agentType": PropertySchema(type: "string", description: "Agent type: claude, codex, opencode, aider, goose, gemini, custom1, or custom2"),
+                        "agentType": PropertySchema(type: "string", description: "Agent type: claude, codex, opencode, gemini, custom1, or custom2"),
                         "repoPath": PropertySchema(type: "string", description: "Path to the repository or worktree folder"),
                         "createWorktree": PropertySchema(type: "boolean", description: "If true, create a new worktree from repoPath"),
                         "branchName": PropertySchema(type: "string", description: "Branch name for new worktree (required if createWorktree is true)")

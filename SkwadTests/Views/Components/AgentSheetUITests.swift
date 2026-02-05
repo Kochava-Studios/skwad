@@ -291,13 +291,13 @@ final class AgentPrefillTests: XCTestCase {
             name: "Test Agent",
             avatar: "🚀",
             folder: "/tmp/test",
-            agentType: "aider",
+            agentType: "codex",
             insertAfterId: insertId
         )
         XCTAssertEqual(prefill.name, "Test Agent")
         XCTAssertEqual(prefill.avatar, "🚀")
         XCTAssertEqual(prefill.folder, "/tmp/test")
-        XCTAssertEqual(prefill.agentType, "aider")
+        XCTAssertEqual(prefill.agentType, "codex")
         XCTAssertEqual(prefill.insertAfterId, insertId)
     }
 

@@ -266,8 +266,6 @@ class AppSettings: ObservableObject {
     @AppStorage("agentOptions_claude") var agentOptions_claude: String = ""
     @AppStorage("agentOptions_codex") var agentOptions_codex: String = ""
     @AppStorage("agentOptions_opencode") var agentOptions_opencode: String = ""
-    @AppStorage("agentOptions_aider") var agentOptions_aider: String = ""
-    @AppStorage("agentOptions_goose") var agentOptions_goose: String = ""
     @AppStorage("agentOptions_gemini") var agentOptions_gemini: String = ""
 
     // Custom agents (command + options)
@@ -295,8 +293,6 @@ class AppSettings: ObservableObject {
         case "claude": return agentOptions_claude
         case "codex": return agentOptions_codex
         case "opencode": return agentOptions_opencode
-        case "aider": return agentOptions_aider
-        case "goose": return agentOptions_goose
         case "gemini": return agentOptions_gemini
         case "custom1": return customAgent1Options
         case "custom2": return customAgent2Options
@@ -310,8 +306,6 @@ class AppSettings: ObservableObject {
         case "claude": agentOptions_claude = options
         case "codex": agentOptions_codex = options
         case "opencode": agentOptions_opencode = options
-        case "aider": agentOptions_aider = options
-        case "goose": agentOptions_goose = options
         case "gemini": agentOptions_gemini = options
         case "custom1": customAgent1Options = options
         case "custom2": customAgent2Options = options

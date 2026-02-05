@@ -171,24 +171,10 @@ final class AppSettingsTests: XCTestCase {
     }
 
     @MainActor
-    func testAiderAgentCommand() {
-        let settings = AppSettings.shared
-        let command = settings.getCommand(for: "aider")
-        XCTAssertEqual(command, "aider")
-    }
-
-    @MainActor
     func testOpencodeAgentCommand() {
         let settings = AppSettings.shared
         let command = settings.getCommand(for: "opencode")
         XCTAssertEqual(command, "opencode")
-    }
-
-    @MainActor
-    func testGooseAgentCommand() {
-        let settings = AppSettings.shared
-        let command = settings.getCommand(for: "goose")
-        XCTAssertEqual(command, "goose")
     }
 
     @MainActor
@@ -242,19 +228,6 @@ final class AppSettingsTests: XCTestCase {
         let settings = AppSettings.shared
         let options = settings.getOptions(for: "unknownagent")
         XCTAssertEqual(options, "")
-    }
-
-    @MainActor
-    func testSetOptionsForKnownAgent() {
-        let settings = AppSettings.shared
-        // Save current
-        let original = settings.agentOptions_aider
-
-        settings.setOptions("--test-option", for: "aider")
-        XCTAssertEqual(settings.getOptions(for: "aider"), "--test-option")
-
-        // Restore
-        settings.agentOptions_aider = original
     }
 
     // MARK: - Recent Repos

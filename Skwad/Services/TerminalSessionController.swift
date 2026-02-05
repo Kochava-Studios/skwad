@@ -29,7 +29,7 @@ class TerminalSessionController: ObservableObject {
     /// Folder path for this terminal session
     let folder: String
 
-    /// Agent type (claude, aider, etc.)
+    /// Agent type (claude, etc.)
     let agentType: String
 
     // MARK: - Dependencies
@@ -68,7 +68,7 @@ class TerminalSessionController: ObservableObject {
     /// - Parameters:
     ///   - agentId: Unique identifier for the agent
     ///   - folder: Working directory for the terminal
-    ///   - agentType: Type of agent (claude, aider, etc.)
+    ///   - agentType: Type of agent (claude, etc.)
     ///   - idleTimeout: Seconds of inactivity before marking idle (default: TimingConstants.idleTimeout)
     ///   - onStatusChange: Callback when status changes
     ///   - onTitleChange: Callback when terminal title changes

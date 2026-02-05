@@ -192,22 +192,6 @@ final class TerminalCommandBuilderTests: XCTestCase {
         settings.mcpServerEnabled = originalMCP
     }
 
-    @MainActor
-    func testNoMCPArgumentsForAider() {
-        let settings = AppSettings.shared
-        let originalMCP = settings.mcpServerEnabled
-
-        settings.mcpServerEnabled = true
-
-        let command = TerminalCommandBuilder.buildAgentCommand(for: "aider", settings: settings)
-
-        // Aider doesn't support MCP, so no MCP-specific arguments
-        XCTAssertFalse(command.contains("--mcp-config"))
-        XCTAssertFalse(command.contains("--allowed-tools"))
-
-        settings.mcpServerEnabled = originalMCP
-    }
-
     // MARK: - Inline Registration
 
     func testSupportsInlineRegistrationForClaude() {
@@ -228,14 +212,6 @@ final class TerminalCommandBuilderTests: XCTestCase {
 
     func testSupportsInlineRegistrationForCopilot() {
         XCTAssertTrue(TerminalCommandBuilder.supportsInlineRegistration(agentType: "copilot"))
-    }
-
-    func testDoesNotSupportInlineRegistrationForAider() {
-        XCTAssertFalse(TerminalCommandBuilder.supportsInlineRegistration(agentType: "aider"))
-    }
-
-    func testDoesNotSupportInlineRegistrationForGoose() {
-        XCTAssertFalse(TerminalCommandBuilder.supportsInlineRegistration(agentType: "goose"))
     }
 
     func testSupportsSystemPromptOnlyForClaude() {

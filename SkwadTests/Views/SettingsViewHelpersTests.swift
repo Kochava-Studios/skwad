@@ -165,10 +165,6 @@ final class SettingsViewHelpersTests: XCTestCase {
         XCTAssertFalse(isCustomAgent("codex"))
     }
 
-    func testAiderIsNotCustomAgent() {
-        XCTAssertFalse(isCustomAgent("aider"))
-    }
-
     func testUnknownIsNotCustomAgent() {
         XCTAssertFalse(isCustomAgent("unknown"))
     }

@@ -27,7 +27,7 @@ struct Agent: Identifiable, Codable, Hashable {
     var name: String
     var avatar: String?  // Either emoji or "data:image/png;base64,..."
     var folder: String
-    var agentType: String  // Agent type ID (claude, codex, aider, custom1, etc.)
+    var agentType: String  // Agent type ID (claude, codex, custom1, etc.)
     var createdBy: UUID?  // Agent ID that created this agent (nil if created by user)
 
     // Runtime state (not persisted)
