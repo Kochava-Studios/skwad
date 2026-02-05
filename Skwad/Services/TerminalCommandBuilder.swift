@@ -2,6 +2,8 @@ import Foundation
 
 /// Builds shell commands for agent initialization
 ///
+/// See `doc/agent-cli-arguments.md` for CLI argument reference across agents.
+///
 /// This service centralizes all command construction logic that was previously
 /// duplicated across multiple view components (GhosttyHostView, TerminalHostView).
 struct TerminalCommandBuilder {
@@ -11,26 +13,100 @@ struct TerminalCommandBuilder {
   /// - Parameters:
   ///   - agentType: The type of agent (claude, codex, etc.)
   ///   - settings: The app settings containing user-configured options
+  ///   - agentId: The agent's UUID for inline registration (optional)
   /// - Returns: The complete agent command with all arguments
-  static func buildAgentCommand(for agentType: String, settings: AppSettings) -> String {
+  static func buildAgentCommand(for agentType: String, settings: AppSettings, agentId: UUID? = nil) -> String {
     let cmd = settings.getCommand(for: agentType)
     let userOpts = settings.getOptions(for: agentType)
-    
+
     guard !cmd.isEmpty else { return "" }
-    
+
     var fullCommand = cmd
-    
+
     // Add MCP-specific arguments if MCP is enabled
     if settings.mcpServerEnabled {
       fullCommand += getMCPArguments(for: agentType, mcpURL: settings.mcpServerURL)
+
+      // Add inline registration for supported agents
+      if let agentId = agentId {
+        fullCommand += getInlineRegistrationArguments(for: agentType, agentId: agentId)
+      }
     }
-    
+
     // Add user-provided options last
     if !userOpts.isEmpty {
       fullCommand += " \(userOpts)"
     }
-    
+
     return fullCommand
+  }
+
+  // MARK: - Registration Prompt Strings
+
+  /// System prompt for agents that support it (currently none besides Claude)
+  private static func registrationSystemPrompt(agentId: UUID) -> String {
+    "You are part of a team of agents called a skwad. A skwad is made of high-performing agents who collaborate to achieve complex goals so engage with them: ask for help and in return help them succeed. Your skwad agent ID: \(agentId.uuidString)."
+  }
+
+  /// User prompt for inline registration (used by most agents)
+  private static func registrationUserPrompt(agentId: UUID) -> String {
+    "You are part of a team of agents called a skwad. A skwad is made of high-performing agents who collaborate to achieve complex goals so engage with them: ask for help and in return help them succeed. Your skwad agent ID: \(agentId.uuidString). Register with the skwad"
+  }
+
+  // MARK: - Inline Registration
+
+  /// Check if an agent type supports system prompt injection
+  static func supportsSystemPrompt(agentType: String) -> Bool {
+    switch agentType {
+    case "claude":
+      return true
+    default:
+      return false
+    }
+  }
+
+  /// Check if an agent type supports inline registration via command-line arguments
+  static func supportsInlineRegistration(agentType: String) -> Bool {
+    switch agentType {
+    case "claude", "codex", "opencode", "gemini", "copilot":
+      return true
+    default:
+      return false
+    }
+  }
+
+  /// Get inline registration arguments for supported agents
+  /// See `doc/agent-cli-arguments.md` for CLI argument reference
+  private static func getInlineRegistrationArguments(for agentType: String, agentId: UUID) -> String {
+    switch agentType {
+    case "claude":
+      // Claude supports system prompt and user prompt
+      let systemPrompt = registrationSystemPrompt(agentId: agentId)
+      return #" --append-system-prompt "\#(systemPrompt)" "Register with the skwad""#
+
+    case "codex":
+      // Codex: user prompt as last argument (no flag)
+      let userPrompt = registrationUserPrompt(agentId: agentId)
+      return #" "\#(userPrompt)""#
+
+    case "opencode":
+      // OpenCode: --prompt "..."
+      let userPrompt = registrationUserPrompt(agentId: agentId)
+      return #" --prompt "\#(userPrompt)""#
+
+    case "gemini":
+      // Gemini CLI: --prompt-interactive "..."
+      let userPrompt = registrationUserPrompt(agentId: agentId)
+      return #" --prompt-interactive "\#(userPrompt)""#
+
+    case "copilot":
+      // GitHub Copilot: --interactive "..."
+      let userPrompt = registrationUserPrompt(agentId: agentId)
+      return #" --interactive "\#(userPrompt)""#
+
+    default:
+      return ""
+    }
   }
   
   /// Get MCP-specific arguments for each agent type

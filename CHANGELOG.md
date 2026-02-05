@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 - File drop support: drag files onto terminal to inject their path
 - MCP tool `close-agent` for agents to close agents they created
 - Agent creator tracking: `create-agent` now tracks which agent created another agent
+- Inline registration for all supported agents (Claude, Codex, OpenCode, Gemini, Copilot)
 
 ### Changed
 - Renamed MCP tool `show-markdown` to `display-markdown` with improved description

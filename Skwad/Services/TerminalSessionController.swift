@@ -125,10 +125,21 @@ class TerminalSessionController: ObservableObject {
 
     // MARK: - Terminal Lifecycle
 
+    /// Whether this agent type supports inline registration via command-line
+    private var supportsInlineRegistration: Bool {
+        TerminalCommandBuilder.supportsInlineRegistration(agentType: agentType)
+    }
+
     /// Build the initialization command for this terminal session
     /// Used by views that need the command at creation time (Ghostty)
     func buildInitializationCommand() -> String {
-        let agentCommand = TerminalCommandBuilder.buildAgentCommand(for: agentType, settings: settings)
+        // Pass agentId for inline registration if MCP is enabled
+        let agentIdForRegistration = settings.mcpServerEnabled ? agentId : nil
+        let agentCommand = TerminalCommandBuilder.buildAgentCommand(
+            for: agentType,
+            settings: settings,
+            agentId: agentIdForRegistration
+        )
         return TerminalCommandBuilder.buildInitializationCommand(
             folder: folder,
             agentCommand: agentCommand
@@ -149,12 +160,12 @@ class TerminalSessionController: ObservableObject {
             sendCommand(command)
         }
 
-        // Schedule registration if MCP enabled
-        if settings.mcpServerEnabled {
+        // Schedule registration if MCP enabled and agent doesn't support inline registration
+        if settings.mcpServerEnabled && !supportsInlineRegistration {
             // Determine initial delay based on agent type
             let agent = availableAgents.first { $0.id == agentType }
-            let delay = agent?.needsLongStartup == true 
-                ? TimingConstants.registrationFirstIdleDelayLong 
+            let delay = agent?.needsLongStartup == true
+                ? TimingConstants.registrationFirstIdleDelayLong
                 : TimingConstants.registrationFirstIdleDelayShort
             scheduleRegistrationPrompt(delay: delay)
         }
@@ -280,7 +291,8 @@ class TerminalSessionController: ObservableObject {
         hasBecomeIdle = true
         
         // Schedule or reschedule registration based on idle count
-        if !didInjectRegistration && monitorsMCP {
+        // Skip for agents that support inline registration via CLI arguments
+        if !didInjectRegistration && monitorsMCP && !supportsInlineRegistration {
             // Determine delay based on idle count and agent type
             let delay: TimeInterval
             if idleCount == 1 {
