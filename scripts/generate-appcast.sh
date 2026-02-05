@@ -33,17 +33,18 @@ MIN_OS=$(/usr/libexec/PlistBuddy -c "Print :LSMinimumSystemVersion" "$INFO_PLIST
 # Get file size
 FILE_SIZE=$(stat -f%z "$ZIP_PATH")
 
-# Get EdDSA signature
-if [ -n "$SIGN_TOOL" ] && [ -f "$SIGN_TOOL" ]; then
-    echo "Signing ZIP with EdDSA..."
-    SIGNATURE=$("$SIGN_TOOL" "$ZIP_PATH" 2>/dev/null | grep "sparkle:edSignature" | sed 's/.*sparkle:edSignature="\([^"]*\)".*/\1/')
-    if [ -z "$SIGNATURE" ]; then
-        echo "Warning: Could not generate signature. Is the private key in Keychain?"
-        SIGNATURE=""
-    fi
-else
-    echo "Warning: sign_update tool not found. Run 'make build' first."
-    SIGNATURE=""
+# Get EdDSA signature (required - fail if not possible)
+if [ -z "$SIGN_TOOL" ] || [ ! -f "$SIGN_TOOL" ]; then
+    echo "Error: sign_update tool not found. Run 'make build' first."
+    exit 1
+fi
+
+echo "Signing ZIP with EdDSA..."
+echo "  Using: $SIGN_TOOL"
+SIGNATURE=$("$SIGN_TOOL" "$ZIP_PATH" 2>/dev/null | grep "sparkle:edSignature" | sed 's/.*sparkle:edSignature="\([^"]*\)".*/\1/')
+if [ -z "$SIGNATURE" ]; then
+    echo "Error: Could not generate signature. Is the private key in Keychain?"
+    exit 1
 fi
 
 # Get current date in RFC 822 format
