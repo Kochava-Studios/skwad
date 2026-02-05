@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 - Markdown preview history per agent
 - MCP tool `create-agent` now supports `splitScreen` option to automatically share screen with creator
 - Cmd+W now closes the focused agent instead of the window
+- Shell option in agent type picker for plain terminal without agent
 
 ### Changed
 - N/A

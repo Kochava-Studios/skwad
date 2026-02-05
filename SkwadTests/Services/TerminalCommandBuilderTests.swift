@@ -214,6 +214,11 @@ final class TerminalCommandBuilderTests: XCTestCase {
         XCTAssertTrue(TerminalCommandBuilder.supportsInlineRegistration(agentType: "copilot"))
     }
 
+    func testSupportsInlineRegistrationForShell() {
+        // Shell returns true to skip registration prompts entirely
+        XCTAssertTrue(TerminalCommandBuilder.supportsInlineRegistration(agentType: "shell"))
+    }
+
     func testSupportsSystemPromptOnlyForClaude() {
         XCTAssertTrue(TerminalCommandBuilder.supportsSystemPrompt(agentType: "claude"))
         XCTAssertFalse(TerminalCommandBuilder.supportsSystemPrompt(agentType: "codex"))
@@ -373,6 +378,46 @@ final class TerminalCommandBuilderTests: XCTestCase {
 
         // Path should be quoted
         XCTAssertTrue(command.contains("'/path/with spaces/and'quotes'"))
+    }
+
+    func testBuildInitializationCommandWithEmptyAgentCommand() {
+        // Shell mode: just cd and clear, no agent command
+        let command = TerminalCommandBuilder.buildInitializationCommand(
+            folder: "/path/to/project",
+            agentCommand: ""
+        )
+
+        XCTAssertTrue(command.contains("cd '/path/to/project'"))
+        XCTAssertTrue(command.contains("clear"))
+        XCTAssertFalse(command.contains("&&  ") || command.hasSuffix("&& "))  // No trailing &&
+        XCTAssertEqual(command, " cd '/path/to/project' && clear")
+    }
+
+    // MARK: - Shell Agent Type
+
+    @MainActor
+    func testShellAgentTypeReturnsEmptyCommand() {
+        let settings = AppSettings.shared
+        let command = TerminalCommandBuilder.buildAgentCommand(for: "shell", settings: settings)
+        XCTAssertEqual(command, "")
+    }
+
+    @MainActor
+    func testShellAgentTypeIgnoresMCPSettings() {
+        let settings = AppSettings.shared
+        let originalMCP = settings.mcpServerEnabled
+        settings.mcpServerEnabled = true
+
+        let command = TerminalCommandBuilder.buildAgentCommand(
+            for: "shell",
+            settings: settings,
+            agentId: UUID()
+        )
+
+        XCTAssertEqual(command, "")
+        XCTAssertFalse(command.contains("--mcp-config"))
+
+        settings.mcpServerEnabled = originalMCP
     }
 
     // MARK: - Default Shell

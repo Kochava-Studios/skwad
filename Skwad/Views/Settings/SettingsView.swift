@@ -153,13 +153,15 @@ struct AgentCommandOption: Identifiable {
   let icon: String?      // Asset image name
   let systemIcon: String? // SF Symbol fallback
   let needsLongStartup: Bool  // true for slow-starting agents like Gemini
-  
-  init(_ id: String, _ name: String, icon: String? = nil, systemIcon: String? = nil, needsLongStartup: Bool = false) {
+  let isDividerBefore: Bool   // true to show divider before this option
+
+  init(_ id: String, _ name: String, icon: String? = nil, systemIcon: String? = nil, needsLongStartup: Bool = false, isDividerBefore: Bool = false) {
     self.id = id
     self.name = name
     self.icon = icon
     self.systemIcon = systemIcon
     self.needsLongStartup = needsLongStartup
+    self.isDividerBefore = isDividerBefore
   }
 }
 
@@ -172,6 +174,7 @@ let availableAgents = [
   AgentCommandOption("copilot", "GitHub Copilot", icon: "copilot"),
   AgentCommandOption("custom1", "Custom 1", systemIcon: "1.circle"),
   AgentCommandOption("custom2", "Custom 2", systemIcon: "2.circle"),
+  AgentCommandOption("shell", "Shell", systemIcon: "terminal", isDividerBefore: true),
 ]
 
 struct CodingSettingsView: View {

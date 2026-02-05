@@ -16,6 +16,11 @@ struct TerminalCommandBuilder {
   ///   - agentId: The agent's UUID for inline registration (optional)
   /// - Returns: The complete agent command with all arguments
   static func buildAgentCommand(for agentType: String, settings: AppSettings, agentId: UUID? = nil) -> String {
+    // Shell type: no agent command, just a plain terminal
+    if agentType == "shell" {
+      return ""
+    }
+
     let cmd = settings.getCommand(for: agentType)
     let userOpts = settings.getOptions(for: agentType)
 
@@ -66,9 +71,10 @@ struct TerminalCommandBuilder {
   }
 
   /// Check if an agent type supports inline registration via command-line arguments
+  /// Shell returns true to skip registration prompts entirely
   static func supportsInlineRegistration(agentType: String) -> Bool {
     switch agentType {
-    case "claude", "codex", "opencode", "gemini", "copilot":
+    case "claude", "codex", "opencode", "gemini", "copilot", "shell":
       return true
     default:
       return false
@@ -149,6 +155,10 @@ struct TerminalCommandBuilder {
   static func buildInitializationCommand(folder: String, agentCommand: String) -> String {
     // Prefix with space to prevent shell history
     // Note: zsh ignores by default, bash requires HISTCONTROL=ignorespace
+    if agentCommand.isEmpty {
+      // Shell mode: just cd and clear, no agent command
+      return " cd '\(folder)' && clear"
+    }
     return " cd '\(folder)' && clear && \(agentCommand)"
   }
   
