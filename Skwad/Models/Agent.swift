@@ -35,6 +35,7 @@ struct Agent: Identifiable, Codable, Hashable {
     var terminalTitle: String = ""  // Current terminal title
     var restartToken: UUID = UUID()  // Changes on restart to force terminal recreation
     var gitStats: GitLineStats? = nil
+    var markdownFilePath: String? = nil  // Markdown file being previewed (set by MCP tool)
 
     // Only persist these fields
     enum CodingKeys: String, CodingKey {

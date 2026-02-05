@@ -311,10 +311,10 @@ struct ContentView: View {
       }
 
       // Markdown panel (sliding from right)
-      if let filePath = agentManager.markdownPanelFilePath {
+      if let agent = activeAgent, let filePath = agent.markdownFilePath {
         MarkdownPanelView(filePath: filePath) {
           withAnimation(.easeInOut(duration: 0.2)) {
-            agentManager.closeMarkdownPanel()
+            agentManager.closeMarkdownPanel(for: agent.id)
           }
         }
         .transition(.move(edge: .trailing))
@@ -336,11 +336,9 @@ struct ContentView: View {
     }
     .onChange(of: agentManager.activeAgentIds) { _, _ in
       if showGitPanel { showGitPanel = false }
-      agentManager.closeMarkdownPanel()
     }
     .onChange(of: agentManager.focusedPaneIndex) { _, _ in
       if showGitPanel { showGitPanel = false }
-      agentManager.closeMarkdownPanel()
     }
     .onChange(of: showGitPanel) { _, _ in
       // Notify terminal to resize when git panel toggles
@@ -350,7 +348,7 @@ struct ContentView: View {
         }
       }
     }
-    .onChange(of: agentManager.markdownPanelFilePath) { _, _ in
+    .onChange(of: activeAgent?.markdownFilePath) { _, _ in
       // Notify terminal to resize when markdown panel toggles
       DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
         if let activeId = agentManager.activeAgentId {

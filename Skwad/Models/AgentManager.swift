@@ -27,9 +27,6 @@ final class AgentManager {
     var workspaces: [Workspace] = []
     var currentWorkspaceId: UUID?
 
-    // Markdown panel state
-    var markdownPanelFilePath: String?
-    var markdownPanelAgentId: UUID?
 
     private let settings = AppSettings.shared
 
@@ -719,13 +716,15 @@ final class AgentManager {
 
     /// Show the markdown panel for a specific file
     func showMarkdownPanel(filePath: String, forAgent agentId: UUID) {
-        markdownPanelFilePath = filePath
-        markdownPanelAgentId = agentId
+        if let index = agents.firstIndex(where: { $0.id == agentId }) {
+            agents[index].markdownFilePath = filePath
+        }
     }
 
-    /// Close the markdown panel
-    func closeMarkdownPanel() {
-        markdownPanelFilePath = nil
-        markdownPanelAgentId = nil
+    /// Close the markdown panel for an agent
+    func closeMarkdownPanel(for agentId: UUID) {
+        if let index = agents.firstIndex(where: { $0.id == agentId }) {
+            agents[index].markdownFilePath = nil
+        }
     }
 }

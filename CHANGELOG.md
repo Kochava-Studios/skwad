@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 - Renamed MCP tool `show-markdown` to `display-markdown` with improved description
+- Markdown panel is now per-agent: switching agents shows/hides the panel accordingly
 
 ### Fixed
 - Context menu submenu flickering when terminal is active
