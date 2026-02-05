@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - Markdown preview history per agent
+- MCP tool `create-agent` now supports `splitScreen` option to automatically share screen with creator
 
 ### Changed
 - N/A
