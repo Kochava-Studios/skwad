@@ -10,18 +10,8 @@ APP_PATH="${2:-build/export/Skwad.app}"
 OUTPUT_PATH="${3:-build/appcast.xml}"
 DOWNLOAD_URL="${4:-https://github.com/Kochava-Studios/skwad/releases/latest/download/Skwad.zip}"
 
-# Sparkle sign_update tool location - check multiple possible paths
-SIGN_TOOL=""
-for path in \
-    "build/DerivedData/SourcePackages/artifacts/sparkle/Sparkle/bin/sign_update" \
-    ".build/artifacts/sparkle/Sparkle/bin/sign_update" \
-    "$(xcodebuild -showBuildSettings 2>/dev/null | grep -m1 BUILD_DIR | awk '{print $3}')/../SourcePackages/artifacts/sparkle/Sparkle/bin/sign_update"
-do
-    if [ -f "$path" ]; then
-        SIGN_TOOL="$path"
-        break
-    fi
-done
+# Sparkle sign_update tool location - search common paths
+SIGN_TOOL=$(find build/DerivedData .build ~/Library/Developer/Xcode/DerivedData -name "sign_update" -path "*/sparkle/Sparkle/bin/*" 2>/dev/null | head -1)
 
 # Validate inputs
 if [ ! -f "$ZIP_PATH" ]; then
