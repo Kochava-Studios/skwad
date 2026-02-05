@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 - File drop support: drag files onto terminal to inject their path
 - MCP tool `close-agent` for agents to close agents they created
+- Markdown panel auto-reloads when file changes on disk
 
 ### Changed
 - Renamed MCP tool `show-markdown` to `display-markdown` with improved description
@@ -16,7 +17,6 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 - Context menu submenu flickering when terminal is active
 - Markdown panel now reloads when file path changes
-- Markdown panel auto-reloads when file changes on disk
 - Split pane now correctly collapses to single pane when removing an agent from a pane
 
 ### Removed
