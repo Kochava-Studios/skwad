@@ -45,4 +45,9 @@ enum TimingConstants {
 
     /// Duration to show "copied" checkmark before resetting
     static let copiedIndicatorDuration: TimeInterval = 2.0
+
+    // MARK: - File Watching
+
+    /// Debounce delay for file watcher notifications
+    static let fileWatcherDebounce: TimeInterval = 0.3
 }

@@ -12,6 +12,7 @@ struct MarkdownPanelView: View {
     @State private var content: String?
     @State private var errorMessage: String?
     @State private var isLoading = true
+    @State private var fileWatcher: FileWatcher?
 
     private var backgroundColor: Color {
         settings.effectiveBackgroundColor
@@ -38,9 +39,15 @@ struct MarkdownPanelView: View {
         .background(backgroundColor)
         .onAppear {
             loadContent()
+            startWatching()
+        }
+        .onDisappear {
+            stopWatching()
         }
         .onChange(of: filePath) { _, _ in
+            stopWatching()
             loadContent()
+            startWatching()
         }
     }
 
@@ -48,7 +55,8 @@ struct MarkdownPanelView: View {
 
     @ViewBuilder
     private var contentView: some View {
-        if isLoading {
+        if isLoading && content == nil {
+            // Only show loading on initial load, not on reload
             loadingView
         } else if let error = errorMessage {
             errorView(error)
@@ -182,6 +190,20 @@ struct MarkdownPanelView: View {
                 }
             }
         }
+    }
+
+    // MARK: - File Watching
+
+    private func startWatching() {
+        fileWatcher = FileWatcher(filePath: filePath) { [self] in
+            loadContent()
+        }
+        fileWatcher?.start()
+    }
+
+    private func stopWatching() {
+        fileWatcher?.stop()
+        fileWatcher = nil
     }
 }
 
