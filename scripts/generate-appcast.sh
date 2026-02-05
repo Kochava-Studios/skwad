@@ -10,8 +10,18 @@ APP_PATH="${2:-build/export/Skwad.app}"
 OUTPUT_PATH="${3:-build/appcast.xml}"
 DOWNLOAD_URL="${4:-https://github.com/Kochava-Studios/skwad/releases/latest/download/Skwad.zip}"
 
-# Sparkle sign_update tool location
-SIGN_TOOL="build/DerivedData/SourcePackages/artifacts/sparkle/Sparkle/bin/sign_update"
+# Sparkle sign_update tool location - check multiple possible paths
+SIGN_TOOL=""
+for path in \
+    "build/DerivedData/SourcePackages/artifacts/sparkle/Sparkle/bin/sign_update" \
+    ".build/artifacts/sparkle/Sparkle/bin/sign_update" \
+    "$(xcodebuild -showBuildSettings 2>/dev/null | grep -m1 BUILD_DIR | awk '{print $3}')/../SourcePackages/artifacts/sparkle/Sparkle/bin/sign_update"
+do
+    if [ -f "$path" ]; then
+        SIGN_TOOL="$path"
+        break
+    fi
+done
 
 # Validate inputs
 if [ ! -f "$ZIP_PATH" ]; then
@@ -34,7 +44,7 @@ MIN_OS=$(/usr/libexec/PlistBuddy -c "Print :LSMinimumSystemVersion" "$INFO_PLIST
 FILE_SIZE=$(stat -f%z "$ZIP_PATH")
 
 # Get EdDSA signature
-if [ -f "$SIGN_TOOL" ]; then
+if [ -n "$SIGN_TOOL" ] && [ -f "$SIGN_TOOL" ]; then
     echo "Signing ZIP with EdDSA..."
     SIGNATURE=$("$SIGN_TOOL" "$ZIP_PATH" 2>/dev/null | grep "sparkle:edSignature" | sed 's/.*sparkle:edSignature="\([^"]*\)".*/\1/')
     if [ -z "$SIGNATURE" ]; then
