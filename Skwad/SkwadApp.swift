@@ -93,6 +93,9 @@ struct SkwadApp: App {
                     // Connect to app delegate for cleanup
                     appDelegate.agentManager = agentManager
 
+                    // Setup menu bar if enabled
+                    appDelegate.setupMenuBarIfNeeded()
+
                     // Apply appearance mode
                     AppSettings.shared.applyAppearance()
 
@@ -119,8 +122,8 @@ struct SkwadApp: App {
         .windowStyle(.hiddenTitleBar)
         .defaultSize(width: 1200, height: 800)
         .commands {
-            // File menu - workspace and agent creation
-            CommandGroup(after: .newItem) {
+            // File menu - workspace and agent creation (replacing removes default "New Window")
+            CommandGroup(replacing: .newItem) {
                 Button("New Workspace...") {
                     showNewWorkspaceSheet = true
                 }

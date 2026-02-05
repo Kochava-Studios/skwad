@@ -77,6 +77,7 @@ class AppSettings: ObservableObject {
 
     // General
     @AppStorage("restoreLayoutOnLaunch") var restoreLayoutOnLaunch: Bool = true
+    @AppStorage("keepInMenuBar") var keepInMenuBar: Bool = false
     @AppStorage("terminalEngine") var terminalEngine: String = "ghostty"  // "ghostty" or "swiftterm"
     @AppStorage("savedAgentsData") private var savedAgentsData: Data = Data()
 

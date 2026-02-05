@@ -119,8 +119,14 @@ struct GeneralSettingsView: View {
       
       Section {
         Toggle("Restore agents on launch", isOn: $settings.restoreLayoutOnLaunch)
+        Toggle("Keep running in menu bar when closed", isOn: $settings.keepInMenuBar)
       } header: {
         Text("Startup")
+      } footer: {
+        if settings.keepInMenuBar {
+          Text("Closing the window or pressing ⌘Q will hide Skwad to the menu bar. Use the menu bar icon to show the window or quit.")
+            .foregroundColor(.secondary)
+        }
       }
 
       Section {

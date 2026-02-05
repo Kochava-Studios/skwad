@@ -17,9 +17,8 @@
 		8D2673C92F31592C0043E3A6 /* VoiceInputManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D2673C72F31592C0043E3A6 /* VoiceInputManager.swift */; };
 		8D2673CA2F31592C0043E3A6 /* VoiceInputOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D2673C82F31592C0043E3A6 /* VoiceInputOverlay.swift */; };
 		8D2673CB2F31592C0043E3A6 /* PushToTalkMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D2673C62F31592C0043E3A6 /* PushToTalkMonitor.swift */; };
+		8D3ED4ED2F344CB70023AA53 /* MenuBarManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D3ED4EC2F344CB70023AA53 /* MenuBarManager.swift */; };
 		8D3F44C72F30EB2000407F17 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = SP000002 /* Sparkle */; };
-		MD000001 /* MarkdownPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MD100001 /* MarkdownPanelView.swift */; };
-		MD000002 /* MarkdownUI in Frameworks */ = {isa = PBXBuildFile; productRef = MD000003 /* MarkdownUI */; };
 		8D6B97222F2DC17900CE877E /* MCPMessageStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6B97212F2DC17900CE877E /* MCPMessageStore.swift */; };
 		8D6B97252F2DC47300CE877E /* AsyncDelay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6B97232F2DC47300CE877E /* AsyncDelay.swift */; };
 		8D6B97262F2DC47300CE877E /* TimingConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6B97242F2DC47300CE877E /* TimingConstants.swift */; };
@@ -52,7 +51,6 @@
 		F8001005 /* SidebarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8000005 /* SidebarView.swift */; };
 		F8001007 /* TerminalHostView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8000007 /* TerminalHostView.swift */; };
 		F8001008 /* AgentTerminalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8000008 /* AgentTerminalView.swift */; };
-		SD000001 /* SplitDividerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = SD100001 /* SplitDividerView.swift */; };
 		F8001009 /* SwiftTerm in Frameworks */ = {isa = PBXBuildFile; productRef = F8002001 /* SwiftTerm */; };
 		F8001010 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8000009 /* AppSettings.swift */; };
 		F8001011 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F800000A /* SettingsView.swift */; };
@@ -74,6 +72,9 @@
 		GH000013 /* GhosttyTerminalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = GH100013 /* GhosttyTerminalView.swift */; };
 		GH000014 /* TerminalScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = GH100014 /* TerminalScrollView.swift */; };
 		LG000001 /* libghostty.a in Frameworks */ = {isa = PBXBuildFile; fileRef = LG100001 /* libghostty.a */; };
+		MD000001 /* MarkdownPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MD100001 /* MarkdownPanelView.swift */; };
+		MD000002 /* MarkdownUI in Frameworks */ = {isa = PBXBuildFile; productRef = MD000003 /* MarkdownUI */; };
+		SD000001 /* SplitDividerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = SD100001 /* SplitDividerView.swift */; };
 		SF000001 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = SF100001 /* Metal.framework */; };
 		SF000002 /* MetalKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = SF100002 /* MetalKit.framework */; };
 		SF000003 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = SF100003 /* QuartzCore.framework */; };
@@ -148,13 +149,13 @@
 
 /* Begin PBXFileReference section */
 		137C060CFAE6151E52210D1A /* GitRepository.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GitRepository.swift; sourceTree = "<group>"; };
-		MD100001 /* MarkdownPanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownPanelView.swift; sourceTree = "<group>"; };
 		241FF0F3B6265925356C1479 /* GitFileWatcher.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GitFileWatcher.swift; sourceTree = "<group>"; };
 		52D95A7EFF9B22BB564BAFA4 /* GitWorktreeManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GitWorktreeManager.swift; sourceTree = "<group>"; };
 		5B074ACAD44D9FA064E28A16 /* NewWorktreeSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NewWorktreeSheet.swift; sourceTree = "<group>"; };
 		8D2673C62F31592C0043E3A6 /* PushToTalkMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushToTalkMonitor.swift; sourceTree = "<group>"; };
 		8D2673C72F31592C0043E3A6 /* VoiceInputManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceInputManager.swift; sourceTree = "<group>"; };
 		8D2673C82F31592C0043E3A6 /* VoiceInputOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceInputOverlay.swift; sourceTree = "<group>"; };
+		8D3ED4EC2F344CB70023AA53 /* MenuBarManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarManager.swift; sourceTree = "<group>"; };
 		8D6B97212F2DC17900CE877E /* MCPMessageStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPMessageStore.swift; sourceTree = "<group>"; };
 		8D6B97232F2DC47300CE877E /* AsyncDelay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsyncDelay.swift; sourceTree = "<group>"; };
 		8D6B97242F2DC47300CE877E /* TimingConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimingConstants.swift; sourceTree = "<group>"; };
@@ -183,7 +184,6 @@
 		F8000005 /* SidebarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarView.swift; sourceTree = "<group>"; };
 		F8000007 /* TerminalHostView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalHostView.swift; sourceTree = "<group>"; };
 		F8000008 /* AgentTerminalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentTerminalView.swift; sourceTree = "<group>"; };
-		SD100001 /* SplitDividerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplitDividerView.swift; sourceTree = "<group>"; };
 		F8000009 /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
 		F800000A /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		F800000B /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
@@ -209,6 +209,8 @@
 		GH100014 /* TerminalScrollView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalScrollView.swift; sourceTree = "<group>"; };
 		IP100001 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		LG100001 /* libghostty.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libghostty.a; path = Vendor/libghostty/lib/libghostty.a; sourceTree = "<group>"; };
+		MD100001 /* MarkdownPanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownPanelView.swift; sourceTree = "<group>"; };
+		SD100001 /* SplitDividerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplitDividerView.swift; sourceTree = "<group>"; };
 		SF100001 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
 		SF100002 /* MetalKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalKit.framework; path = System/Library/Frameworks/MetalKit.framework; sourceTree = SDKROOT; };
 		SF100003 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
@@ -376,11 +378,12 @@
 				VM200000 /* ViewModels */,
 				F8000013 /* Views */,
 				77680A9680BE89ECA55216DA /* Voice */,
-				8D6B97272F2E316A00CE877E /* AppDelegate.swift */,
-				IP100001 /* Info.plist */,
-				F800000B /* Theme.swift */,
 				F8000200 /* Skwad.entitlements */,
+				IP100001 /* Info.plist */,
+				8D6B97272F2E316A00CE877E /* AppDelegate.swift */,
+				8D3ED4EC2F344CB70023AA53 /* MenuBarManager.swift */,
 				F8000001 /* SkwadApp.swift */,
+				F800000B /* Theme.swift */,
 			);
 			path = Skwad;
 			sourceTree = "<group>";
@@ -412,14 +415,6 @@
 				F8000002 /* ContentView.swift */,
 			);
 			path = Views;
-			sourceTree = "<group>";
-		};
-		MD200001 /* Markdown */ = {
-			isa = PBXGroup;
-			children = (
-				MD100001 /* MarkdownPanelView.swift */,
-			);
-			path = Markdown;
 			sourceTree = "<group>";
 		};
 		F8000014 /* Sidebar */ = {
@@ -501,6 +496,14 @@
 				GH100014 /* TerminalScrollView.swift */,
 			);
 			path = GhosttyTerminal;
+			sourceTree = "<group>";
+		};
+		MD200001 /* Markdown */ = {
+			isa = PBXGroup;
+			children = (
+				MD100001 /* MarkdownPanelView.swift */,
+			);
+			path = Markdown;
 			sourceTree = "<group>";
 		};
 		SF200000 /* Frameworks */ = {
@@ -860,6 +863,7 @@
 				GH000003 /* Ghostty.Input.swift in Sources */,
 				GH000004 /* Ghostty.Key.swift in Sources */,
 				8D6B972C2F2E32DD00CE877E /* NSImage+Scaling.swift in Sources */,
+				8D3ED4ED2F344CB70023AA53 /* MenuBarManager.swift in Sources */,
 				GH000005 /* Ghostty.KeyEvent.swift in Sources */,
 				GH000006 /* Ghostty.Mods.swift in Sources */,
 				GH000007 /* Ghostty.MouseEvent.swift in Sources */,
@@ -1247,6 +1251,14 @@
 				minimumVersion = 1.2.0;
 			};
 		};
+		MD300001 /* XCRemoteSwiftPackageReference "swift-markdown-ui" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/gonzalezreal/swift-markdown-ui";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.4.0;
+			};
+		};
 		SP000001 /* XCRemoteSwiftPackageReference "Sparkle" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/sparkle-project/Sparkle";
@@ -1261,14 +1273,6 @@
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 0.10.0;
-			};
-		};
-		MD300001 /* XCRemoteSwiftPackageReference "swift-markdown-ui" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/gonzalezreal/swift-markdown-ui";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 2.4.0;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
@@ -1304,6 +1308,11 @@
 			package = F8002000 /* XCRemoteSwiftPackageReference "SwiftTerm" */;
 			productName = SwiftTerm;
 		};
+		MD000003 /* MarkdownUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = MD300001 /* XCRemoteSwiftPackageReference "swift-markdown-ui" */;
+			productName = MarkdownUI;
+		};
 		SP000002 /* Sparkle */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = SP000001 /* XCRemoteSwiftPackageReference "Sparkle" */;
@@ -1313,11 +1322,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = TS800000 /* XCRemoteSwiftPackageReference "ViewInspector" */;
 			productName = ViewInspector;
-		};
-		MD000003 /* MarkdownUI */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = MD300001 /* XCRemoteSwiftPackageReference "swift-markdown-ui" */;
-			productName = MarkdownUI;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
