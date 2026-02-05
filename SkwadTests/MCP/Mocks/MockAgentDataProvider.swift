@@ -32,6 +32,10 @@ actor MockAgentDataProvider: AgentDataProvider {
         return _agents
     }
 
+    func getAgent(id: UUID) async -> Agent? {
+        return _agents.first { $0.id == id }
+    }
+
     func getAgentsInSameWorkspace(as agentId: UUID) async -> [Agent] {
         // Find which workspace contains this agent
         guard let workspace = _workspaces.first(where: { $0.agentIds.contains(agentId) }) else {
@@ -61,11 +65,19 @@ actor MockAgentDataProvider: AgentDataProvider {
         _injectedTexts.append((text: text, agentId: agentId))
     }
 
-    func addAgent(folder: String, name: String, avatar: String?, agentType: String) async -> UUID? {
+    func addAgent(folder: String, name: String, avatar: String?, agentType: String, createdBy: UUID?) async -> UUID? {
         _addedAgents.append((folder: folder, name: name, avatar: avatar, agentType: agentType))
-        let newAgent = Agent(name: name, avatar: avatar, folder: folder, agentType: agentType)
+        let newAgent = Agent(name: name, avatar: avatar, folder: folder, agentType: agentType, createdBy: createdBy)
         _agents.append(newAgent)
         return newAgent.id
+    }
+
+    func removeAgent(id: UUID) async -> Bool {
+        if let index = _agents.firstIndex(where: { $0.id == id }) {
+            _agents.remove(at: index)
+            return true
+        }
+        return false
     }
 
     func showMarkdownPanel(filePath: String, agentId: UUID) async -> Bool {
