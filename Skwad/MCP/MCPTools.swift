@@ -96,7 +96,8 @@ actor MCPToolHandler {
                         "agentType": PropertySchema(type: "string", description: "Agent type: claude, codex, opencode, gemini, custom1, or custom2"),
                         "repoPath": PropertySchema(type: "string", description: "Path to the repository or worktree folder"),
                         "createWorktree": PropertySchema(type: "boolean", description: "If true, create a new worktree from repoPath"),
-                        "branchName": PropertySchema(type: "string", description: "Branch name for new worktree (required if createWorktree is true)")
+                        "branchName": PropertySchema(type: "string", description: "Branch name for new worktree (required if createWorktree is true)"),
+                        "splitScreen": PropertySchema(type: "boolean", description: "If true, new agent shares screen with creator (split view)")
                     ],
                     required: ["name", "agentType", "repoPath"]
                 )
@@ -308,6 +309,7 @@ actor MCPToolHandler {
         let icon = arguments["icon"] as? String
         let createWorktree = arguments["createWorktree"] as? Bool ?? false
         let branchName = arguments["branchName"] as? String
+        let splitScreen = arguments["splitScreen"] as? Bool ?? false
 
         // Validate branch name is provided if creating worktree
         if createWorktree && (branchName == nil || branchName!.isEmpty) {
@@ -325,7 +327,8 @@ actor MCPToolHandler {
             repoPath: repoPath,
             createWorktree: createWorktree,
             branchName: branchName,
-            createdBy: createdBy
+            createdBy: createdBy,
+            splitScreen: splitScreen
         )
 
         return successResult(result)

@@ -312,6 +312,7 @@ final class AgentManager {
 
     // MARK: - Agent CRUD
 
+    @discardableResult
     func addAgent(
         folder: String,
         name: String? = nil,
@@ -319,7 +320,7 @@ final class AgentManager {
         agentType: String = "claude",
         createdBy: UUID? = nil,
         insertAfterId: UUID? = nil
-    ) {
+    ) -> UUID? {
         var agent = Agent(folder: folder, avatar: avatar, agentType: agentType, createdBy: createdBy)
         if let name = name {
             agent.name = name
@@ -357,6 +358,8 @@ final class AgentManager {
 
         // Add to recent agents
         settings.addRecentAgent(agent)
+
+        return agent.id
     }
 
     func removeAgent(_ agent: Agent) {
@@ -561,6 +564,63 @@ final class AgentManager {
         activeAgentIds = keepId.map { [$0] } ?? (workspaceAgents.first.map { [$0.id] } ?? [])
         layoutMode = .single
         focusedPaneIndex = 0
+    }
+
+    /// Enters split view showing the creator agent and a newly created agent
+    /// Called when an agent creates another agent with splitScreen=true
+    func enterSplitWithNewAgent(newAgentId: UUID, creatorId: UUID) {
+        // Find which pane the creator is in (if any)
+        let creatorPane = paneIndex(for: creatorId)
+
+        switch layoutMode {
+        case .single:
+            // Single → Dual vertical: creator left (0), new agent right (1)
+            activeAgentIds = [creatorId, newAgentId]
+            layoutMode = .splitVertical
+            focusedPaneIndex = 1  // Focus the new agent
+
+        case .splitVertical, .splitHorizontal:
+            // Dual → Four-pane grid
+            // Keep existing 2 agents in panes 0 and 1, add new agent to pane 2
+            var newActiveIds = activeAgentIds
+            newActiveIds.append(newAgentId)
+            // If we need a 4th, pick any agent not already shown
+            if newActiveIds.count < 4 {
+                if let fourthAgent = currentWorkspaceAgents.first(where: {
+                    !newActiveIds.contains($0.id) && $0.id != newAgentId
+                }) {
+                    newActiveIds.append(fourthAgent.id)
+                }
+            }
+            activeAgentIds = Array(newActiveIds.prefix(4))
+            layoutMode = .gridFourPane
+            // Focus the new agent's pane
+            if let newPane = activeAgentIds.firstIndex(of: newAgentId) {
+                focusedPaneIndex = newPane
+            }
+
+        case .gridFourPane:
+            // Four-pane already full: replace a pane (not the creator's)
+            // Priority: 4 (index 3) → 3 (index 2) → 2 (index 1) → 1 (index 0)
+            let replacementOrder = [3, 2, 1, 0]
+            var replacedPane: Int? = nil
+
+            for pane in replacementOrder where pane < activeAgentIds.count {
+                if pane != creatorPane {
+                    activeAgentIds[pane] = newAgentId
+                    replacedPane = pane
+                    break
+                }
+            }
+
+            // Edge case: creator is in all considered panes (shouldn't happen, but fallback)
+            if replacedPane == nil, activeAgentIds.count > 3 {
+                activeAgentIds[3] = newAgentId
+                replacedPane = 3
+            }
+
+            focusedPaneIndex = replacedPane ?? 3
+        }
     }
 
     func focusPane(_ index: Int) {

@@ -22,7 +22,7 @@ protocol AgentDataProvider: Sendable {
     func getAgentsInSameWorkspace(as agentId: UUID) async -> [Agent]
     func setRegistered(for agentId: UUID, registered: Bool) async
     func injectText(_ text: String, for agentId: UUID) async
-    func addAgent(folder: String, name: String, avatar: String?, agentType: String, createdBy: UUID?) async -> UUID?
+    func addAgent(folder: String, name: String, avatar: String?, agentType: String, createdBy: UUID?, splitScreen: Bool) async -> UUID?
     func removeAgent(id: UUID) async -> Bool
     func showMarkdownPanel(filePath: String, agentId: UUID) async -> Bool
 }
@@ -349,7 +349,8 @@ actor MCPService: MCPServiceProtocol {
         repoPath: String,
         createWorktree: Bool,
         branchName: String?,
-        createdBy: UUID?
+        createdBy: UUID?,
+        splitScreen: Bool
     ) async -> CreateAgentResponse {
         guard let provider = agentDataProvider else {
             return CreateAgentResponse(success: false, agentId: nil, message: "AgentDataProvider not available")
@@ -402,7 +403,7 @@ actor MCPService: MCPServiceProtocol {
         }
 
         // Create the agent via the provider
-        if let agentId = await provider.addAgent(folder: folder, name: name, avatar: icon, agentType: agentType, createdBy: createdBy) {
+        if let agentId = await provider.addAgent(folder: folder, name: name, avatar: icon, agentType: agentType, createdBy: createdBy, splitScreen: splitScreen) {
             logger.info("[skwad] Created agent '\(name)' with ID \(agentId)")
             return CreateAgentResponse(success: true, agentId: agentId.uuidString, message: "Agent created successfully")
         } else {
@@ -508,16 +509,19 @@ final class AgentManagerWrapper: AgentDataProvider, @unchecked Sendable {
         }
     }
 
-    func addAgent(folder: String, name: String, avatar: String?, agentType: String, createdBy: UUID?) async -> UUID? {
+    func addAgent(folder: String, name: String, avatar: String?, agentType: String, createdBy: UUID?, splitScreen: Bool) async -> UUID? {
         await MainActor.run {
             guard let manager = manager else { return nil }
-            let countBefore = manager.agents.count
-            manager.addAgent(folder: folder, name: name, avatar: avatar, agentType: agentType, createdBy: createdBy)
-            // Return the ID of the newly added agent
-            if manager.agents.count > countBefore {
-                return manager.agents.last?.id
+            guard let newAgentId = manager.addAgent(folder: folder, name: name, avatar: avatar, agentType: agentType, createdBy: createdBy) else {
+                return nil
             }
-            return nil
+
+            // Handle split screen if requested
+            if splitScreen, let creatorId = createdBy {
+                manager.enterSplitWithNewAgent(newAgentId: newAgentId, creatorId: creatorId)
+            }
+
+            return newAgentId
         }
     }
 
