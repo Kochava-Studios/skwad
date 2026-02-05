@@ -56,6 +56,15 @@ jobs:
           # Cleanup
           rm -f $CERTIFICATE_PATH
 
+      - name: Import Sparkle signing key
+        run: |
+          # Build first to get Sparkle tools
+          make build
+          # Import the EdDSA private key for Sparkle signing
+          echo "${{ secrets.SPARKLE_PRIVATE_KEY }}" | ./build/DerivedData/SourcePackages/artifacts/sparkle/Sparkle/bin/generate_keys -f /dev/stdin
+        env:
+          SIGNING_CERTIFICATE: ${{ secrets.SIGNING_CERTIFICATE }}
+
       - name: Get version
         id: version
         run: |
