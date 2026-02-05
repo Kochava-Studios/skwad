@@ -35,9 +35,10 @@ final class AgentTests: XCTestCase {
         XCTAssertFalse(agent.isImageAvatar)
     }
 
-    func testDisplayTitleStripsLeadingIndicators() {
+    func testDisplayTitleReturnsTerminalTitle() {
         var agent = Agent(name: "Test", folder: "/tmp")
-        agent.terminalTitle = "✳ claude"
+        // displayTitle returns terminalTitle directly - cleaning happens in AgentManager.updateTitle()
+        agent.terminalTitle = "claude"
         XCTAssertEqual(agent.displayTitle, "claude")
     }
 }

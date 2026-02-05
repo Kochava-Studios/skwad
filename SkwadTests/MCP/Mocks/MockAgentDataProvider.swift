@@ -68,6 +68,11 @@ actor MockAgentDataProvider: AgentDataProvider {
         return newAgent.id
     }
 
+    func showMarkdownPanel(filePath: String, agentId: UUID) async -> Bool {
+        // Mock implementation - just return true for tests
+        return true
+    }
+
     // MARK: - Test Helpers
 
     /// Helper to check if an agent ID was registered during tests

@@ -113,9 +113,10 @@ final class SidebarViewHelpersTests: XCTestCase {
 
     // MARK: - Agent Row Display
 
-    func testAgentDisplayTitleStripsStatusIndicators() {
+    func testAgentDisplayTitleReturnsTerminalTitleDirectly() {
+        // displayTitle returns terminalTitle directly - cleaning happens in AgentManager.updateTitle()
         var agent = Agent(name: "Test", folder: "/path")
-        agent.terminalTitle = "✳ Working on task"
+        agent.terminalTitle = "Working on task"
 
         XCTAssertEqual(agent.displayTitle, "Working on task")
     }
@@ -134,9 +135,11 @@ final class SidebarViewHelpersTests: XCTestCase {
         XCTAssertEqual(agent.displayTitle, "Working on feature")
     }
 
-    func testAgentDisplayTitleStripsMultipleStatusIndicators() {
+    func testAgentDisplayTitleReturnsCleanedTitle() {
+        // AgentManager.updateTitle() cleans the title before storing
+        // displayTitle just returns the stored value
         var agent = Agent(name: "Test", folder: "/path")
-        agent.terminalTitle = "● ✳ Task"
+        agent.terminalTitle = "Task"  // Pre-cleaned by AgentManager
 
         XCTAssertEqual(agent.displayTitle, "Task")
     }
