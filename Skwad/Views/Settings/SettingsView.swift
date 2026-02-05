@@ -124,7 +124,7 @@ struct GeneralSettingsView: View {
         Text("Startup")
       } footer: {
         if settings.keepInMenuBar {
-          Text("Closing the window or pressing ⌘Q will hide Skwad to the menu bar. Use the menu bar icon to show the window or quit.")
+          Text("Closing the window or pressing ⌘Q will hide Skwad to the menu bar. Click the menu bar icon to show the window, Right-click to show the menu.")
             .foregroundColor(.secondary)
         }
       }

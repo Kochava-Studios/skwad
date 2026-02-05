@@ -98,20 +98,18 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             return
         }
 
-        Task { @MainActor in
-            // First show the dock icon
-            NSApp.setActivationPolicy(.regular)
+        // First unhide the app (critical for accessory -> regular transition)
+        NSApp.unhide(nil)
 
-            // Wait for policy change to take effect
-            try? await Task.sleep(for: .milliseconds(100))
+        // Make window visible and bring to front
+        window.setIsVisible(true)
+        window.makeKeyAndOrderFront(nil)
 
-            // Show window first
-            window.makeKeyAndOrderFront(nil)
-            window.orderFrontRegardless()
+        // Now switch to regular activation policy (shows dock icon)
+        NSApp.setActivationPolicy(.regular)
 
-            // Then activate app to bring to front and focus
-            NSApp.activate(ignoringOtherApps: true)
-        }
+        // Finally activate the app to ensure focus
+        NSApp.activate(ignoringOtherApps: true)
     }
 
     func hideMainWindow() {

@@ -22,7 +22,7 @@ class MenuBarManager: NSObject {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
 
         if let button = statusItem?.button {
-            button.image = NSImage(systemSymbolName: "person.2.shield", accessibilityDescription: "Skwad")
+            button.image = NSImage(systemSymbolName: "seal", accessibilityDescription: "Skwad")
             // Handle clicks manually to distinguish left/right
             button.target = self
             button.action = #selector(statusItemClicked(_:))
