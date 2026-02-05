@@ -276,7 +276,8 @@ final class MCPServiceTests: XCTestCase {
             agentType: "claude",
             repoPath: "/path/to/repo",
             createWorktree: true,
-            branchName: nil  // Missing branch name
+            branchName: nil,  // Missing branch name
+            createdBy: nil
         )
 
         XCTAssertFalse(result.success)
@@ -294,7 +295,8 @@ final class MCPServiceTests: XCTestCase {
             agentType: "claude",
             repoPath: "/path/to/repo",
             createWorktree: true,
-            branchName: ""  // Empty branch name
+            branchName: "",  // Empty branch name
+            createdBy: nil
         )
 
         XCTAssertFalse(result.success)

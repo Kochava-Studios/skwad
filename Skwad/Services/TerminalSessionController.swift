@@ -140,10 +140,12 @@ class TerminalSessionController: ObservableObject {
             settings: settings,
             agentId: agentIdForRegistration
         )
-        return TerminalCommandBuilder.buildInitializationCommand(
+        let command = TerminalCommandBuilder.buildInitializationCommand(
             folder: folder,
             agentCommand: agentCommand
         )
+        Self.logger.info("[skwad][\(String(self.agentId.uuidString.prefix(8)).lowercased())] Command: \(command)")
+        return command
     }
 
     /// Start the terminal session

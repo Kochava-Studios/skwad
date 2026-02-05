@@ -23,6 +23,11 @@ struct TerminalCommandBuilder {
 
     var fullCommand = cmd
 
+    // Add user-provided options first (e.g., --settings)
+    if !userOpts.isEmpty {
+      fullCommand += " \(userOpts)"
+    }
+
     // Add MCP-specific arguments if MCP is enabled
     if settings.mcpServerEnabled {
       fullCommand += getMCPArguments(for: agentType, mcpURL: settings.mcpServerURL)
@@ -31,11 +36,6 @@ struct TerminalCommandBuilder {
       if let agentId = agentId {
         fullCommand += getInlineRegistrationArguments(for: agentType, agentId: agentId)
       }
-    }
-
-    // Add user-provided options last
-    if !userOpts.isEmpty {
-      fullCommand += " \(userOpts)"
     }
 
     return fullCommand
