@@ -117,17 +117,17 @@ struct GeneralSettingsView: View {
           .foregroundColor(.secondary)
       }
       
-      Section {
-        Toggle("Restore agents on launch", isOn: $settings.restoreLayoutOnLaunch)
-        Toggle("Keep running in menu bar when closed", isOn: $settings.keepInMenuBar)
-      } header: {
-        Text("Startup")
-      } footer: {
-        if settings.keepInMenuBar {
-          Text("Closing the window or pressing ⌘Q will hide Skwad to the menu bar. Click the menu bar icon to show the window, Right-click to show the menu.")
-            .foregroundColor(.secondary)
-        }
-      }
+//      Section {
+//        Toggle("Restore agents on launch", isOn: $settings.restoreLayoutOnLaunch)
+//        Toggle("Keep running in menu bar when closed", isOn: $settings.keepInMenuBar)
+//      } header: {
+//        Text("Startup")
+//      } footer: {
+//        if settings.keepInMenuBar {
+//          Text("Closing the window or pressing ⌘Q will hide Skwad to the menu bar. Click the menu bar icon to show the window, Right-click to show the menu.")
+//            .foregroundColor(.secondary)
+//        }
+//      }
 
       Section {
         Toggle("Automatically check for updates", isOn: $automaticallyChecksForUpdates)

@@ -7,7 +7,6 @@ All notable changes to this project will be documented in this file.
 ### Added
 - File drop support: drag files onto terminal to inject their path
 - MCP tool `close-agent` for agents to close agents they created
-- Keep running in menu bar when closed
 
 ### Changed
 - Renamed MCP tool `show-markdown` to `display-markdown` with improved description
