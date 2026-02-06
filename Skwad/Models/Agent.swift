@@ -82,6 +82,16 @@ struct Agent: Identifiable, Codable, Hashable {
         self.name = URL(fileURLWithPath: folder).lastPathComponent
     }
 
+    /// Whether this is a plain shell agent (no AI)
+    var isShell: Bool {
+        agentType == "shell"
+    }
+
+    /// Whether this agent needs activity tracking (Working/Idle status, git stats on idle, etc.)
+    var tracksActivity: Bool {
+        !isShell
+    }
+
     /// Terminal title (cleaned on update in AgentManager)
     var displayTitle: String {
         terminalTitle

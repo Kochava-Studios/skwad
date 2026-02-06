@@ -35,6 +35,9 @@ class TerminalSessionController: ObservableObject {
     /// Optional command for shell agent type
     let shellCommand: String?
 
+    /// Whether this agent tracks activity (Working/Idle status transitions)
+    let tracksActivity: Bool
+
     // MARK: - Dependencies
 
     private let settings = AppSettings.shared
@@ -55,6 +58,7 @@ class TerminalSessionController: ObservableObject {
     private var isDisposed = false
     private var hasBecomeIdle = false
     private var didStart = false
+    private var lastTimerSchedule: CFAbsoluteTime = 0
 
     // Registration prompt scheduling
     private let registrationTimer = ManagedTimer()
@@ -80,6 +84,7 @@ class TerminalSessionController: ObservableObject {
         folder: String,
         agentType: String,
         shellCommand: String? = nil,
+        tracksActivity: Bool = true,
         idleTimeout: TimeInterval = TimingConstants.idleTimeout,
         onStatusChange: @escaping (AgentStatus) -> Void,
         onTitleChange: ((String) -> Void)? = nil
@@ -88,6 +93,7 @@ class TerminalSessionController: ObservableObject {
         self.folder = folder
         self.agentType = agentType
         self.shellCommand = shellCommand
+        self.tracksActivity = tracksActivity
         self.monitorsMCP = AppSettings.shared.mcpServerEnabled
         self.idleTimeout = idleTimeout
         self.onStatusChange = onStatusChange
@@ -107,11 +113,15 @@ class TerminalSessionController: ObservableObject {
         self.adapter = adapter
 
         // Wire adapter events to controller methods
-        adapter.onActivity = { [weak self] in
-            self?.activityDetected(fromUserInput: false)
-        }
-        adapter.onUserInput = { [weak self] in
-            self?.activityDetected(fromUserInput: true)
+        // Only wire activity callbacks when tracking is enabled — when nil,
+        // the terminal engines skip dispatching entirely (zero overhead)
+        if tracksActivity {
+            adapter.onActivity = { [weak self] in
+                self?.activityDetected(fromUserInput: false)
+            }
+            adapter.onUserInput = { [weak self] in
+                self?.activityDetected(fromUserInput: true)
+            }
         }
         adapter.onReady = { [weak self] in
             self?.terminalDidBecomeReady()
@@ -221,8 +231,17 @@ class TerminalSessionController: ObservableObject {
     private func activityDetected(fromUserInput: Bool) {
         guard !isDisposed else { return }
 
-        // Set status to running
+        // Set status to running (cheap: guarded by didSet)
         status = .running
+
+        // Throttle timer rescheduling to avoid excessive Timer churn under heavy output.
+        // Under rapid terminal output, this can fire thousands of times/sec. We only need
+        // to reschedule the idle timer periodically — the 200ms gate keeps idle detection
+        // accurate (well within the 2s idle timeout) while reducing timer ops ~1000x.
+        let now = CFAbsoluteTimeGetCurrent()
+        let elapsed = now - lastTimerSchedule
+        guard fromUserInput || elapsed >= 0.2 else { return }
+        lastTimerSchedule = now
 
         // Use longer timeout for user input (typing/thinking) vs terminal output
         let timeout = fromUserInput ? TimingConstants.userInputIdleTimeout : idleTimeout

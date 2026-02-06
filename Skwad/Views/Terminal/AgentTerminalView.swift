@@ -169,46 +169,48 @@ struct AgentFullHeader: View {
             }
             .background(WindowDragView(onTap: onPaneTap))
 
-            VStack(alignment: .trailing, spacing: 2) {
-                HStack(spacing: 8) {
-                    Circle()
-                        .fill(agent.status.color)
-                        .frame(width: 10, height: 10)
-                    Text(agent.status.rawValue)
-                        .font(.body)
-                        .foregroundColor(Theme.secondaryText)
-                        .lineLimit(1)
-                }
+            if !agent.isShell {
+                VStack(alignment: .trailing, spacing: 2) {
+                    HStack(spacing: 8) {
+                        Circle()
+                            .fill(agent.status.color)
+                            .frame(width: 10, height: 10)
+                        Text(agent.status.rawValue)
+                            .font(.body)
+                            .foregroundColor(Theme.secondaryText)
+                            .lineLimit(1)
+                    }
 
-                if let stats = agent.gitStats {
-                    if stats.insertions == 0 && stats.deletions == 0 {
-                        Text("Clean")
+                    if let stats = agent.gitStats {
+                        if stats.insertions == 0 && stats.deletions == 0 {
+                            Text("Clean")
+                                .foregroundColor(Theme.secondaryText)
+                                .font(.body)
+                                .lineLimit(1)
+                        } else {
+                            HStack(spacing: 8) {
+                                Text("+\(stats.insertions)")
+                                    .foregroundColor(.green)
+                                    .font(.body.monospaced())
+                                    .lineLimit(1)
+                                Text("-\(stats.deletions)")
+                                    .foregroundColor(.red)
+                                    .font(.body.monospaced())
+                                    .lineLimit(1)
+                            }
+                        }
+                    } else {
+                        Text("Getting stats...")
                             .foregroundColor(Theme.secondaryText)
                             .font(.body)
                             .lineLimit(1)
-                    } else {
-                        HStack(spacing: 8) {
-                            Text("+\(stats.insertions)")
-                                .foregroundColor(.green)
-                                .font(.body.monospaced())
-                                .lineLimit(1)
-                            Text("-\(stats.deletions)")
-                                .foregroundColor(.red)
-                                .font(.body.monospaced())
-                                .lineLimit(1)
-                        }
                     }
-                } else {
-                    Text("Getting stats...")
-                        .foregroundColor(Theme.secondaryText)
-                        .font(.body)
-                        .lineLimit(1)
                 }
-            }
-            .opacity(isUnfocusedInSplit ? Theme.unfocusedHeaderOpacity : 1.0)
-            .contentShape(Rectangle())
-            .onTapGesture {
-                onGitStatsTap()
+                .opacity(isUnfocusedInSplit ? Theme.unfocusedHeaderOpacity : 1.0)
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    onGitStatsTap()
+                }
             }
         }
         .padding(16)
@@ -315,13 +317,15 @@ struct AgentCompactHeader: View {
                 .contentShape(Rectangle())
                 .gesture(WindowDragGesture())
 
-            HStack(spacing: 6) {
-                Circle()
-                    .fill(agent.status.color)
-                    .frame(width: 8, height: 8)
-                Text(agent.status.rawValue)
-                    .font(.callout)
-                    .foregroundColor(Theme.secondaryText)
+            if !agent.isShell {
+                HStack(spacing: 6) {
+                    Circle()
+                        .fill(agent.status.color)
+                        .frame(width: 8, height: 8)
+                    Text(agent.status.rawValue)
+                        .font(.callout)
+                        .foregroundColor(Theme.secondaryText)
+                }
             }
         }
         .padding(.leading, paneIndex == 0 ? 32 : 16)

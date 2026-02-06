@@ -78,7 +78,8 @@ struct SidebarView: View {
                                 companions: agentManager.companions(of: agent.id)
                             )
                             .onTapGesture {
-                                agentManager.selectAgent(agent.id)
+                                let cmdHeld = NSEvent.modifierFlags.contains(.command)
+                                agentManager.selectAgent(agent.id, skipCompanionLayout: cmdHeld)
                             }
                         }
                             .overlay(alignment: .top) {
@@ -357,9 +358,11 @@ struct AgentRowView: View {
 
                 Spacer()
 
-                Circle()
-                    .fill(agent.status.color)
-                    .frame(width: 8, height: 8)
+                if !agent.isShell {
+                    Circle()
+                        .fill(agent.status.color)
+                        .frame(width: 8, height: 8)
+                }
             }
 
             if !companions.isEmpty {
@@ -372,9 +375,11 @@ struct AgentRowView: View {
                                 .foregroundColor(Theme.secondaryText)
                                 .lineLimit(1)
                             Spacer()
-                            Circle()
-                                .fill(companion.status.color)
-                                .frame(width: 6, height: 6)
+                            if !companion.isShell {
+                                Circle()
+                                    .fill(companion.status.color)
+                                    .frame(width: 6, height: 6)
+                            }
                         }
                     }
                 }
