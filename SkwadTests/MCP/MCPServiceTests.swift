@@ -278,7 +278,7 @@ final class MCPServiceTests: XCTestCase {
             createWorktree: true,
             branchName: nil,  // Missing branch name
             createdBy: nil,
-            splitScreen: false,
+            companion: false,
             shellCommand: nil
         )
 
@@ -299,7 +299,7 @@ final class MCPServiceTests: XCTestCase {
             createWorktree: true,
             branchName: "",  // Empty branch name
             createdBy: nil,
-            splitScreen: false,
+            companion: false,
             shellCommand: nil
         )
 

@@ -22,7 +22,7 @@ protocol AgentDataProvider: Sendable {
     func getAgentsInSameWorkspace(as agentId: UUID) async -> [Agent]
     func setRegistered(for agentId: UUID, registered: Bool) async
     func injectText(_ text: String, for agentId: UUID) async
-    func addAgent(folder: String, name: String, avatar: String?, agentType: String, createdBy: UUID?, splitScreen: Bool, shellCommand: String?) async -> UUID?
+    func addAgent(folder: String, name: String, avatar: String?, agentType: String, createdBy: UUID?, companion: Bool, shellCommand: String?) async -> UUID?
     func removeAgent(id: UUID) async -> Bool
     func showMarkdownPanel(filePath: String, agentId: UUID) async -> Bool
 }
@@ -350,7 +350,7 @@ actor MCPService: MCPServiceProtocol {
         createWorktree: Bool,
         branchName: String?,
         createdBy: UUID?,
-        splitScreen: Bool,
+        companion: Bool,
         shellCommand: String?
     ) async -> CreateAgentResponse {
         guard let provider = agentDataProvider else {
@@ -403,8 +403,17 @@ actor MCPService: MCPServiceProtocol {
             }
         }
 
+        // Enforce max 3 companions per owner
+        if companion, let ownerId = createdBy {
+            let agents = await provider.getAgents()
+            let existingCompanions = agents.filter { $0.createdBy == ownerId && $0.isCompanion }
+            if existingCompanions.count >= 3 {
+                return CreateAgentResponse(success: false, agentId: nil, message: "Maximum of 3 companion agents per owner reached")
+            }
+        }
+
         // Create the agent via the provider
-        if let agentId = await provider.addAgent(folder: folder, name: name, avatar: icon, agentType: agentType, createdBy: createdBy, splitScreen: splitScreen, shellCommand: shellCommand) {
+        if let agentId = await provider.addAgent(folder: folder, name: name, avatar: icon, agentType: agentType, createdBy: createdBy, companion: companion, shellCommand: shellCommand) {
             logger.info("[skwad] Created agent '\(name)' with ID \(agentId)")
             return CreateAgentResponse(success: true, agentId: agentId.uuidString, message: "Agent created successfully")
         } else {
@@ -510,15 +519,15 @@ final class AgentManagerWrapper: AgentDataProvider, @unchecked Sendable {
         }
     }
 
-    func addAgent(folder: String, name: String, avatar: String?, agentType: String, createdBy: UUID?, splitScreen: Bool, shellCommand: String?) async -> UUID? {
+    func addAgent(folder: String, name: String, avatar: String?, agentType: String, createdBy: UUID?, companion: Bool, shellCommand: String?) async -> UUID? {
         await MainActor.run {
             guard let manager = manager else { return nil }
-            guard let newAgentId = manager.addAgent(folder: folder, name: name, avatar: avatar, agentType: agentType, createdBy: createdBy, shellCommand: shellCommand) else {
+            guard let newAgentId = manager.addAgent(folder: folder, name: name, avatar: avatar, agentType: agentType, createdBy: createdBy, isCompanion: companion, shellCommand: shellCommand) else {
                 return nil
             }
 
-            // Handle split screen if requested
-            if splitScreen, let creatorId = createdBy {
+            // If companion, enter split with owner
+            if companion, let creatorId = createdBy {
                 manager.enterSplitWithNewAgent(newAgentId: newAgentId, creatorId: creatorId)
             }
 

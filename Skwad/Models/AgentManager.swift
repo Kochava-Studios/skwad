@@ -320,10 +320,11 @@ final class AgentManager {
         avatar: String? = nil,
         agentType: String = "claude",
         createdBy: UUID? = nil,
+        isCompanion: Bool = false,
         insertAfterId: UUID? = nil,
         shellCommand: String? = nil
     ) -> UUID? {
-        var agent = Agent(folder: folder, avatar: avatar, agentType: agentType, createdBy: createdBy, shellCommand: shellCommand)
+        var agent = Agent(folder: folder, avatar: avatar, agentType: agentType, createdBy: createdBy, isCompanion: isCompanion, shellCommand: shellCommand)
         if let name = name {
             agent.name = name
         }

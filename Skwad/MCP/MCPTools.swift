@@ -97,7 +97,7 @@ actor MCPToolHandler {
                         "repoPath": PropertySchema(type: "string", description: "Path to the repository or worktree folder"),
                         "createWorktree": PropertySchema(type: "boolean", description: "If true, create a new worktree from repoPath"),
                         "branchName": PropertySchema(type: "string", description: "Branch name for new worktree (required if createWorktree is true)"),
-                        "splitScreen": PropertySchema(type: "boolean", description: "If true, new agent shares screen with creator (split view)"),
+                        "companion": PropertySchema(type: "boolean", description: "If true, the new agent is a companion of the creator: it won't appear in the agent list, its visibility is linked to the creator, and it will be closed when the creator is closed. Only use this flag if the user has explicitly asked for a companion agent."),
                         "command": PropertySchema(type: "string", description: "Command to run (only for shell agent type)")
                     ],
                     required: ["name", "agentType", "repoPath"]
@@ -310,7 +310,7 @@ actor MCPToolHandler {
         let icon = arguments["icon"] as? String
         let createWorktree = arguments["createWorktree"] as? Bool ?? false
         let branchName = arguments["branchName"] as? String
-        let splitScreen = arguments["splitScreen"] as? Bool ?? false
+        let companion = arguments["companion"] as? Bool ?? false
         let shellCommand = arguments["command"] as? String
 
         // Validate branch name is provided if creating worktree
@@ -330,7 +330,7 @@ actor MCPToolHandler {
             createWorktree: createWorktree,
             branchName: branchName,
             createdBy: createdBy,
-            splitScreen: splitScreen,
+            companion: companion,
             shellCommand: shellCommand
         )
 
