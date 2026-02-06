@@ -187,7 +187,14 @@ let navigableAgents = workspaceAgents.filter { !$0.isCompanion }
 
 ## Commit Strategy
 
-1. **Model + MCP plumbing**: Add `isCompanion` to Agent, update MCP tool def/handler/service/protocol/wrapper — replace `splitScreen` with `companion`
-2. **Sidebar + cascade close**: Filter companions from sidebar, cascade close on owner removal
-3. **Display linking + navigation**: Linked display in `selectAgent()`, skip companions in navigation
-4. **Tests**: Update existing tests, add companion-specific tests
+1. [x] **Model + MCP plumbing**: Add `isCompanion` to Agent, update MCP tool def/handler/service/protocol/wrapper — replace `splitScreen` with `companion`
+2. [x] **Sidebar + cascade close**: Filter companions from sidebar, cascade close on owner removal
+3. [x] **Display linking + navigation**: Linked display in `selectAgent()`, skip companions in navigation
+4. [x] **Tests**: Update existing tests, add companion-specific tests
+
+## Key Learnings
+
+- When adding a boolean qualifier to an existing relationship (like `createdBy`), prefer a separate `isCompanion` flag over a new `companionOf: UUID?` field to avoid two parent-link fields with subtle semantic differences.
+- The `splitScreen` parameter was transient (never persisted on Agent). The companion concept needs persistence (`isCompanion` in `CodingKeys`) because the relationship must survive app restarts.
+- Navigation methods (`selectNextAgent`, `selectPreviousAgent`, `selectAgentAtIndex`) all need to be updated when introducing hidden agents — call through `selectAgent()` in single mode to get companion display linking for free.
+- The MCP parameter flow crosses 5 layers: tool definition → handler extraction → service method → protocol → wrapper. All must be updated in sync.
