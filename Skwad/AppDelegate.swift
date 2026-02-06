@@ -27,15 +27,22 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     /// Observer for window close button interception
     private var windowCloseObserver: NSObjectProtocol?
 
+    private static var isRunningTests: Bool {
+        ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
+    }
+
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Single instance: if another Skwad is already running, activate it and quit
-        let runningInstances = NSRunningApplication.runningApplications(withBundleIdentifier: Bundle.main.bundleIdentifier!)
-        if let existing = runningInstances.first(where: { $0 != NSRunningApplication.current }) {
-            existing.activate(options: [.activateAllWindows, .activateIgnoringOtherApps])
-            DispatchQueue.main.async {
-                NSApp.terminate(nil)
+        // Skip this check when running as a test host to avoid killing the test runner
+        if !AppDelegate.isRunningTests {
+            let runningInstances = NSRunningApplication.runningApplications(withBundleIdentifier: Bundle.main.bundleIdentifier!)
+            if let existing = runningInstances.first(where: { $0 != NSRunningApplication.current }) {
+                existing.activate(options: [.activateAllWindows, .activateIgnoringOtherApps])
+                DispatchQueue.main.async {
+                    NSApp.terminate(nil)
+                }
+                return
             }
-            return
         }
 
         setupKeyEventMonitor()
