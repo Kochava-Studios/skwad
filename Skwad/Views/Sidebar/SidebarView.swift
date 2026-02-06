@@ -47,7 +47,7 @@ struct SidebarView: View {
             // Agent list
             ScrollView {
                 LazyVStack(spacing: 4) {
-                    ForEach(agentManager.currentWorkspaceAgents) { agent in
+                    ForEach(agentManager.currentWorkspaceAgents.filter { !$0.isCompanion }) { agent in
                         AgentContextMenu(
                             agent: agent,
                             onEdit: { agentToEdit = agent },

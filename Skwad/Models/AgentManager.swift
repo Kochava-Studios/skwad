@@ -366,6 +366,12 @@ final class AgentManager {
     }
 
     func removeAgent(_ agent: Agent) {
+        // Close companions first (if this agent owns any)
+        let companions = agents.filter { $0.createdBy == agent.id && $0.isCompanion }
+        for companion in companions {
+            removeAgent(companion)
+        }
+
         // Unregister from MCP if registered
         if agent.isRegistered {
             Task {
