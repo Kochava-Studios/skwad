@@ -8,16 +8,18 @@ struct SavedAgent: Codable, Identifiable {
     var avatar: String
     var folder: String
     var agentType: String
+    var shellCommand: String?
 
-    init(id: UUID, name: String, avatar: String, folder: String, agentType: String = "claude") {
+    init(id: UUID, name: String, avatar: String, folder: String, agentType: String = "claude", shellCommand: String? = nil) {
         self.id = id
         self.name = name
         self.avatar = avatar
         self.folder = folder
         self.agentType = agentType
+        self.shellCommand = shellCommand
     }
 
-    // Custom decoding to handle migration from old format without agentType
+    // Custom decoding to handle migration from old format without agentType/shellCommand
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         id = try container.decode(UUID.self, forKey: .id)
@@ -25,10 +27,11 @@ struct SavedAgent: Codable, Identifiable {
         avatar = try container.decode(String.self, forKey: .avatar)
         folder = try container.decode(String.self, forKey: .folder)
         agentType = try container.decodeIfPresent(String.self, forKey: .agentType) ?? "claude"
+        shellCommand = try container.decodeIfPresent(String.self, forKey: .shellCommand)
     }
 
     enum CodingKeys: String, CodingKey {
-        case id, name, avatar, folder, agentType
+        case id, name, avatar, folder, agentType, shellCommand
     }
 }
 
@@ -221,11 +224,11 @@ class AppSettings: ObservableObject {
     }
 
     func saveAgents(_ agents: [Agent]) {
-        savedAgents = agents.map { SavedAgent(id: $0.id, name: $0.name, avatar: $0.avatar ?? "🤖", folder: $0.folder, agentType: $0.agentType) }
+        savedAgents = agents.map { SavedAgent(id: $0.id, name: $0.name, avatar: $0.avatar ?? "🤖", folder: $0.folder, agentType: $0.agentType, shellCommand: $0.shellCommand) }
     }
 
     func loadSavedAgents() -> [Agent] {
-        savedAgents.map { Agent(id: $0.id, name: $0.name, avatar: $0.avatar, folder: $0.folder, agentType: $0.agentType) }
+        savedAgents.map { Agent(id: $0.id, name: $0.name, avatar: $0.avatar, folder: $0.folder, agentType: $0.agentType, shellCommand: $0.shellCommand) }
     }
 
     // MARK: - Workspaces

@@ -11,6 +11,9 @@ struct SidebarView: View {
     @State private var broadcastMessage = ""
     @State private var showRestartAllConfirmation = false
     @State private var showCloseAllConfirmation = false
+    @State private var draggedAgentId: UUID?
+    @State private var dropTargetAgentId: UUID?
+    @State private var dropPosition: DropPosition = .above
 
     var body: some View {
         VStack() {
@@ -63,26 +66,43 @@ struct SidebarView: View {
                                     agentManager.selectAgent(agent.id)
                                 }
                         }
-                            .draggable(agent.id.uuidString) {
+                            .overlay(alignment: .top) {
+                                if dropTargetAgentId == agent.id && dropPosition == .above {
+                                    DropIndicatorLine()
+                                        .offset(y: -3)
+                                }
+                            }
+                            .overlay(alignment: .bottom) {
+                                if dropTargetAgentId == agent.id && dropPosition == .below {
+                                    DropIndicatorLine()
+                                        .offset(y: 3)
+                                }
+                            }
+                            .onDrag {
+                                draggedAgentId = agent.id
+                                return NSItemProvider(object: agent.id.uuidString as NSString)
+                            } preview: {
                                 AgentRowView(agent: agent, isSelected: true)
                                     .frame(width: 200)
                                     .opacity(0.8)
                             }
-                            .dropDestination(for: String.self) { items, _ in
-                                let workspaceAgents = agentManager.currentWorkspaceAgents
-                                guard let droppedId = items.first,
-                                      let droppedUUID = UUID(uuidString: droppedId),
-                                      let fromIndex = workspaceAgents.firstIndex(where: { $0.id == droppedUUID }),
-                                      let toIndex = workspaceAgents.firstIndex(where: { $0.id == agent.id }) else {
-                                    return false
-                                }
-                                if fromIndex != toIndex {
-                                    withAnimation(.easeInOut(duration: 0.15)) {
-                                        let destination = toIndex > fromIndex ? toIndex + 1 : toIndex
-                                        agentManager.moveAgent(from: IndexSet(integer: fromIndex), to: destination)
+                            .dropDestination(for: String.self) { items, location in
+                                let position = dropPosition
+                                dropTargetAgentId = nil
+                                return handleDrop(items: items, targetAgentId: agent.id, position: position)
+                            } isTargeted: { isTargeted in
+                                if isTargeted {
+                                    dropTargetAgentId = agent.id
+                                    // Determine above/below from source vs target position
+                                    if let agentIds = agentManager.currentWorkspace?.agentIds,
+                                       let targetIndex = agentIds.firstIndex(of: agent.id),
+                                       let draggedId = draggedAgentId,
+                                       let fromIndex = agentIds.firstIndex(of: draggedId) {
+                                        dropPosition = fromIndex < targetIndex ? .below : .above
                                     }
+                                } else if dropTargetAgentId == agent.id {
+                                    dropTargetAgentId = nil
                                 }
-                                return true
                             }
                     }
                 }
@@ -199,8 +219,33 @@ struct SidebarView: View {
         }
     }
 
+    // MARK: - Drag and Drop
+
+    private func handleDrop(items: [String], targetAgentId: UUID, position: DropPosition) -> Bool {
+        defer { draggedAgentId = nil }
+        guard let droppedId = items.first,
+              let droppedUUID = UUID(uuidString: droppedId),
+              let agentIds = agentManager.currentWorkspace?.agentIds,
+              let fromIndex = agentIds.firstIndex(of: droppedUUID),
+              let toIndex = agentIds.firstIndex(of: targetAgentId) else {
+            return false
+        }
+        if fromIndex != toIndex {
+            withAnimation(.easeInOut(duration: 0.15)) {
+                let destination: Int
+                if position == .below {
+                    destination = toIndex > fromIndex ? toIndex + 1 : toIndex + 1
+                } else {
+                    destination = toIndex > fromIndex ? toIndex : toIndex
+                }
+                agentManager.moveAgent(from: IndexSet(integer: fromIndex), to: destination)
+            }
+        }
+        return true
+    }
+
     // MARK: - Broadcast
-    
+
     private func sendBroadcast(_ message: String) {
         let trimmed = message.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
@@ -247,6 +292,26 @@ struct SidebarView: View {
 
 extension Notification.Name {
     static let showNewAgentSheet = Notification.Name("showNewAgentSheet")
+}
+
+// MARK: - Drag and Drop
+
+enum DropPosition {
+    case above, below
+}
+
+struct DropIndicatorLine: View {
+    var body: some View {
+        HStack(spacing: 0) {
+            Circle()
+                .fill(Color.accentColor)
+                .frame(width: 6, height: 6)
+            Rectangle()
+                .fill(Color.accentColor)
+                .frame(height: 2)
+        }
+        .padding(.horizontal, 4)
+    }
 }
 
 struct AgentRowView: View {
