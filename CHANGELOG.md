@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 - Cmd+W now closes the focused agent instead of the window
 - Shell option in agent type picker for plain terminal without agent
 - MCP tool `create-agent` supports optional `command` parameter for shell agent type
+- Keep running in menu bar: hide to menu bar on Cmd+Q or close button, restore on click
 
 ### Changed
 - N/A

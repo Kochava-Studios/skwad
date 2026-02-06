@@ -28,6 +28,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var windowCloseObserver: NSObjectProtocol?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        // Single instance: if another Skwad is already running, activate it and quit
+        let runningInstances = NSRunningApplication.runningApplications(withBundleIdentifier: Bundle.main.bundleIdentifier!)
+        if let existing = runningInstances.first(where: { $0 != NSRunningApplication.current }) {
+            existing.activate(options: [.activateAllWindows, .activateIgnoringOtherApps])
+            DispatchQueue.main.async {
+                NSApp.terminate(nil)
+            }
+            return
+        }
+
         setupKeyEventMonitor()
         setupWindowCloseObserver()
         removeDefaultCloseMenuItem()
