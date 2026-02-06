@@ -639,7 +639,18 @@ final class AgentManager {
 
     func selectAgent(_ agentId: UUID) {
         if layoutMode == .single {
-            activeAgentIds = [agentId]
+            let companions = agents.filter { $0.createdBy == agentId && $0.isCompanion }
+            if companions.isEmpty {
+                activeAgentIds = [agentId]
+            } else {
+                // Show owner + companions in split
+                let companionIds = companions.prefix(3).map { $0.id }
+                activeAgentIds = [agentId] + companionIds
+                let total = 1 + companionIds.count
+                layoutMode = total <= 2 ? .splitVertical :
+                             (total <= 3 ? .splitHorizontal : .gridFourPane)
+                focusedPaneIndex = 0
+            }
             return
         }
 
@@ -690,12 +701,12 @@ final class AgentManager {
         let workspaceAgents = currentWorkspaceAgents
         guard !workspaceAgents.isEmpty else { return }
         let currentId = activeAgentId
-        guard let currentIndex = workspaceAgents.firstIndex(where: { $0.id == currentId }) else {
-            activeAgentIds = [workspaceAgents[0].id]
-            return
-        }
 
         if layoutMode != .single {
+            guard let currentIndex = workspaceAgents.firstIndex(where: { $0.id == currentId }) else {
+                activeAgentIds = [workspaceAgents[0].id]
+                return
+            }
             // Cycle into focused pane, skip agents in other panes
             var next = (currentIndex + 1) % workspaceAgents.count
             while activeAgentIds.contains(workspaceAgents[next].id) && workspaceAgents[next].id != currentId {
@@ -703,8 +714,15 @@ final class AgentManager {
             }
             activeAgentIds[focusedPaneIndex] = workspaceAgents[next].id
         } else {
-            let nextIndex = (currentIndex + 1) % workspaceAgents.count
-            activeAgentIds = [workspaceAgents[nextIndex].id]
+            // In single mode, skip companions
+            let navigableAgents = workspaceAgents.filter { !$0.isCompanion }
+            guard !navigableAgents.isEmpty else { return }
+            guard let currentIndex = navigableAgents.firstIndex(where: { $0.id == currentId }) else {
+                selectAgent(navigableAgents[0].id)
+                return
+            }
+            let nextIndex = (currentIndex + 1) % navigableAgents.count
+            selectAgent(navigableAgents[nextIndex].id)
         }
     }
 
@@ -712,29 +730,38 @@ final class AgentManager {
         let workspaceAgents = currentWorkspaceAgents
         guard !workspaceAgents.isEmpty else { return }
         let currentId = activeAgentId
-        guard let currentIndex = workspaceAgents.firstIndex(where: { $0.id == currentId }) else {
-            if let lastAgent = workspaceAgents.last {
-                activeAgentIds = [lastAgent.id]
-            }
-            return
-        }
 
         if layoutMode != .single {
+            guard let currentIndex = workspaceAgents.firstIndex(where: { $0.id == currentId }) else {
+                if let lastAgent = workspaceAgents.last {
+                    activeAgentIds = [lastAgent.id]
+                }
+                return
+            }
             var prev = (currentIndex - 1 + workspaceAgents.count) % workspaceAgents.count
             while activeAgentIds.contains(workspaceAgents[prev].id) && workspaceAgents[prev].id != currentId {
                 prev = (prev - 1 + workspaceAgents.count) % workspaceAgents.count
             }
             activeAgentIds[focusedPaneIndex] = workspaceAgents[prev].id
         } else {
-            let previousIndex = (currentIndex - 1 + workspaceAgents.count) % workspaceAgents.count
-            activeAgentIds = [workspaceAgents[previousIndex].id]
+            // In single mode, skip companions
+            let navigableAgents = workspaceAgents.filter { !$0.isCompanion }
+            guard !navigableAgents.isEmpty else { return }
+            guard let currentIndex = navigableAgents.firstIndex(where: { $0.id == currentId }) else {
+                if let lastAgent = navigableAgents.last {
+                    selectAgent(lastAgent.id)
+                }
+                return
+            }
+            let previousIndex = (currentIndex - 1 + navigableAgents.count) % navigableAgents.count
+            selectAgent(navigableAgents[previousIndex].id)
         }
     }
 
     func selectAgentAtIndex(_ index: Int) {
-        let workspaceAgents = currentWorkspaceAgents
-        guard index >= 0 && index < workspaceAgents.count else { return }
-        let agentId = workspaceAgents[index].id
+        let navigableAgents = currentWorkspaceAgents.filter { !$0.isCompanion }
+        guard index >= 0 && index < navigableAgents.count else { return }
+        let agentId = navigableAgents[index].id
 
         if layoutMode != .single {
             // If agent is already in a pane, focus that pane
