@@ -87,7 +87,7 @@ actor MCPToolHandler {
             ),
             ToolDefinition(
                 name: MCPToolName.createAgent.rawValue,
-                description: "Create a new agent in Skwad. Can optionally create a new git worktree for the agent.",
+                description: "Create a new agent in Skwad. Can optionally create a new git worktree for the agent. Note: shell agents are plain terminals without an AI agent, so do not try to send messages to them.",
                 inputSchema: ToolInputSchema(
                     properties: [
                         "agentId": PropertySchema(type: "string", description: "Your agent ID (used to track who created the agent)"),
