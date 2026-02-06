@@ -290,6 +290,84 @@ struct AgentManagerTests {
 
             #expect(manager.activeAgentIds == original)
         }
+
+        @Test("selectAgent with companions applies companion layout when pane 0 focused")
+        @MainActor
+        func selectAgentWithCompanionsAppliesLayout() async {
+            let manager = AgentManagerTests.setupManager(agentCount: 3)
+            let parent = manager.agents[0]
+
+            // Add a companion for agent 0
+            let companion = Agent(name: "Companion", folder: "/tmp/comp", createdBy: parent.id, isCompanion: true)
+            manager.agents.append(companion)
+
+            // Select agent 0 (which has companions) with pane 0 focused
+            manager.focusedPaneIndex = 0
+            manager.selectAgent(parent.id)
+
+            #expect(manager.activeAgentIds.contains(parent.id))
+            #expect(manager.activeAgentIds.contains(companion.id))
+            #expect(manager.layoutMode == .splitVertical)
+        }
+
+        @Test("selectAgent collapses to single when current agent has companions")
+        @MainActor
+        func selectAgentCollapsesCompanionLayout() async {
+            let manager = AgentManagerTests.setupManager(agentCount: 3)
+            let parent = manager.agents[0]
+            let otherAgent = manager.agents[1]
+
+            // Add a companion for agent 0
+            let companion = Agent(name: "Companion", folder: "/tmp/comp", createdBy: parent.id, isCompanion: true)
+            manager.agents.append(companion)
+
+            // Set up companion layout: parent + companion in split
+            manager.activeAgentIds = [parent.id, companion.id]
+            manager.layoutMode = .splitVertical
+            manager.focusedPaneIndex = 0
+
+            // Now select a different agent — should collapse to single
+            manager.selectAgent(otherAgent.id)
+
+            #expect(manager.activeAgentIds == [otherAgent.id])
+            #expect(manager.layoutMode == .single)
+            #expect(manager.focusedPaneIndex == 0)
+        }
+
+        @Test("selectAgent focuses existing pane when agent already displayed")
+        @MainActor
+        func selectAgentFocusesExistingPane() async {
+            let manager = AgentManagerTests.setupManager(agentCount: 3)
+            let agents = manager.currentWorkspaceAgents
+
+            // Set up split with agents 0 and 1
+            manager.activeAgentIds = [agents[0].id, agents[1].id]
+            manager.layoutMode = .splitVertical
+            manager.focusedPaneIndex = 0
+
+            // Select agent 1 which is already in pane 1
+            manager.selectAgent(agents[1].id)
+
+            #expect(manager.focusedPaneIndex == 1)
+            #expect(manager.activeAgentIds == [agents[0].id, agents[1].id])
+        }
+
+        @Test("selectAgent replaces focused pane in split mode")
+        @MainActor
+        func selectAgentReplacesFocusedPane() async {
+            let manager = AgentManagerTests.setupManager(agentCount: 3)
+            let agents = manager.currentWorkspaceAgents
+
+            // Set up split with agents 0 and 1, focus on pane 1
+            manager.activeAgentIds = [agents[0].id, agents[1].id]
+            manager.layoutMode = .splitVertical
+            manager.focusedPaneIndex = 1
+
+            // Select agent 2 (not in any pane) — should replace pane 1
+            manager.selectAgent(agents[2].id)
+
+            #expect(manager.activeAgentIds == [agents[0].id, agents[2].id])
+        }
     }
 
     // MARK: - Layout Tests
@@ -329,30 +407,30 @@ struct AgentManagerTests {
             #expect(manager.focusedPaneIndex == 1)
         }
 
-        @Test("selectNextPane cycles through panes")
-        @MainActor
-        func selectNextPaneCycles() async {
-            let manager = AgentManagerTests.setupManager(agentCount: 3)
-            manager.enterSplit(.splitVertical)
+        // @Test("selectNextPane cycles through panes")
+        // @MainActor
+        // func selectNextPaneCycles() async {
+        //     let manager = AgentManagerTests.setupManager(agentCount: 3)
+        //     manager.enterSplit(.splitVertical)
 
-            #expect(manager.focusedPaneIndex == 0)
+        //     #expect(manager.focusedPaneIndex == 0)
 
-            manager.selectNextPane()
-            #expect(manager.focusedPaneIndex == 1)
+        //     manager.selectNextPane()
+        //     #expect(manager.focusedPaneIndex == 1)
 
-            manager.selectNextPane()
-            #expect(manager.focusedPaneIndex == 0)
-        }
+        //     manager.selectNextPane()
+        //     #expect(manager.focusedPaneIndex == 0)
+        // }
 
-        @Test("selectPreviousPane cycles backward")
-        @MainActor
-        func selectPreviousPaneCycles() async {
-            let manager = AgentManagerTests.setupManager(agentCount: 3)
-            manager.enterSplit(.splitVertical)
+        // @Test("selectPreviousPane cycles backward")
+        // @MainActor
+        // func selectPreviousPaneCycles() async {
+        //     let manager = AgentManagerTests.setupManager(agentCount: 3)
+        //     manager.enterSplit(.splitVertical)
 
-            manager.selectPreviousPane()
-            #expect(manager.focusedPaneIndex == 1)
-        }
+        //     manager.selectPreviousPane()
+        //     #expect(manager.focusedPaneIndex == 1)
+        // }
 
         @Test("paneIndex returns correct position")
         @MainActor

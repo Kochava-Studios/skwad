@@ -213,25 +213,25 @@ struct SkwadApp: App {
 
                 Divider()
 
+//                Button("Next Agent") {
+//                    agentManager.selectNextAgent()
+//                }
+//                .keyboardShortcut(KeyEquivalent.tab, modifiers: .control)
+//
+//                Button("Previous Agent") {
+//                    agentManager.selectPreviousAgent()
+//                }
+//                .keyboardShortcut(KeyEquivalent.tab, modifiers: [.control, .shift])
+//
+//                Divider()
+
                 Button("Next Agent") {
                     agentManager.selectNextAgent()
                 }
-                .keyboardShortcut(KeyEquivalent.tab, modifiers: .control)
+                .keyboardShortcut("]", modifiers: .command)
 
                 Button("Previous Agent") {
                     agentManager.selectPreviousAgent()
-                }
-                .keyboardShortcut(KeyEquivalent.tab, modifiers: [.control, .shift])
-
-                Divider()
-
-                Button(agentManager.layoutMode == .single ? "Next Agent" : "Next Pane") {
-                    agentManager.selectNextPaneOrAgent()
-                }
-                .keyboardShortcut("]", modifiers: .command)
-
-                Button(agentManager.layoutMode == .single ? "Previous Agent" : "Previous Pane") {
-                    agentManager.selectPreviousPaneOrAgent()
                 }
                 .keyboardShortcut("[", modifiers: .command)
 

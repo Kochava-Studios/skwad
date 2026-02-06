@@ -526,8 +526,8 @@ final class AgentManagerWrapper: AgentDataProvider, @unchecked Sendable {
                 return nil
             }
 
-            // If companion, enter split with owner
-            if companion, let creatorId = createdBy {
+            // If companion and creator is currently displayed, enter split with owner
+            if companion, let creatorId = createdBy, manager.activeAgentIds.contains(creatorId) {
                 manager.enterSplitWithNewAgent(newAgentId: newAgentId, creatorId: creatorId)
             }
 

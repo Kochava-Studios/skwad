@@ -221,8 +221,8 @@ final class AgentManager {
 
     /// Whether an agent should appear selected in the sidebar (itself or one of its companions is active)
     func isAgentActive(_ agentId: UUID) -> Bool {
-        activeAgentIds.contains(agentId) ||
-        companions(of: agentId).contains { activeAgentIds.contains($0.id) }
+        agentId == activeAgentId ||
+        companions(of: agentId).contains { $0.id == activeAgentId }
     }
 
     /// Which pane index an agent occupies, or nil if not in any pane
@@ -239,6 +239,7 @@ final class AgentManager {
             folder: agent.folder,
             agentType: agent.agentType,
             shellCommand: agent.shellCommand,
+            tracksActivity: agent.tracksActivity,
             onStatusChange: { [weak self] status in
                 self?.updateStatus(for: agent.id, status: status)
             },
@@ -548,7 +549,7 @@ final class AgentManager {
             if let index = agents.firstIndex(where: { $0.id == agentId }) {
                 guard agents[index].status != status else { return }
                 agents[index].status = status
-                if status == .idle {
+                if status == .idle && !agents[index].isShell {
                     refreshGitStats(for: agentId)
                 }
             }
@@ -667,124 +668,93 @@ final class AgentManager {
         focusedPaneIndex = index
     }
 
-    func selectAgent(_ agentId: UUID) {
-        // Check if this is a sidebar selection (agent is not a companion)
-        let agent = agents.first { $0.id == agentId }
-        let isFromSidebar = agent != nil && !agent!.isCompanion
-
-        if isFromSidebar {
+    func selectAgent(_ agentId: UUID, skipCompanionLayout: Bool = false) {
+        // Rule 1: Agent has companions and pane 0 is focused → companion layout
+        if !skipCompanionLayout && !companions(of: agentId).isEmpty && focusedPaneIndex == 0 {
             applyCompanionLayout(for: agentId)
             return
         }
 
-        // Non-sidebar selection (e.g. pane click, companion)
-        if layoutMode == .single {
+        // Rule 2: Currently selected agent (pane 0) has companions → collapse to single
+        if let currentId = activeAgentIds.first, !companions(of: currentId).isEmpty {
             activeAgentIds = [agentId]
+            layoutMode = .single
+            focusedPaneIndex = 0
             return
         }
 
-        // If agent is already in a pane, just focus that pane
-        if let paneIndex = activeAgentIds.firstIndex(of: agentId) {
-            focusedPaneIndex = paneIndex
+        // Rule 3: Agent already in a pane → just focus it
+        if let pane = activeAgentIds.firstIndex(of: agentId) {
+            focusedPaneIndex = pane
+            return
+        }
+
+        // Rule 4: Place in focused pane
+        if layoutMode == .single {
+            activeAgentIds = [agentId]
         } else {
-            // Agent not in any pane → assign to focused pane
             activeAgentIds[focusedPaneIndex] = agentId
         }
     }
 
     // MARK: - Agent Navigation
 
-    /// Navigate to next pane (multi-pane mode) or next agent (single-pane mode)
-    func selectNextPaneOrAgent() {
-        if layoutMode == .single {
-            selectNextAgent()
-        } else {
-            selectNextPane()
-        }
-    }
+    // /// Navigate to next pane (multi-pane mode) or next agent (single-pane mode)
+    // func selectNextPaneOrAgent() {
+    //     if layoutMode == .single {
+    //         selectNextAgent()
+    //     } else {
+    //         selectNextPane()
+    //     }
+    // }
 
-    /// Navigate to previous pane (multi-pane mode) or previous agent (single-pane mode)
-    func selectPreviousPaneOrAgent() {
-        if layoutMode == .single {
-            selectPreviousAgent()
-        } else {
-            selectPreviousPane()
-        }
-    }
+    // /// Navigate to previous pane (multi-pane mode) or previous agent (single-pane mode)
+    // func selectPreviousPaneOrAgent() {
+    //     if layoutMode == .single {
+    //         selectPreviousAgent()
+    //     } else {
+    //         selectPreviousPane()
+    //     }
+    // }
 
-    /// Focus next pane in multi-pane mode
-    func selectNextPane() {
-        guard layoutMode != .single else { return }
-        let paneCount = activeAgentIds.count
-        focusedPaneIndex = (focusedPaneIndex + 1) % paneCount
-    }
+    // /// Focus next pane in multi-pane mode
+    // func selectNextPane() {
+    //     guard layoutMode != .single else { return }
+    //     let paneCount = activeAgentIds.count
+    //     focusedPaneIndex = (focusedPaneIndex + 1) % paneCount
+    // }
 
-    /// Focus previous pane in multi-pane mode
-    func selectPreviousPane() {
-        guard layoutMode != .single else { return }
-        let paneCount = activeAgentIds.count
-        focusedPaneIndex = (focusedPaneIndex - 1 + paneCount) % paneCount
-    }
+    // /// Focus previous pane in multi-pane mode
+    // func selectPreviousPane() {
+    //     guard layoutMode != .single else { return }
+    //     let paneCount = activeAgentIds.count
+    //     focusedPaneIndex = (focusedPaneIndex - 1 + paneCount) % paneCount
+    // }
 
     func selectNextAgent() {
-        let workspaceAgents = currentWorkspaceAgents
-        guard !workspaceAgents.isEmpty else { return }
-        let currentId = activeAgentId
-
-        if layoutMode != .single {
-            guard let currentIndex = workspaceAgents.firstIndex(where: { $0.id == currentId }) else {
-                activeAgentIds = [workspaceAgents[0].id]
-                return
-            }
-            // Cycle into focused pane, skip agents in other panes
-            var next = (currentIndex + 1) % workspaceAgents.count
-            while activeAgentIds.contains(workspaceAgents[next].id) && workspaceAgents[next].id != currentId {
-                next = (next + 1) % workspaceAgents.count
-            }
-            activeAgentIds[focusedPaneIndex] = workspaceAgents[next].id
-        } else {
-            // In single mode, skip companions
-            let navigableAgents = workspaceAgents.filter { !$0.isCompanion }
-            guard !navigableAgents.isEmpty else { return }
-            guard let currentIndex = navigableAgents.firstIndex(where: { $0.id == currentId }) else {
-                selectAgent(navigableAgents[0].id)
-                return
-            }
-            let nextIndex = (currentIndex + 1) % navigableAgents.count
-            selectAgent(navigableAgents[nextIndex].id)
+        // Cycle through sidebar items (non-companion agents)
+        let navigableAgents = currentWorkspaceAgents.filter { !$0.isCompanion }
+        guard !navigableAgents.isEmpty else { return }
+        guard let currentIndex = navigableAgents.firstIndex(where: { $0.id == activeAgentId }) else {
+            selectAgent(navigableAgents[0].id)
+            return
         }
+        let nextIndex = (currentIndex + 1) % navigableAgents.count
+        selectAgent(navigableAgents[nextIndex].id)
     }
 
     func selectPreviousAgent() {
-        let workspaceAgents = currentWorkspaceAgents
-        guard !workspaceAgents.isEmpty else { return }
-        let currentId = activeAgentId
-
-        if layoutMode != .single {
-            guard let currentIndex = workspaceAgents.firstIndex(where: { $0.id == currentId }) else {
-                if let lastAgent = workspaceAgents.last {
-                    activeAgentIds = [lastAgent.id]
-                }
-                return
+        // Cycle through sidebar items (non-companion agents)
+        let navigableAgents = currentWorkspaceAgents.filter { !$0.isCompanion }
+        guard !navigableAgents.isEmpty else { return }
+        guard let currentIndex = navigableAgents.firstIndex(where: { $0.id == activeAgentId }) else {
+            if let lastAgent = navigableAgents.last {
+                selectAgent(lastAgent.id)
             }
-            var prev = (currentIndex - 1 + workspaceAgents.count) % workspaceAgents.count
-            while activeAgentIds.contains(workspaceAgents[prev].id) && workspaceAgents[prev].id != currentId {
-                prev = (prev - 1 + workspaceAgents.count) % workspaceAgents.count
-            }
-            activeAgentIds[focusedPaneIndex] = workspaceAgents[prev].id
-        } else {
-            // In single mode, skip companions
-            let navigableAgents = workspaceAgents.filter { !$0.isCompanion }
-            guard !navigableAgents.isEmpty else { return }
-            guard let currentIndex = navigableAgents.firstIndex(where: { $0.id == currentId }) else {
-                if let lastAgent = navigableAgents.last {
-                    selectAgent(lastAgent.id)
-                }
-                return
-            }
-            let previousIndex = (currentIndex - 1 + navigableAgents.count) % navigableAgents.count
-            selectAgent(navigableAgents[previousIndex].id)
+            return
         }
+        let previousIndex = (currentIndex - 1 + navigableAgents.count) % navigableAgents.count
+        selectAgent(navigableAgents[previousIndex].id)
     }
 
     func selectAgentAtIndex(_ index: Int) {
