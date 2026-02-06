@@ -11,12 +11,14 @@ All notable changes to this project will be documented in this file.
 - Shell option in agent type picker for plain terminal without agent
 - MCP tool `create-agent` supports optional `command` parameter for shell agent type
 - Keep running in menu bar: hide to menu bar on Cmd+Q or close button, restore on click
+- Drop indicator line in sidebar during agent drag and drop
 
 ### Changed
-- N/A
+- Reorganized menus to follow macOS conventions for single-window app
 
 ### Fixed
-- N/A
+- Drag and drop agent reordering in sidebar (was moving wrong agent)
+- Shell command now persisted and restored on app relaunch
 
 ### Removed
 - N/A
