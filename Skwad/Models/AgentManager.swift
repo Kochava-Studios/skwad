@@ -55,6 +55,19 @@ final class AgentManager {
             } else {
                 currentWorkspaceId = workspaces.first?.id
             }
+
+            // Restore companion layout for the active agent
+            if let activeId = activeAgentIds.first {
+                let companions = agents.filter { $0.createdBy == activeId && $0.isCompanion }
+                if !companions.isEmpty {
+                    let companionIds = companions.prefix(3).map { $0.id }
+                    activeAgentIds = [activeId] + companionIds
+                    let total = 1 + companionIds.count
+                    layoutMode = total <= 2 ? .splitVertical :
+                                 (total <= 3 ? .splitHorizontal : .gridFourPane)
+                    focusedPaneIndex = 0
+                }
+            }
         }
     }
 
@@ -576,7 +589,7 @@ final class AgentManager {
     }
 
     /// Enters split view showing the creator agent and a newly created agent
-    /// Called when an agent creates another agent with splitScreen=true
+    /// Called when an agent creates a companion agent
     func enterSplitWithNewAgent(newAgentId: UUID, creatorId: UUID) {
         // Find which pane the creator is in (if any)
         let creatorPane = paneIndex(for: creatorId)
@@ -638,12 +651,18 @@ final class AgentManager {
     }
 
     func selectAgent(_ agentId: UUID) {
-        if layoutMode == .single {
+        // Check if this is a sidebar selection (agent is not a companion)
+        let agent = agents.first { $0.id == agentId }
+        let isFromSidebar = agent != nil && !agent!.isCompanion
+
+        if isFromSidebar {
+            // Selecting from sidebar: compute the right layout for this agent
             let companions = agents.filter { $0.createdBy == agentId && $0.isCompanion }
             if companions.isEmpty {
                 activeAgentIds = [agentId]
+                layoutMode = .single
+                focusedPaneIndex = 0
             } else {
-                // Show owner + companions in split
                 let companionIds = companions.prefix(3).map { $0.id }
                 activeAgentIds = [agentId] + companionIds
                 let total = 1 + companionIds.count
@@ -651,6 +670,12 @@ final class AgentManager {
                              (total <= 3 ? .splitHorizontal : .gridFourPane)
                 focusedPaneIndex = 0
             }
+            return
+        }
+
+        // Non-sidebar selection (e.g. pane click, companion)
+        if layoutMode == .single {
+            activeAgentIds = [agentId]
             return
         }
 

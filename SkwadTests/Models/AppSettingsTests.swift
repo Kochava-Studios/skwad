@@ -328,6 +328,42 @@ final class AppSettingsTests: XCTestCase {
         settings.recentAgents = original
     }
 
+    // MARK: - SavedAgent Companion Persistence
+
+    func testSavedAgentCompanionRoundTrip() throws {
+        let ownerId = UUID()
+        let original = SavedAgent(id: UUID(), name: "Companion", avatar: "🤖", folder: "/tmp", createdBy: ownerId, isCompanion: true)
+
+        let data = try JSONEncoder().encode(original)
+        let decoded = try JSONDecoder().decode(SavedAgent.self, from: data)
+
+        XCTAssertEqual(decoded.id, original.id)
+        XCTAssertEqual(decoded.createdBy, ownerId)
+        XCTAssertTrue(decoded.isCompanion)
+    }
+
+    func testSavedAgentNonCompanionRoundTrip() throws {
+        let original = SavedAgent(id: UUID(), name: "Regular", avatar: "🤖", folder: "/tmp")
+
+        let data = try JSONEncoder().encode(original)
+        let decoded = try JSONDecoder().decode(SavedAgent.self, from: data)
+
+        XCTAssertNil(decoded.createdBy)
+        XCTAssertFalse(decoded.isCompanion)
+    }
+
+    func testSavedAgentDecodesOldFormatWithoutCompanionFields() throws {
+        // Simulate old SavedAgent JSON without createdBy/isCompanion
+        let json = """
+        {"id":"\(UUID().uuidString)","name":"Old","avatar":"🤖","folder":"/tmp","agentType":"claude"}
+        """
+        let data = json.data(using: .utf8)!
+        let decoded = try JSONDecoder().decode(SavedAgent.self, from: data)
+
+        XCTAssertNil(decoded.createdBy)
+        XCTAssertFalse(decoded.isCompanion)
+    }
+
     @MainActor
     func testRemoveRecentAgentByFolder() {
         let settings = AppSettings.shared

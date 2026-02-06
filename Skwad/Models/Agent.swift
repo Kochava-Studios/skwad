@@ -46,6 +46,19 @@ struct Agent: Identifiable, Codable, Hashable {
         case id, name, avatar, folder, agentType, createdBy, isCompanion, shellCommand
     }
 
+    // Custom decoding to handle migration from old format without isCompanion/createdBy
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        name = try container.decode(String.self, forKey: .name)
+        avatar = try container.decodeIfPresent(String.self, forKey: .avatar)
+        folder = try container.decode(String.self, forKey: .folder)
+        agentType = try container.decodeIfPresent(String.self, forKey: .agentType) ?? "claude"
+        createdBy = try container.decodeIfPresent(UUID.self, forKey: .createdBy)
+        isCompanion = try container.decodeIfPresent(Bool.self, forKey: .isCompanion) ?? false
+        shellCommand = try container.decodeIfPresent(String.self, forKey: .shellCommand)
+    }
+
     init(id: UUID = UUID(), name: String, avatar: String? = nil, folder: String, agentType: String = "claude", createdBy: UUID? = nil, isCompanion: Bool = false, shellCommand: String? = nil) {
         self.id = id
         self.name = name

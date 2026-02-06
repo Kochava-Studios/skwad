@@ -51,4 +51,54 @@ final class AgentTests: XCTestCase {
         let agent = Agent(name: "Test", folder: "/tmp/test")
         XCTAssertNil(agent.markdownFilePath)
     }
+
+    // MARK: - Companion
+
+    func testCompanionDefaultsToFalse() {
+        let agent = Agent(name: "Test", folder: "/tmp/test")
+        XCTAssertFalse(agent.isCompanion)
+        XCTAssertNil(agent.createdBy)
+    }
+
+    func testCompanionCreation() {
+        let ownerId = UUID()
+        let agent = Agent(name: "Companion", folder: "/tmp/test", createdBy: ownerId, isCompanion: true)
+        XCTAssertTrue(agent.isCompanion)
+        XCTAssertEqual(agent.createdBy, ownerId)
+    }
+
+    func testCompanionCodableRoundTrip() throws {
+        let ownerId = UUID()
+        let original = Agent(name: "Companion", avatar: "🤖", folder: "/tmp/test", createdBy: ownerId, isCompanion: true)
+
+        let data = try JSONEncoder().encode(original)
+        let decoded = try JSONDecoder().decode(Agent.self, from: data)
+
+        XCTAssertEqual(decoded.id, original.id)
+        XCTAssertEqual(decoded.name, original.name)
+        XCTAssertEqual(decoded.createdBy, ownerId)
+        XCTAssertTrue(decoded.isCompanion)
+    }
+
+    func testNonCompanionCodableRoundTrip() throws {
+        let original = Agent(name: "Regular", folder: "/tmp/test")
+
+        let data = try JSONEncoder().encode(original)
+        let decoded = try JSONDecoder().decode(Agent.self, from: data)
+
+        XCTAssertFalse(decoded.isCompanion)
+        XCTAssertNil(decoded.createdBy)
+    }
+
+    func testDecodingWithoutIsCompanionDefaultsToFalse() throws {
+        // Simulate old data without isCompanion field
+        let json = """
+        {"id":"\(UUID().uuidString)","name":"Old","folder":"/tmp","agentType":"claude"}
+        """
+        let data = json.data(using: .utf8)!
+        let decoded = try JSONDecoder().decode(Agent.self, from: data)
+
+        XCTAssertFalse(decoded.isCompanion)
+        XCTAssertNil(decoded.createdBy)
+    }
 }
