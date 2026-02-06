@@ -65,9 +65,9 @@ actor MockAgentDataProvider: AgentDataProvider {
         _injectedTexts.append((text: text, agentId: agentId))
     }
 
-    func addAgent(folder: String, name: String, avatar: String?, agentType: String, createdBy: UUID?, splitScreen: Bool) async -> UUID? {
+    func addAgent(folder: String, name: String, avatar: String?, agentType: String, createdBy: UUID?, splitScreen: Bool, shellCommand: String?) async -> UUID? {
         _addedAgents.append((folder: folder, name: name, avatar: avatar, agentType: agentType))
-        let newAgent = Agent(name: name, avatar: avatar, folder: folder, agentType: agentType, createdBy: createdBy)
+        let newAgent = Agent(name: name, avatar: avatar, folder: folder, agentType: agentType, createdBy: createdBy, shellCommand: shellCommand)
         _agents.append(newAgent)
         return newAgent.id
     }

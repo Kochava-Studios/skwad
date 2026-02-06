@@ -29,6 +29,7 @@ struct Agent: Identifiable, Codable, Hashable {
     var folder: String
     var agentType: String  // Agent type ID (claude, codex, custom1, etc.)
     var createdBy: UUID?  // Agent ID that created this agent (nil if created by user)
+    var shellCommand: String?  // Command to run for shell agent type
 
     // Runtime state (not persisted)
     var status: AgentStatus = .idle
@@ -41,25 +42,27 @@ struct Agent: Identifiable, Codable, Hashable {
 
     // Only persist these fields
     enum CodingKeys: String, CodingKey {
-        case id, name, avatar, folder, agentType, createdBy
+        case id, name, avatar, folder, agentType, createdBy, shellCommand
     }
 
-    init(id: UUID = UUID(), name: String, avatar: String? = nil, folder: String, agentType: String = "claude", createdBy: UUID? = nil) {
+    init(id: UUID = UUID(), name: String, avatar: String? = nil, folder: String, agentType: String = "claude", createdBy: UUID? = nil, shellCommand: String? = nil) {
         self.id = id
         self.name = name
         self.avatar = avatar
         self.folder = folder
         self.agentType = agentType
         self.createdBy = createdBy
+        self.shellCommand = shellCommand
     }
 
     /// Create agent from folder path, deriving name from last path component
-    init(folder: String, avatar: String? = nil, agentType: String = "claude", createdBy: UUID? = nil) {
+    init(folder: String, avatar: String? = nil, agentType: String = "claude", createdBy: UUID? = nil, shellCommand: String? = nil) {
         self.id = UUID()
         self.folder = folder
         self.avatar = avatar
         self.agentType = agentType
         self.createdBy = createdBy
+        self.shellCommand = shellCommand
         self.name = URL(fileURLWithPath: folder).lastPathComponent
     }
 

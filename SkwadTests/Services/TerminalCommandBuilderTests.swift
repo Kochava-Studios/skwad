@@ -420,6 +420,50 @@ final class TerminalCommandBuilderTests: XCTestCase {
         settings.mcpServerEnabled = originalMCP
     }
 
+    @MainActor
+    func testShellAgentTypeWithCustomCommand() {
+        let settings = AppSettings.shared
+
+        let command = TerminalCommandBuilder.buildAgentCommand(
+            for: "shell",
+            settings: settings,
+            shellCommand: "npm run build"
+        )
+
+        XCTAssertEqual(command, "npm run build")
+    }
+
+    @MainActor
+    func testShellAgentTypeWithCustomCommandIgnoresMCP() {
+        let settings = AppSettings.shared
+        let originalMCP = settings.mcpServerEnabled
+        settings.mcpServerEnabled = true
+
+        let command = TerminalCommandBuilder.buildAgentCommand(
+            for: "shell",
+            settings: settings,
+            agentId: UUID(),
+            shellCommand: "python script.py"
+        )
+
+        XCTAssertEqual(command, "python script.py")
+        XCTAssertFalse(command.contains("--mcp-config"))
+
+        settings.mcpServerEnabled = originalMCP
+    }
+
+    func testBuildInitializationCommandWithShellCommand() {
+        let command = TerminalCommandBuilder.buildInitializationCommand(
+            folder: "/path/to/project",
+            agentCommand: "npm run dev"
+        )
+
+        XCTAssertTrue(command.contains("cd '/path/to/project'"))
+        XCTAssertTrue(command.contains("clear"))
+        XCTAssertTrue(command.contains("npm run dev"))
+        XCTAssertEqual(command, " cd '/path/to/project' && clear && npm run dev")
+    }
+
     // MARK: - Default Shell
 
     func testGetDefaultShellReturnsShellEnvOrZsh() {

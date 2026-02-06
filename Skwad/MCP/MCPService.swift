@@ -22,7 +22,7 @@ protocol AgentDataProvider: Sendable {
     func getAgentsInSameWorkspace(as agentId: UUID) async -> [Agent]
     func setRegistered(for agentId: UUID, registered: Bool) async
     func injectText(_ text: String, for agentId: UUID) async
-    func addAgent(folder: String, name: String, avatar: String?, agentType: String, createdBy: UUID?, splitScreen: Bool) async -> UUID?
+    func addAgent(folder: String, name: String, avatar: String?, agentType: String, createdBy: UUID?, splitScreen: Bool, shellCommand: String?) async -> UUID?
     func removeAgent(id: UUID) async -> Bool
     func showMarkdownPanel(filePath: String, agentId: UUID) async -> Bool
 }
@@ -350,7 +350,8 @@ actor MCPService: MCPServiceProtocol {
         createWorktree: Bool,
         branchName: String?,
         createdBy: UUID?,
-        splitScreen: Bool
+        splitScreen: Bool,
+        shellCommand: String?
     ) async -> CreateAgentResponse {
         guard let provider = agentDataProvider else {
             return CreateAgentResponse(success: false, agentId: nil, message: "AgentDataProvider not available")
@@ -403,7 +404,7 @@ actor MCPService: MCPServiceProtocol {
         }
 
         // Create the agent via the provider
-        if let agentId = await provider.addAgent(folder: folder, name: name, avatar: icon, agentType: agentType, createdBy: createdBy, splitScreen: splitScreen) {
+        if let agentId = await provider.addAgent(folder: folder, name: name, avatar: icon, agentType: agentType, createdBy: createdBy, splitScreen: splitScreen, shellCommand: shellCommand) {
             logger.info("[skwad] Created agent '\(name)' with ID \(agentId)")
             return CreateAgentResponse(success: true, agentId: agentId.uuidString, message: "Agent created successfully")
         } else {
@@ -509,10 +510,10 @@ final class AgentManagerWrapper: AgentDataProvider, @unchecked Sendable {
         }
     }
 
-    func addAgent(folder: String, name: String, avatar: String?, agentType: String, createdBy: UUID?, splitScreen: Bool) async -> UUID? {
+    func addAgent(folder: String, name: String, avatar: String?, agentType: String, createdBy: UUID?, splitScreen: Bool, shellCommand: String?) async -> UUID? {
         await MainActor.run {
             guard let manager = manager else { return nil }
-            guard let newAgentId = manager.addAgent(folder: folder, name: name, avatar: avatar, agentType: agentType, createdBy: createdBy) else {
+            guard let newAgentId = manager.addAgent(folder: folder, name: name, avatar: avatar, agentType: agentType, createdBy: createdBy, shellCommand: shellCommand) else {
                 return nil
             }
 

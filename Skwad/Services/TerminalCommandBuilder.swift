@@ -14,11 +14,12 @@ struct TerminalCommandBuilder {
   ///   - agentType: The type of agent (claude, codex, etc.)
   ///   - settings: The app settings containing user-configured options
   ///   - agentId: The agent's UUID for inline registration (optional)
+  ///   - shellCommand: Optional command to run for shell agent type
   /// - Returns: The complete agent command with all arguments
-  static func buildAgentCommand(for agentType: String, settings: AppSettings, agentId: UUID? = nil) -> String {
-    // Shell type: no agent command, just a plain terminal
+  static func buildAgentCommand(for agentType: String, settings: AppSettings, agentId: UUID? = nil, shellCommand: String? = nil) -> String {
+    // Shell type: return custom command or empty
     if agentType == "shell" {
-      return ""
+      return shellCommand ?? ""
     }
 
     let cmd = settings.getCommand(for: agentType)

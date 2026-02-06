@@ -32,6 +32,9 @@ class TerminalSessionController: ObservableObject {
     /// Agent type (claude, etc.)
     let agentType: String
 
+    /// Optional command for shell agent type
+    let shellCommand: String?
+
     // MARK: - Dependencies
 
     private let settings = AppSettings.shared
@@ -76,6 +79,7 @@ class TerminalSessionController: ObservableObject {
         agentId: UUID,
         folder: String,
         agentType: String,
+        shellCommand: String? = nil,
         idleTimeout: TimeInterval = TimingConstants.idleTimeout,
         onStatusChange: @escaping (AgentStatus) -> Void,
         onTitleChange: ((String) -> Void)? = nil
@@ -83,6 +87,7 @@ class TerminalSessionController: ObservableObject {
         self.agentId = agentId
         self.folder = folder
         self.agentType = agentType
+        self.shellCommand = shellCommand
         self.monitorsMCP = AppSettings.shared.mcpServerEnabled
         self.idleTimeout = idleTimeout
         self.onStatusChange = onStatusChange
@@ -138,7 +143,8 @@ class TerminalSessionController: ObservableObject {
         let agentCommand = TerminalCommandBuilder.buildAgentCommand(
             for: agentType,
             settings: settings,
-            agentId: agentIdForRegistration
+            agentId: agentIdForRegistration,
+            shellCommand: shellCommand
         )
         let command = TerminalCommandBuilder.buildInitializationCommand(
             folder: folder,

@@ -222,6 +222,7 @@ final class AgentManager {
             agentId: agent.id,
             folder: agent.folder,
             agentType: agent.agentType,
+            shellCommand: agent.shellCommand,
             onStatusChange: { [weak self] status in
                 self?.updateStatus(for: agent.id, status: status)
             },
@@ -319,9 +320,10 @@ final class AgentManager {
         avatar: String? = nil,
         agentType: String = "claude",
         createdBy: UUID? = nil,
-        insertAfterId: UUID? = nil
+        insertAfterId: UUID? = nil,
+        shellCommand: String? = nil
     ) -> UUID? {
-        var agent = Agent(folder: folder, avatar: avatar, agentType: agentType, createdBy: createdBy)
+        var agent = Agent(folder: folder, avatar: avatar, agentType: agentType, createdBy: createdBy, shellCommand: shellCommand)
         if let name = name {
             agent.name = name
         }
