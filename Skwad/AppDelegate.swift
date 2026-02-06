@@ -24,8 +24,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     /// Monitor for keyboard events (Cmd+W interception)
     private var keyEventMonitor: Any?
 
+    /// Observer for window close button interception
+    private var windowCloseObserver: NSObjectProtocol?
+
     func applicationDidFinishLaunching(_ notification: Notification) {
         setupKeyEventMonitor()
+        setupWindowCloseObserver()
     }
 
     /// Intercept Cmd+W to close the focused agent instead of the window
@@ -40,6 +44,36 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 }
             }
             return event  // Pass through other events
+        }
+    }
+
+    /// Hijack the close button on the main window to hide instead of close
+    private func setupWindowCloseObserver() {
+        // Wait for the window to appear, then replace the close button's action
+        windowCloseObserver = NotificationCenter.default.addObserver(
+            forName: NSWindow.didBecomeKeyNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] notification in
+            guard let self,
+                  let window = notification.object as? NSWindow,
+                  window.canBecomeMain else { return }
+
+            self.mainWindow = window
+
+            // Replace the close button's target/action so it hides instead of closes
+            if let closeButton = window.standardWindowButton(.closeButton) {
+                closeButton.target = self
+                closeButton.action = #selector(self.closeButtonClicked)
+            }
+        }
+    }
+
+    @objc private func closeButtonClicked() {
+        if AppSettings.shared.keepInMenuBar {
+            hideMainWindow()
+        } else {
+            mainWindow?.close()
         }
     }
 
@@ -125,36 +159,46 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        if !flag && AppSettings.shared.keepInMenuBar {
+            showMainWindow()
+            return false
+        }
+        return true
+    }
+
     func showMainWindow() {
+        // Re-acquire window reference if lost (SwiftUI can recreate windows)
+        if mainWindow == nil || mainWindow?.isReleasedWhenClosed == true {
+            mainWindow = NSApp.windows.first(where: { $0.canBecomeMain })
+        }
+
         guard let window = mainWindow else {
             print("[skwad] No main window reference!")
             return
         }
 
-        // First unhide the app (critical for accessory -> regular transition)
-        NSApp.unhide(nil)
-
-        // Make window visible and bring to front
-        window.setIsVisible(true)
-        window.makeKeyAndOrderFront(nil)
-
-        // Now switch to regular activation policy (shows dock icon)
+        // Show dock icon
         NSApp.setActivationPolicy(.regular)
 
-        // Finally activate the app to ensure focus
-        NSApp.activate(ignoringOtherApps: true)
+        // Show window immediately
+        window.orderFrontRegardless()
+
+        // Activate after policy change has propagated
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+            NSRunningApplication.current.activate(options: [.activateAllWindows, .activateIgnoringOtherApps])
+            window.makeKeyAndOrderFront(nil)
+        }
     }
 
     func hideMainWindow() {
-        // Save reference to main window before hiding
+        // Acquire window reference if needed
         if mainWindow == nil {
             mainWindow = NSApp.windows.first(where: { $0.canBecomeMain })
         }
 
-        // Hide window first
+        // Hide window and remove dock icon
         mainWindow?.orderOut(nil)
-
-        // Then hide from dock
         NSApp.setActivationPolicy(.accessory)
     }
 
