@@ -275,9 +275,9 @@ extension Ghostty {
                 }
             }()
 
-            if terminalView != nil && isContentAction {
+            if let terminalView, isContentAction, terminalView.onActivity != nil {
                 DispatchQueue.main.async {
-                    terminalView?.onActivity?()
+                    terminalView.onActivity?()
                 }
             }
 
