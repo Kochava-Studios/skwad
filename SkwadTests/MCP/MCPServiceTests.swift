@@ -307,6 +307,100 @@ final class MCPServiceTests: XCTestCase {
         XCTAssertTrue(result.message.contains("branchName"))
     }
 
+    // MARK: - Companion Agent Validation
+
+    func testCompanionCreationSetsIsCompanion() async {
+        let service = MCPService.shared
+
+        let owner = Agent(name: "Owner", folder: "/tmp")
+        let workspace = Workspace(name: "Test", agentIds: [owner.id])
+        let provider = MockAgentDataProvider(agents: [owner], workspaces: [workspace])
+        await service.setAgentDataProvider(provider)
+
+        let result = await service.createAgent(
+            name: "Companion",
+            icon: nil,
+            agentType: "claude",
+            repoPath: "/tmp",
+            createWorktree: false,
+            branchName: nil,
+            createdBy: owner.id,
+            companion: true,
+            shellCommand: nil
+        )
+
+        XCTAssertTrue(result.success)
+
+        // Verify the created agent has isCompanion set
+        let agents = await provider.getAgents()
+        let companion = agents.first { $0.name == "Companion" }
+        XCTAssertNotNil(companion)
+        XCTAssertTrue(companion!.isCompanion)
+        XCTAssertEqual(companion!.createdBy, owner.id)
+    }
+
+    func testMaxThreeCompanionsPerOwner() async {
+        let service = MCPService.shared
+
+        let owner = Agent(name: "Owner", folder: "/tmp")
+
+        // Create 3 existing companions
+        let c1 = Agent(name: "C1", folder: "/tmp", createdBy: owner.id, isCompanion: true)
+        let c2 = Agent(name: "C2", folder: "/tmp", createdBy: owner.id, isCompanion: true)
+        let c3 = Agent(name: "C3", folder: "/tmp", createdBy: owner.id, isCompanion: true)
+
+        let workspace = Workspace(name: "Test", agentIds: [owner.id, c1.id, c2.id, c3.id])
+        let provider = MockAgentDataProvider(agents: [owner, c1, c2, c3], workspaces: [workspace])
+        await service.setAgentDataProvider(provider)
+
+        // Try to create a 4th companion
+        let result = await service.createAgent(
+            name: "C4",
+            icon: nil,
+            agentType: "claude",
+            repoPath: "/tmp",
+            createWorktree: false,
+            branchName: nil,
+            createdBy: owner.id,
+            companion: true,
+            shellCommand: nil
+        )
+
+        XCTAssertFalse(result.success)
+        XCTAssertTrue(result.message.contains("Maximum"))
+    }
+
+    func testDifferentOwnersCanEachHaveCompanions() async {
+        let service = MCPService.shared
+
+        let owner1 = Agent(name: "Owner1", folder: "/tmp")
+        let owner2 = Agent(name: "Owner2", folder: "/tmp")
+
+        // Owner1 already has 3 companions
+        let c1 = Agent(name: "C1", folder: "/tmp", createdBy: owner1.id, isCompanion: true)
+        let c2 = Agent(name: "C2", folder: "/tmp", createdBy: owner1.id, isCompanion: true)
+        let c3 = Agent(name: "C3", folder: "/tmp", createdBy: owner1.id, isCompanion: true)
+
+        let workspace = Workspace(name: "Test", agentIds: [owner1.id, owner2.id, c1.id, c2.id, c3.id])
+        let provider = MockAgentDataProvider(agents: [owner1, owner2, c1, c2, c3], workspaces: [workspace])
+        await service.setAgentDataProvider(provider)
+
+        // Owner2 should still be able to create a companion
+        let result = await service.createAgent(
+            name: "Owner2-Companion",
+            icon: nil,
+            agentType: "claude",
+            repoPath: "/tmp",
+            createWorktree: false,
+            branchName: nil,
+            createdBy: owner2.id,
+            companion: true,
+            shellCommand: nil
+        )
+
+        XCTAssertTrue(result.success)
+    }
+
     // MARK: - Find Agent
 
     func testFindsByUUID() async {
