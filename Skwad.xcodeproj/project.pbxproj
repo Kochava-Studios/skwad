@@ -127,6 +127,7 @@
 		TS000033 /* AgentSheetUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100032 /* AgentSheetUITests.swift */; };
 		TS000034 /* GitPanelViewHelpersTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100033 /* GitPanelViewHelpersTests.swift */; };
 		TS000035 /* VoiceInputHelpersTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100034 /* VoiceInputHelpersTests.swift */; };
+		TS000036 /* AgentContextMenuTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100035 /* AgentContextMenuTests.swift */; };
 		UP000001 /* UpdaterManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = UP100001 /* UpdaterManager.swift */; };
 		UT000001 /* Clipboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = UT100001 /* Clipboard.swift */; };
 		UT000002 /* TerminalTextCleaner.swift in Sources */ = {isa = PBXBuildFile; fileRef = UT100002 /* TerminalTextCleaner.swift */; };
@@ -264,6 +265,7 @@
 		TS100032 /* AgentSheetUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentSheetUITests.swift; sourceTree = "<group>"; };
 		TS100033 /* GitPanelViewHelpersTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitPanelViewHelpersTests.swift; sourceTree = "<group>"; };
 		TS100034 /* VoiceInputHelpersTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceInputHelpersTests.swift; sourceTree = "<group>"; };
+		TS100035 /* AgentContextMenuTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentContextMenuTests.swift; sourceTree = "<group>"; };
 		TS100100 /* SkwadTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SkwadTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		UP100001 /* UpdaterManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdaterManager.swift; sourceTree = "<group>"; };
 		UT100001 /* Clipboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Clipboard.swift; sourceTree = "<group>"; };
@@ -632,6 +634,7 @@
 			isa = PBXGroup;
 			children = (
 				TS100014 /* AgentSheetHelpersTests.swift */,
+				TS100035 /* AgentContextMenuTests.swift */,
 				TS100019 /* AvatarViewHelpersTests.swift */,
 				TS100020 /* MCPCommandViewHelpersTests.swift */,
 				TS100022 /* AvatarViewTests.swift */,
@@ -946,6 +949,7 @@
 				TS000033 /* AgentSheetUITests.swift in Sources */,
 				TS000034 /* GitPanelViewHelpersTests.swift in Sources */,
 				TS000035 /* VoiceInputHelpersTests.swift in Sources */,
+				TS000036 /* AgentContextMenuTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

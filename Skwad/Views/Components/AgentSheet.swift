@@ -8,6 +8,18 @@ struct AgentPrefill: Identifiable {
     let folder: String
     let agentType: String
     let insertAfterId: UUID?
+    let createdBy: UUID?
+    let isCompanion: Bool
+
+    init(name: String, avatar: String?, folder: String, agentType: String, insertAfterId: UUID? = nil, createdBy: UUID? = nil, isCompanion: Bool = false) {
+        self.name = name
+        self.avatar = avatar
+        self.folder = folder
+        self.agentType = agentType
+        self.insertAfterId = insertAfterId
+        self.createdBy = createdBy
+        self.isCompanion = isCompanion
+    }
 }
 
 struct AgentSheet: View {
@@ -30,6 +42,7 @@ struct AgentSheet: View {
     @State private var name: String = ""
     @State private var avatar: String = "🤖"
     @State private var selectedAgentType: String = "claude"
+    @State private var shellCommand: String = ""
     @State private var showingEmojiPicker = false
     @State private var selectedImage: NSImage?
     @State private var showingCropper = false
@@ -130,6 +143,13 @@ struct AgentSheet: View {
                 if !isEditing {
                     Section {
                         AgentTypePicker(label: "Coding Agent", selection: $selectedAgentType)
+
+                        if selectedAgentType == "shell" {
+                            LabeledContent("Command") {
+                                TextField("", text: $shellCommand, prompt: Text("Optional shell command"))
+                                    .textFieldStyle(.plain)
+                            }
+                        }
                     }
                 }
 
@@ -530,13 +550,21 @@ struct AgentSheet: View {
             settings.addRecentRepo(repo.name)
         }
 
-        agentManager.addAgent(
+        let newAgentId = agentManager.addAgent(
             folder: selectedFolder,
             name: name.isEmpty ? nil : name,
             avatar: avatar,
             agentType: selectedAgentType,
-            insertAfterId: prefill?.insertAfterId
+            createdBy: prefill?.createdBy,
+            isCompanion: prefill?.isCompanion ?? false,
+            insertAfterId: prefill?.insertAfterId,
+            shellCommand: shellCommand.isEmpty ? nil : shellCommand
         )
+
+        if let newAgentId, let createdBy = prefill?.createdBy, prefill?.isCompanion == true {
+            agentManager.enterSplitWithNewAgent(newAgentId: newAgentId, creatorId: createdBy)
+        }
+
         dismiss()
     }
 

@@ -59,6 +59,17 @@ struct SidebarView: View {
                                     agentType: agent.agentType,
                                     insertAfterId: agent.id
                                 )
+                            },
+                            onNewCompanion: {
+                                forkPrefill = AgentPrefill(
+                                    name: "",
+                                    avatar: nil,
+                                    folder: agent.folder,
+                                    agentType: "shell",
+                                    insertAfterId: agent.id,
+                                    createdBy: agent.id,
+                                    isCompanion: true
+                                )
                             }
                         ) {
                             AgentRowView(agent: agent, isSelected: agent.id == agentManager.activeAgentId)

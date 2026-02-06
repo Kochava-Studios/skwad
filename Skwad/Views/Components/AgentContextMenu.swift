@@ -27,47 +27,83 @@ struct IconLabel: View {
     }
 }
 
+/// Menu item visibility rules based on agent properties
+struct AgentMenuVisibility {
+    let showNewCompanion: Bool
+    let showFork: Bool
+    let showDuplicate: Bool
+    let showMoveToWorkspace: Bool
+    let showRegister: Bool
+
+    init(agent: Agent) {
+        showNewCompanion = !agent.isCompanion
+        showFork = !agent.isCompanion
+        showDuplicate = !agent.isCompanion
+        showMoveToWorkspace = !agent.isCompanion
+        showRegister = agent.agentType != "shell"
+    }
+}
+
 /// Reusable agent context menu builder
 struct AgentContextMenu<Content: View>: View {
     let agent: Agent
     let onEdit: () -> Void
     let onFork: () -> Void
+    let onNewCompanion: () -> Void
     @ViewBuilder let content: Content
 
     @Environment(AgentManager.self) var agentManager
 
+    private var visibility: AgentMenuVisibility { AgentMenuVisibility(agent: agent) }
+
     var body: some View {
         content.contextMenu {
+            if visibility.showNewCompanion {
+                Button {
+                    onNewCompanion()
+                } label: {
+                    Label("New Companion...", systemImage: "person.2")
+                }
+
+                Divider()
+            }
+
             Button {
                 onEdit()
             } label: {
                 Label("Edit Agent...", systemImage: "pencil")
             }
 
-            Button {
-                onFork()
-            } label: {
-                Label("Fork Agent", systemImage: "arrow.triangle.branch")
-            }
-
-            Button {
-                agentManager.duplicateAgent(agent)
-            } label: {
-                Label("Duplicate Agent", systemImage: "plus.square.on.square")
-            }
-
-            // Move to Workspace submenu (only show if there are other workspaces)
-            if agentManager.workspaces.count > 1 {
-                Menu {
-                    ForEach(agentManager.workspaces.filter { $0.id != agentManager.currentWorkspaceId }) { workspace in
-                        Button {
-                            agentManager.moveAgentToWorkspace(agent, to: workspace.id)
-                        } label: {
-                            Label(workspace.name, systemImage: "square.stack")
-                        }
-                    }
+            if visibility.showFork {
+                Button {
+                    onFork()
                 } label: {
-                    Label("Move to Workspace", systemImage: "arrow.right.square")
+                    Label("Fork Agent", systemImage: "arrow.triangle.branch")
+                }
+            }
+
+            if visibility.showDuplicate {
+                Button {
+                    agentManager.duplicateAgent(agent)
+                } label: {
+                    Label("Duplicate Agent", systemImage: "plus.square.on.square")
+                }
+            }
+
+            if visibility.showMoveToWorkspace {
+                // Move to Workspace submenu (only show if there are other workspaces)
+                if agentManager.workspaces.count > 1 {
+                    Menu {
+                        ForEach(agentManager.workspaces.filter { $0.id != agentManager.currentWorkspaceId }) { workspace in
+                            Button {
+                                agentManager.moveAgentToWorkspace(agent, to: workspace.id)
+                            } label: {
+                                Label(workspace.name, systemImage: "square.stack")
+                            }
+                        }
+                    } label: {
+                        Label("Move to Workspace", systemImage: "arrow.right.square")
+                    }
                 }
             }
 
@@ -107,10 +143,12 @@ struct AgentContextMenu<Content: View>: View {
 
             Divider()
 
-            Button {
-                agentManager.registerAgent(agent)
-            } label: {
-                Label("Register Agent", systemImage: "person.badge.plus")
+            if visibility.showRegister {
+                Button {
+                    agentManager.registerAgent(agent)
+                } label: {
+                    Label("Register Agent", systemImage: "person.badge.plus")
+                }
             }
 
             Button {

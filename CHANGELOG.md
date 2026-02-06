@@ -5,10 +5,12 @@ All notable changes to this project will be documented in this file.
 ## [1.4.0] - WIP
 
 ### Added
+- Companion agents: create lightweight agents linked to an owner agent (automatically share screen with their owner)
+- MCP tool `create-agent` supports companion agents with `companion` flag
 - Markdown preview history per agent
-- MCP tool `create-agent` now supports `splitScreen` option to automatically share screen with creator
 - Cmd+W now closes the focused agent instead of the window
 - Shell option in agent type picker for plain terminal without agent
+- Optional shell command field when creating shell agents
 - MCP tool `create-agent` supports optional `command` parameter for shell agent type
 - Keep running in menu bar: hide to menu bar on Cmd+Q or close button, restore on click
 - Drop indicator line in sidebar during agent drag and drop
