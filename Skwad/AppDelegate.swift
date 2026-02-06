@@ -89,12 +89,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     /// Hide the default "Close" and "Close All" menu items from the File menu
-    /// Cmd+W is handled by the key event monitor to close agents instead
+    /// Our own "Close Agent" and "Close Workspace" items use Cmd+W too, so match by title
     private func removeDefaultCloseMenuItem() {
+        let defaultTitles: Set<String> = ["Close", "Close All", "Close Tab"]
         // SwiftUI keeps re-adding Close items, so we poll and neuter them
         Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { _ in
             guard let fileMenu = NSApp.mainMenu?.item(withTitle: "File")?.submenu else { return }
-            for item in fileMenu.items where item.keyEquivalent == "w" {
+            for item in fileMenu.items where defaultTitles.contains(item.title) {
                 // Replace with zero-size view — SwiftUI can't reset this like it resets isHidden
                 item.view = NSView(frame: .zero)
                 item.isHidden = true

@@ -157,6 +157,20 @@ struct SkwadApp: App {
 
                 Divider()
 
+                Button("Close Agent") {
+                    closeCurrentAgent()
+                }
+                .keyboardShortcut("w", modifiers: .command)
+                .disabled(agentManager.activeAgentId == nil)
+
+                Button("Close Workspace") {
+                    closeCurrentWorkspace()
+                }
+                .keyboardShortcut("w", modifiers: [.command, .shift])
+                .disabled(agentManager.currentWorkspace == nil)
+
+                Divider()
+
                 Button("Quit Skwad") {
                     appDelegate.quitForReal()
                 }
@@ -175,9 +189,17 @@ struct SkwadApp: App {
                 }
                 .keyboardShortcut("k", modifiers: .command)
                 .disabled(agentManager.activeAgentId == nil)
+
+                Button("Restart Current Agent") {
+                    if let agent = agentManager.agents.first(where: { $0.id == agentManager.activeAgentId }) {
+                        agentManager.restartAgent(agent)
+                    }
+                }
+                .keyboardShortcut("r", modifiers: .command)
+                .disabled(agentManager.activeAgentId == nil)
             }
 
-            // View menu - UI toggles
+            // View menu - UI toggles and agent navigation
             CommandGroup(after: .sidebar) {
                 Button("Toggle Git Panel") {
                     toggleGitPanel.toggle()
@@ -188,10 +210,9 @@ struct SkwadApp: App {
                     toggleSidebar.toggle()
                 }
                 .keyboardShortcut("b", modifiers: [.command, .option])
-            }
 
-            // Window menu - agent navigation and management
-            CommandGroup(after: .windowArrangement) {
+                Divider()
+
                 Button("Next Agent") {
                     agentManager.selectNextAgent()
                 }
@@ -213,30 +234,6 @@ struct SkwadApp: App {
                     agentManager.selectPreviousPaneOrAgent()
                 }
                 .keyboardShortcut("[", modifiers: .command)
-
-                Divider()
-
-                Button("Restart Current Agent") {
-                    if let agent = agentManager.agents.first(where: { $0.id == agentManager.activeAgentId }) {
-                        agentManager.restartAgent(agent)
-                    }
-                }
-                .keyboardShortcut("r", modifiers: .command)
-                .disabled(agentManager.activeAgentId == nil)
-
-                Divider()
-
-                Button("Close Current Agent") {
-                    closeCurrentAgent()
-                }
-                .keyboardShortcut("w", modifiers: .command)
-                .disabled(agentManager.activeAgentId == nil)
-
-                Button("Close Workspace") {
-                    closeCurrentWorkspace()
-                }
-                .keyboardShortcut("w", modifiers: [.command, .shift])
-                .disabled(agentManager.currentWorkspace == nil)
 
                 // Cmd+1-9 to switch workspaces
                 if !agentManager.workspaces.isEmpty {
@@ -261,6 +258,9 @@ struct SkwadApp: App {
                         .keyboardShortcut(KeyEquivalent(Character("\(index + 1)")), modifiers: .control)
                     }
                 }
+
+                Divider()
+
             }
         }
 
