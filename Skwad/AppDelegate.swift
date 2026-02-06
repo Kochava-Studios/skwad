@@ -30,6 +30,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         setupKeyEventMonitor()
         setupWindowCloseObserver()
+        removeDefaultCloseMenuItem()
     }
 
     /// Intercept Cmd+W to close the focused agent instead of the window
@@ -74,6 +75,25 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             hideMainWindow()
         } else {
             mainWindow?.close()
+        }
+    }
+
+    /// Hide the default "Close" and "Close All" menu items from the File menu
+    /// Cmd+W is handled by the key event monitor to close agents instead
+    private func removeDefaultCloseMenuItem() {
+        // SwiftUI keeps re-adding Close items, so we poll and neuter them
+        Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { _ in
+            guard let fileMenu = NSApp.mainMenu?.item(withTitle: "File")?.submenu else { return }
+            for item in fileMenu.items where item.keyEquivalent == "w" {
+                // Replace with zero-size view — SwiftUI can't reset this like it resets isHidden
+                item.view = NSView(frame: .zero)
+                item.isHidden = true
+            }
+            // Hide trailing separators
+            for item in fileMenu.items.reversed() {
+                if item.isHidden { continue }
+                if item.isSeparatorItem { item.isHidden = true } else { break }
+            }
         }
     }
 

@@ -148,15 +148,21 @@ struct SkwadApp: App {
                 .disabled(agentManager.currentWorkspaceAgents.isEmpty)
 
                 if let appName = defaultOpenWithAppName {
-                    Divider()
-
                     Button("Open in \(appName)") {
                         openActiveAgentInDefaultApp()
                     }
                     .keyboardShortcut("o", modifiers: [.command, .shift])
                     .disabled(agentManager.activeAgentId == nil)
                 }
+
+                Divider()
+
+                Button("Quit Skwad") {
+                    appDelegate.quitForReal()
+                }
+                .keyboardShortcut("q", modifiers: [.command, .shift])
             }
+
 
             // Edit menu - text and terminal operations
             CommandGroup(after: .textEditing) {
