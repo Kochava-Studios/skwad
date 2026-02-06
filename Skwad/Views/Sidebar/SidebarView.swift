@@ -72,10 +72,14 @@ struct SidebarView: View {
                                 )
                             }
                         ) {
-                            AgentRowView(agent: agent, isSelected: agent.id == agentManager.activeAgentId)
-                                .onTapGesture {
-                                    agentManager.selectAgent(agent.id)
-                                }
+                            AgentRowView(
+                                agent: agent,
+                                isSelected: agentManager.isAgentActive(agent.id),
+                                companions: agentManager.companions(of: agent.id)
+                            )
+                            .onTapGesture {
+                                agentManager.selectAgent(agent.id)
+                            }
                         }
                             .overlay(alignment: .top) {
                                 if dropTargetAgentId == agent.id && dropPosition == .above {
@@ -328,32 +332,55 @@ struct DropIndicatorLine: View {
 struct AgentRowView: View {
     let agent: Agent
     let isSelected: Bool
+    var companions: [Agent] = []
 
     var body: some View {
-        HStack(spacing: 12) {
-            AvatarView(avatar: agent.avatar, size: 40, font: .largeTitle)
+        VStack(spacing: 0) {
+            HStack(spacing: 12) {
+                AvatarView(avatar: agent.avatar, size: 40, font: .largeTitle)
 
-            VStack(alignment: .leading, spacing: 0) {
-                Text(agent.name)
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(Theme.primaryText)
+                VStack(alignment: .leading, spacing: 0) {
+                    Text(agent.name)
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(Theme.primaryText)
 
-                Text(agent.displayTitle.isEmpty ? "Ready" : agent.displayTitle)
-                    .font(.callout)
-                    .foregroundColor(Theme.secondaryText)
-                    .lineLimit(1)
+                    Text(agent.displayTitle.isEmpty ? "Ready" : agent.displayTitle)
+                        .font(.callout)
+                        .foregroundColor(Theme.secondaryText)
+                        .lineLimit(1)
 
-              Text(URL(fileURLWithPath: agent.folder).lastPathComponent)
-                    .font(.callout)
-                    .foregroundColor(Theme.secondaryText)
-                    .lineLimit(1)
+                    Text(URL(fileURLWithPath: agent.folder).lastPathComponent)
+                        .font(.callout)
+                        .foregroundColor(Theme.secondaryText)
+                        .lineLimit(1)
+                }
+
+                Spacer()
+
+                Circle()
+                    .fill(agent.status.color)
+                    .frame(width: 8, height: 8)
             }
 
-            Spacer()
-
-            Circle()
-                .fill(agent.status.color)
-                .frame(width: 8, height: 8)
+            if !companions.isEmpty {
+                VStack(alignment: .leading, spacing: 2) {
+                    ForEach(companions) { companion in
+                        HStack(spacing: 6) {
+                            AvatarView(avatar: companion.avatar, size: 14, font: .caption2)
+                            Text(companion.name)
+                                .font(.caption)
+                                .foregroundColor(Theme.secondaryText)
+                                .lineLimit(1)
+                            Spacer()
+                            Circle()
+                                .fill(companion.status.color)
+                                .frame(width: 6, height: 6)
+                        }
+                    }
+                }
+                .padding(.top, 6)
+                .padding(.leading, 52)
+            }
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)

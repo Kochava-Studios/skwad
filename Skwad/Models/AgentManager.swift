@@ -58,15 +58,7 @@ final class AgentManager {
 
             // Restore companion layout for the active agent
             if let activeId = activeAgentIds.first {
-                let companions = agents.filter { $0.createdBy == activeId && $0.isCompanion }
-                if !companions.isEmpty {
-                    let companionIds = companions.prefix(3).map { $0.id }
-                    activeAgentIds = [activeId] + companionIds
-                    let total = 1 + companionIds.count
-                    layoutMode = total <= 2 ? .splitVertical :
-                                 (total <= 3 ? .splitHorizontal : .gridFourPane)
-                    focusedPaneIndex = 0
-                }
+                applyCompanionLayout(for: activeId)
             }
         }
     }
@@ -220,6 +212,17 @@ final class AgentManager {
     var selectedAgent: Agent? {
         guard let id = selectedAgentId else { return nil }
         return agents.first { $0.id == id }
+    }
+
+    /// Get companions for an agent
+    func companions(of agentId: UUID) -> [Agent] {
+        agents.filter { $0.createdBy == agentId && $0.isCompanion }
+    }
+
+    /// Whether an agent should appear selected in the sidebar (itself or one of its companions is active)
+    func isAgentActive(_ agentId: UUID) -> Bool {
+        activeAgentIds.contains(agentId) ||
+        companions(of: agentId).contains { activeAgentIds.contains($0.id) }
     }
 
     /// Which pane index an agent occupies, or nil if not in any pane
@@ -380,7 +383,7 @@ final class AgentManager {
 
     func removeAgent(_ agent: Agent) {
         // Close companions first (if this agent owns any)
-        let companions = agents.filter { $0.createdBy == agent.id && $0.isCompanion }
+        let companions = companions(of: agent.id)
         for companion in companions {
             removeAgent(companion)
         }
@@ -569,6 +572,20 @@ final class AgentManager {
 
     // MARK: - Layout / Split Pane
 
+    /// Apply the correct layout for an agent and its companions
+    func applyCompanionLayout(for agentId: UUID) {
+        let companions = companions(of: agentId)
+        if companions.isEmpty {
+            activeAgentIds = [agentId]
+            layoutMode = .single
+        } else {
+            let companionIds = companions.prefix(3).map { $0.id }
+            activeAgentIds = [agentId] + companionIds
+            layoutMode = companionIds.count == 1 ? .splitVertical : .gridFourPane
+        }
+        focusedPaneIndex = 0
+    }
+
     func enterSplit(_ mode: LayoutMode) {
         let workspaceAgents = currentWorkspaceAgents
         guard workspaceAgents.count >= 2 else { return }
@@ -656,20 +673,7 @@ final class AgentManager {
         let isFromSidebar = agent != nil && !agent!.isCompanion
 
         if isFromSidebar {
-            // Selecting from sidebar: compute the right layout for this agent
-            let companions = agents.filter { $0.createdBy == agentId && $0.isCompanion }
-            if companions.isEmpty {
-                activeAgentIds = [agentId]
-                layoutMode = .single
-                focusedPaneIndex = 0
-            } else {
-                let companionIds = companions.prefix(3).map { $0.id }
-                activeAgentIds = [agentId] + companionIds
-                let total = 1 + companionIds.count
-                layoutMode = total <= 2 ? .splitVertical :
-                             (total <= 3 ? .splitHorizontal : .gridFourPane)
-                focusedPaneIndex = 0
-            }
+            applyCompanionLayout(for: agentId)
             return
         }
 
