@@ -15,6 +15,7 @@ struct ContentView: View {
   @State private var dragStartRatio: CGFloat?
   @State private var dragStartRatioSecondary: CGFloat?
   @State private var isDropTargeted = false
+  @State private var lastPaneRects: [UUID: CGRect] = [:]
 
   // Bindings from SkwadApp for menu commands
   @Binding var showNewAgentSheet: Bool
@@ -72,10 +73,9 @@ struct ContentView: View {
         ZStack(alignment: .topLeading) {
           // Keep all terminals alive, show/hide via frame+offset per pane
           ForEach(agentManager.agents) { agent in
-            
-            let rect = paneRect(for: agent.id, in: geo.size)
-            let visible = agentManager.activeAgentIds.contains(agent.id)
 
+            let visible = agentManager.activeAgentIds.contains(agent.id)
+            let rect = visible ? paneRect(for: agent.id, in: geo.size) : (lastPaneRects[agent.id] ?? CGRect(origin: .zero, size: geo.size))
             let paneIdx = agentManager.paneIndex(for: agent.id) ?? 0
 
             AgentTerminalView(
@@ -104,6 +104,17 @@ struct ContentView: View {
               .offset(x: rect.minX, y: rect.minY)
               .opacity(visible ? 1 : 0)
               .allowsHitTesting(visible)
+              .onAppear {
+                // Seed cache so first visibility doesn't cause a resize
+                if lastPaneRects[agent.id] == nil {
+                  lastPaneRects[agent.id] = CGRect(origin: .zero, size: geo.size)
+                }
+              }
+              .onChange(of: visible) { _, isVisible in
+                if isVisible {
+                  lastPaneRects[agent.id] = paneRect(for: agent.id, in: geo.size)
+                }
+              }
           }
 
           // Empty state - no workspaces or empty workspace

@@ -16,12 +16,18 @@ import OSLog
 class TerminalSessionController: ObservableObject {
 
     /// Current session state
-    @Published var status: AgentStatus = .idle {
-        didSet {
-            guard oldValue != status else { return }
-            statusDidChange(from: oldValue, to: status)
+    /// Agents that don't track activity are forced to .idle
+    var status: AgentStatus {
+        get { tracksActivity ? _status : .idle }
+        set {
+            let effective = tracksActivity ? newValue : .idle
+            guard _status != effective else { return }
+            let oldValue = _status
+            _status = effective
+            statusDidChange(from: oldValue, to: effective)
         }
     }
+    @Published private var _status: AgentStatus = .idle
 
     /// Unique identifier for this terminal session
     let agentId: UUID
