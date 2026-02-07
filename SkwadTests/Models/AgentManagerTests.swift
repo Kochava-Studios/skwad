@@ -475,9 +475,9 @@ struct AgentManagerTests {
             #expect(manager.focusedPaneIndex == 1)  // New agent gets focus
         }
 
-        @Test("enterSplitWithNewAgent from dual vertical creates four pane")
+        @Test("enterSplitWithNewAgent from dual vertical creates three pane")
         @MainActor
-        func enterSplitWithNewAgentFromDualCreatesGrid() async {
+        func enterSplitWithNewAgentFromDualCreatesThreePane() async {
             let manager = AgentManagerTests.setupManager(agentCount: 3)
             let agents = manager.currentWorkspaceAgents
             manager.enterSplit(.splitVertical)
@@ -488,17 +488,17 @@ struct AgentManagerTests {
 
             manager.enterSplitWithNewAgent(newAgentId: newAgentId, creatorId: creatorId)
 
-            #expect(manager.layoutMode == .gridFourPane)
-            #expect(manager.activeAgentIds.count >= 3)
+            #expect(manager.layoutMode == .threePane)
+            #expect(manager.activeAgentIds.count == 3)
             #expect(manager.activeAgentIds.contains(newAgentId))
             // New agent should be focused
             let newAgentPane = manager.paneIndex(for: newAgentId)
             #expect(newAgentPane == manager.focusedPaneIndex)
         }
 
-        @Test("enterSplitWithNewAgent from dual horizontal creates four pane")
+        @Test("enterSplitWithNewAgent from dual horizontal creates three pane")
         @MainActor
-        func enterSplitWithNewAgentFromDualHorizontalCreatesGrid() async {
+        func enterSplitWithNewAgentFromDualHorizontalCreatesThreePane() async {
             let manager = AgentManagerTests.setupManager(agentCount: 3)
             let agents = manager.currentWorkspaceAgents
             manager.enterSplit(.splitHorizontal)
@@ -509,7 +509,7 @@ struct AgentManagerTests {
 
             manager.enterSplitWithNewAgent(newAgentId: newAgentId, creatorId: creatorId)
 
-            #expect(manager.layoutMode == .gridFourPane)
+            #expect(manager.layoutMode == .threePane)
             #expect(manager.activeAgentIds.contains(newAgentId))
         }
 

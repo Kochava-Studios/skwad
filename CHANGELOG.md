@@ -14,6 +14,7 @@ All notable changes to this project will be documented in this file.
 - MCP tool `create-agent` supports optional `command` parameter for shell agent type
 - Keep running in menu bar: hide to menu bar on Cmd+Q or close button, restore on click
 - Drop indicator line in sidebar during agent drag and drop
+- 3-pane layout: left half full-height + right side split top/bottom (auto-selected for 3 agents)
 
 ### Changed
 - Reorganized menus to follow macOS conventions for single-window app

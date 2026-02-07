@@ -23,6 +23,17 @@ final class ContentViewHelpersTests: XCTestCase {
             return pane == 0
                 ? CGRect(x: 0, y: 0, width: size.width, height: h0)
                 : CGRect(x: 0, y: h0, width: size.width, height: h1)
+        case .threePane:  // left half full-height | right top / right bottom
+            let w0 = size.width * splitRatio
+            let w1 = size.width - w0
+            let h0 = size.height * splitRatioSecondary
+            let h1 = size.height - h0
+            switch pane {
+            case 0: return CGRect(x: 0, y: 0, width: w0, height: size.height)  // left (full height)
+            case 1: return CGRect(x: w0, y: 0, width: w1, height: h0)          // top-right
+            case 2: return CGRect(x: w0, y: h0, width: w1, height: h1)         // bottom-right
+            default: return CGRect(origin: .zero, size: size)
+            }
         case .gridFourPane:  // 4-pane grid (primary = vertical, secondary = horizontal)
             let w0 = size.width * splitRatio
             let w1 = size.width - w0
@@ -396,7 +407,7 @@ final class ContentViewHelpersTests: XCTestCase {
     }
 
     func testLayoutModesAreCodable() throws {
-        let modes: [LayoutMode] = [.single, .splitVertical, .splitHorizontal, .gridFourPane]
+        let modes: [LayoutMode] = [.single, .splitVertical, .splitHorizontal, .threePane, .gridFourPane]
 
         for mode in modes {
             let encoded = try JSONEncoder().encode(mode)

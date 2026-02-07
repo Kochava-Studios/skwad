@@ -6,7 +6,17 @@ enum LayoutMode: String, Codable {
     case single
     case splitVertical   // left | right
     case splitHorizontal // top / bottom
+    case threePane       // left half full-height | right top / right bottom
     case gridFourPane    // 4-pane grid (up to 4 agents)
+
+    var paneCount: Int {
+        switch self {
+        case .single: return 1
+        case .splitVertical, .splitHorizontal: return 2
+        case .threePane: return 3
+        case .gridFourPane: return 4
+        }
+    }
 }
 
 // Weak wrapper for terminal references to avoid retain cycles
@@ -417,14 +427,20 @@ final class AgentManager {
         let workspaceAgents = currentWorkspaceAgents
 
         if wasInActivePane {
-            // For 4-pane grid, just remove the agent from activeAgentIds but stay in grid mode
-            if layoutMode == .gridFourPane {
+            if layoutMode == .gridFourPane || layoutMode == .threePane {
                 activeAgentIds.removeAll { $0 == agent.id }
-                // If we have less than 2 agents remaining in the grid, exit to single
                 if activeAgentIds.count < 2 {
                     exitSplit(selecting: activeAgentIds.first ?? workspaceAgents.first?.id)
-                } else if focusedPaneIndex >= activeAgentIds.count {
-                    focusedPaneIndex = activeAgentIds.count - 1
+                } else {
+                    // Downgrade layout to match remaining pane count
+                    if activeAgentIds.count == 3 {
+                        layoutMode = .threePane
+                    } else if activeAgentIds.count == 2 {
+                        layoutMode = .splitVertical
+                    }
+                    if focusedPaneIndex >= activeAgentIds.count {
+                        focusedPaneIndex = activeAgentIds.count - 1
+                    }
                 }
             } else {
                 // For other split modes, collapse to single with surviving pane agent
@@ -587,7 +603,11 @@ final class AgentManager {
         } else {
             let companionIds = companions.prefix(3).map { $0.id }
             activeAgentIds = [agentId] + companionIds
-            layoutMode = companionIds.count == 1 ? .splitVertical : .gridFourPane
+            switch companionIds.count {
+            case 1: layoutMode = .splitVertical
+            case 2: layoutMode = .threePane
+            default: layoutMode = .gridFourPane
+            }
         }
         focusedPaneIndex = 0
     }
@@ -625,18 +645,20 @@ final class AgentManager {
             focusedPaneIndex = 1  // Focus the new agent
 
         case .splitVertical, .splitHorizontal:
-            // Dual → Four-pane grid
-            // Keep existing 2 agents in panes 0 and 1, add new agent to pane 2
+            // Dual → Three-pane: keep existing 2 agents, add new agent as pane 2
             var newActiveIds = activeAgentIds
             newActiveIds.append(newAgentId)
-            // If we need a 4th, pick any agent not already shown
-            if newActiveIds.count < 4 {
-                if let fourthAgent = currentWorkspaceAgents.first(where: {
-                    !newActiveIds.contains($0.id) && $0.id != newAgentId
-                }) {
-                    newActiveIds.append(fourthAgent.id)
-                }
+            activeAgentIds = Array(newActiveIds.prefix(3))
+            layoutMode = .threePane
+            // Focus the new agent's pane
+            if let newPane = activeAgentIds.firstIndex(of: newAgentId) {
+                focusedPaneIndex = newPane
             }
+
+        case .threePane:
+            // Three-pane → Four-pane grid: add new agent as pane 3
+            var newActiveIds = activeAgentIds
+            newActiveIds.append(newAgentId)
             activeAgentIds = Array(newActiveIds.prefix(4))
             layoutMode = .gridFourPane
             // Focus the new agent's pane

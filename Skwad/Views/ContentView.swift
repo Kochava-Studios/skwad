@@ -206,7 +206,7 @@ struct ContentView: View {
           // Split mode overlays
           if agentManager.layoutMode != .single {
             // Dim the unfocused panes
-            ForEach(0..<(agentManager.layoutMode == .gridFourPane ? 4 : 2), id: \.self) { pane in
+            ForEach(0..<agentManager.layoutMode.paneCount, id: \.self) { pane in
               if pane != agentManager.focusedPaneIndex {
                 let rect = computePaneRect(pane, in: geo.size)
                 Rectangle()
@@ -217,7 +217,7 @@ struct ContentView: View {
               }
             }
 
-            if agentManager.layoutMode != .gridFourPane {
+            if agentManager.layoutMode == .splitVertical || agentManager.layoutMode == .splitHorizontal {
               // Use NSView-based divider to sit above terminal NSViews
               let isVertical = agentManager.layoutMode == .splitVertical
               let pos = isVertical ? geo.size.width * agentManager.splitRatio : geo.size.height * agentManager.splitRatio
@@ -248,13 +248,14 @@ struct ContentView: View {
                 x: isVertical ? pos - dividerWidth / 2 : 0,
                 y: isVertical ? 0 : pos - dividerWidth / 2
               )
-            } else {
-              // Grid mode: vertical divider (primary) and horizontal divider (secondary)
+            } else if agentManager.layoutMode == .threePane || agentManager.layoutMode == .gridFourPane {
+              // Vertical + horizontal dividers
               let dividerWidth: CGFloat = 12
               let vertPos = geo.size.width * agentManager.splitRatio
               let horizPos = geo.size.height * agentManager.splitRatioSecondary
+              let isThreePane = agentManager.layoutMode == .threePane
 
-              // Vertical divider (controls primary ratio)
+              // Vertical divider (controls primary ratio) - full height
               SplitDividerView(
                 isVertical: true,
                 onDrag: { delta in
@@ -276,6 +277,8 @@ struct ContentView: View {
               .offset(x: vertPos - dividerWidth / 2)
 
               // Horizontal divider (controls secondary ratio)
+              // In threePane: only spans the right half
+              // In gridFourPane: spans full width
               SplitDividerView(
                 isVertical: false,
                 onDrag: { delta in
@@ -293,8 +296,8 @@ struct ContentView: View {
                   }
                 }
               )
-              .frame(width: geo.size.width, height: dividerWidth)
-              .offset(y: horizPos - dividerWidth / 2)
+              .frame(width: isThreePane ? geo.size.width - vertPos : geo.size.width, height: dividerWidth)
+              .offset(x: isThreePane ? vertPos : 0, y: horizPos - dividerWidth / 2)
             }
           }
         }
@@ -444,6 +447,17 @@ struct ContentView: View {
       return pane == 0
         ? CGRect(x: 0, y: 0, width: size.width, height: h0)
         : CGRect(x: 0, y: h0, width: size.width, height: h1)
+    case .threePane:  // left half full-height | right top / right bottom
+      let w0 = size.width * ratioPrimary
+      let w1 = size.width - w0
+      let h0 = size.height * ratioSecondary
+      let h1 = size.height - h0
+      switch pane {
+      case 0: return CGRect(x: 0, y: 0, width: w0, height: size.height)  // left (full height)
+      case 1: return CGRect(x: w0, y: 0, width: w1, height: h0)          // top-right
+      case 2: return CGRect(x: w0, y: h0, width: w1, height: h1)         // bottom-right
+      default: return CGRect(origin: .zero, size: size)
+      }
     case .gridFourPane:  // 4-pane grid (primary = vertical, secondary = horizontal)
       let w0 = size.width * ratioPrimary
       let w1 = size.width - w0
@@ -667,6 +681,23 @@ struct ContentView: View {
       }
 
       if agentManager.currentWorkspaceAgents.count >= 3 {
+        Button {
+          agentManager.layoutMode = .threePane
+          let workspaceAgents = agentManager.currentWorkspaceAgents
+          if agentManager.activeAgentIds.count < 3 {
+            var newIds = agentManager.activeAgentIds
+            let availableAgents = workspaceAgents.filter { !newIds.contains($0.id) }
+            for agent in availableAgents.prefix(3 - newIds.count) {
+              newIds.append(agent.id)
+            }
+            agentManager.activeAgentIds = newIds
+          } else if agentManager.activeAgentIds.count > 3 {
+            agentManager.activeAgentIds = Array(agentManager.activeAgentIds.prefix(3))
+          }
+        } label: {
+          Label("3-Pane Split", systemImage: "rectangle.split.3x1")
+        }
+
         Button {
           agentManager.layoutMode = .gridFourPane
           let workspaceAgents = agentManager.currentWorkspaceAgents
