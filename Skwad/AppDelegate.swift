@@ -32,6 +32,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        // Disable automatic window tabbing (removes "Show Tab Bar" / "Show All Tabs" from View menu)
+        NSWindow.allowsAutomaticWindowTabbing = false
+
         // Single instance: if another Skwad is already running, activate it and quit
         // Skip this check when running as a test host to avoid killing the test runner
         if !AppDelegate.isRunningTests {
@@ -50,18 +53,29 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         removeDefaultCloseMenuItem()
     }
 
-    /// Intercept Cmd+W to close the focused agent instead of the window
+    /// Intercept Cmd+W and Ctrl+Tab key events
     private func setupKeyEventMonitor() {
         keyEventMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
-            // Check for Cmd+W (keyCode 13 is 'W')
+            // Cmd+W: close focused agent instead of window
             if event.modifierFlags.contains(.command) && event.keyCode == 13 {
-                // Only intercept plain Cmd+W, not Cmd+Shift+W
                 if !event.modifierFlags.contains(.shift) {
                     self?.closeCurrentAgent()
-                    return nil  // Consume the event
+                    return nil
                 }
             }
-            return event  // Pass through other events
+            // Ctrl+Tab / Ctrl+Shift+Tab: navigate agents
+            if event.keyCode == 48 {  // Tab key
+                let mods = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
+                if mods == .control {
+                    DispatchQueue.main.async { self?.agentManager?.selectNextAgent() }
+                    return nil
+                }
+                if mods == [.control, .shift] {
+                    DispatchQueue.main.async { self?.agentManager?.selectPreviousAgent() }
+                    return nil
+                }
+            }
+            return event
         }
     }
 

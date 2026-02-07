@@ -1,5 +1,9 @@
 import SwiftUI
 
+extension Notification.Name {
+    static let closeWorkspace = Notification.Name("closeWorkspace")
+}
+
 struct WorkspaceBarView: View {
     @Environment(AgentManager.self) var agentManager
     @ObservedObject private var settings = AppSettings.shared
@@ -101,6 +105,11 @@ struct WorkspaceBarView: View {
         }
         .sheet(item: $workspaceToEdit) { workspace in
             WorkspaceSheet(workspace: workspace)
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .closeWorkspace)) { notification in
+            if let workspace = notification.object as? Workspace {
+                workspaceToClose = workspace
+            }
         }
         .alert("Close Workspace", isPresented: Binding(
             get: { workspaceToClose != nil },

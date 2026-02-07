@@ -165,6 +165,11 @@ final class AgentManager {
         settings.currentWorkspaceId = workspaceId
     }
 
+    func switchToWorkspaceAtIndex(_ index: Int) {
+        guard index >= 0, index < workspaces.count else { return }
+        switchToWorkspace(workspaces[index].id)
+    }
+
     func moveWorkspace(from source: IndexSet, to destination: Int) {
         workspaces.move(fromOffsets: source, toOffset: destination)
         saveWorkspaces()
