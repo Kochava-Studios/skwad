@@ -199,8 +199,8 @@ struct SkwadApp: App {
                 .disabled(agentManager.activeAgentId == nil)
             }
 
-            // View menu - UI toggles and agent navigation
-            CommandGroup(after: .sidebar) {
+            // View menu - agent navigation and UI toggles (before fullscreen)
+            CommandGroup(before: .toolbar) {
                 Button("Toggle Git Panel") {
                     toggleGitPanel.toggle()
                 }
@@ -213,18 +213,6 @@ struct SkwadApp: App {
 
                 Divider()
 
-//                Button("Next Agent") {
-//                    agentManager.selectNextAgent()
-//                }
-//                .keyboardShortcut(KeyEquivalent.tab, modifiers: .control)
-//
-//                Button("Previous Agent") {
-//                    agentManager.selectPreviousAgent()
-//                }
-//                .keyboardShortcut(KeyEquivalent.tab, modifiers: [.control, .shift])
-//
-//                Divider()
-
                 Button("Next Agent") {
                     agentManager.selectNextAgent()
                 }
@@ -235,7 +223,7 @@ struct SkwadApp: App {
                 }
                 .keyboardShortcut("[", modifiers: .command)
 
-                // Cmd+1-9 to switch workspaces
+                // Cmd+1-9 to switch workspaces (changes rarely so safe to use dynamic ForEach)
                 if !agentManager.workspaces.isEmpty {
                     Divider()
 
@@ -247,20 +235,7 @@ struct SkwadApp: App {
                     }
                 }
 
-                // Ctrl+1-9 to select agents within workspace
-                if !agentManager.currentWorkspaceAgents.isEmpty {
-                    Divider()
-
-                    ForEach(Array(agentManager.currentWorkspaceAgents.enumerated().prefix(9)), id: \.element.id) { index, agent in
-                        Button(agent.name) {
-                            agentManager.selectAgentAtIndex(index)
-                        }
-                        .keyboardShortcut(KeyEquivalent(Character("\(index + 1)")), modifiers: .control)
-                    }
-                }
-
                 Divider()
-
             }
         }
 
@@ -334,7 +309,7 @@ struct SkwadApp: App {
 
     private func closeCurrentWorkspace() {
         guard let workspace = agentManager.currentWorkspace else { return }
-        agentManager.removeWorkspace(workspace)
+        NotificationCenter.default.post(name: .closeWorkspace, object: workspace)
     }
 
     private func openActiveAgentInDefaultApp() {
