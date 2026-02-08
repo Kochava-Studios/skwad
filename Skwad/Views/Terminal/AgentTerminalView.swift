@@ -85,6 +85,9 @@ struct AgentTerminalView: View {
                             createdBy: agent.id,
                             isCompanion: true
                         )
+                    },
+                    onShellCompanion: {
+                        agentManager.createShellCompanion(for: agent)
                     }
                 ) {
                     AgentFullHeader(agent: agent, isFocused: isActive, onGitStatsTap: onGitStatsTap, onPaneTap: onPaneTap)

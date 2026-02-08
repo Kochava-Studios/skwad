@@ -29,6 +29,12 @@ final class AgentContextMenuTests: XCTestCase {
         XCTAssertTrue(visibility.showMoveToWorkspace)
     }
 
+    func testNormalAgentShowsShellCompanion() {
+        let agent = Agent(name: "Test", folder: "/path", agentType: "claude")
+        let visibility = AgentMenuVisibility(agent: agent)
+        XCTAssertTrue(visibility.showShellCompanion)
+    }
+
     func testNormalAgentShowsRegister() {
         let agent = Agent(name: "Test", folder: "/path", agentType: "claude")
         let visibility = AgentMenuVisibility(agent: agent)
@@ -36,6 +42,12 @@ final class AgentContextMenuTests: XCTestCase {
     }
 
     // MARK: - Shell Agent (not companion)
+
+    func testShellAgentShowsShellCompanion() {
+        let agent = Agent(name: "Shell", folder: "/path", agentType: "shell")
+        let visibility = AgentMenuVisibility(agent: agent)
+        XCTAssertTrue(visibility.showShellCompanion)
+    }
 
     func testShellAgentShowsNewCompanion() {
         let agent = Agent(name: "Shell", folder: "/path", agentType: "shell")
@@ -75,6 +87,12 @@ final class AgentContextMenuTests: XCTestCase {
         XCTAssertFalse(visibility.showNewCompanion)
     }
 
+    func testCompanionHidesShellCompanion() {
+        let agent = Agent(name: "Companion", folder: "/path", agentType: "claude", createdBy: UUID(), isCompanion: true)
+        let visibility = AgentMenuVisibility(agent: agent)
+        XCTAssertFalse(visibility.showShellCompanion)
+    }
+
     func testCompanionHidesFork() {
         let agent = Agent(name: "Companion", folder: "/path", agentType: "claude", createdBy: UUID(), isCompanion: true)
         let visibility = AgentMenuVisibility(agent: agent)
@@ -105,6 +123,12 @@ final class AgentContextMenuTests: XCTestCase {
         let agent = Agent(name: "ShellComp", folder: "/path", agentType: "shell", createdBy: UUID(), isCompanion: true)
         let visibility = AgentMenuVisibility(agent: agent)
         XCTAssertFalse(visibility.showNewCompanion)
+    }
+
+    func testShellCompanionHidesShellCompanion() {
+        let agent = Agent(name: "ShellComp", folder: "/path", agentType: "shell", createdBy: UUID(), isCompanion: true)
+        let visibility = AgentMenuVisibility(agent: agent)
+        XCTAssertFalse(visibility.showShellCompanion)
     }
 
     func testShellCompanionHidesFork() {

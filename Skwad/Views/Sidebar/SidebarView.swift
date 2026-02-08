@@ -70,6 +70,9 @@ struct SidebarView: View {
                                     createdBy: agent.id,
                                     isCompanion: true
                                 )
+                            },
+                            onShellCompanion: {
+                                agentManager.createShellCompanion(for: agent)
                             }
                         ) {
                             AgentRowView(

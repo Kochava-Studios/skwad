@@ -516,6 +516,19 @@ final class AgentManager {
         _ = createDuplicateAgent(agent)
     }
 
+    func createShellCompanion(for agent: Agent) {
+        guard !agent.isCompanion else { return }
+        guard let newId = addAgent(
+            folder: agent.folder,
+            name: "Shell",
+            agentType: "shell",
+            createdBy: agent.id,
+            isCompanion: true,
+            insertAfterId: agent.id
+        ) else { return }
+        enterSplitWithNewAgent(newAgentId: newId, creatorId: agent.id)
+    }
+
     func restartAgent(_ agent: Agent) {
         // Keep same ID but regenerate restart token to force terminal recreation
         guard let index = agents.firstIndex(where: { $0.id == agent.id }) else { return }

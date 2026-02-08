@@ -355,17 +355,8 @@ struct SkwadApp: App {
     }
 
     private func createCompanionShell() {
-        guard let agent = agentManager.agents.first(where: { $0.id == agentManager.activeAgentId }),
-              !agent.isCompanion else { return }
-        guard let newId = agentManager.addAgent(
-            folder: agent.folder,
-            name: "Shell",
-            agentType: "shell",
-            createdBy: agent.id,
-            isCompanion: true,
-            insertAfterId: agent.id
-        ) else { return }
-        agentManager.enterSplitWithNewAgent(newAgentId: newId, creatorId: agent.id)
+        guard let agent = agentManager.agents.first(where: { $0.id == agentManager.activeAgentId }) else { return }
+        agentManager.createShellCompanion(for: agent)
     }
 
     private func openActiveAgentInDefaultApp() {

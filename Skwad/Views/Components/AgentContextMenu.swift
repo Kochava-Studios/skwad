@@ -30,6 +30,7 @@ struct IconLabel: View {
 /// Menu item visibility rules based on agent properties
 struct AgentMenuVisibility {
     let showNewCompanion: Bool
+    let showShellCompanion: Bool
     let showFork: Bool
     let showDuplicate: Bool
     let showMoveToWorkspace: Bool
@@ -37,6 +38,7 @@ struct AgentMenuVisibility {
 
     init(agent: Agent) {
         showNewCompanion = !agent.isCompanion
+        showShellCompanion = !agent.isCompanion
         showFork = !agent.isCompanion
         showDuplicate = !agent.isCompanion
         showMoveToWorkspace = !agent.isCompanion
@@ -50,6 +52,7 @@ struct AgentContextMenu<Content: View>: View {
     let onEdit: () -> Void
     let onFork: () -> Void
     let onNewCompanion: () -> Void
+    let onShellCompanion: () -> Void
     @ViewBuilder let content: Content
 
     @Environment(AgentManager.self) var agentManager
@@ -63,6 +66,14 @@ struct AgentContextMenu<Content: View>: View {
                     onNewCompanion()
                 } label: {
                     Label("New Companion...", systemImage: "person.2")
+                }
+            }
+
+            if visibility.showShellCompanion {
+                Button {
+                    onShellCompanion()
+                } label: {
+                    Label("New Shell Companion", systemImage: "terminal")
                 }
 
                 Divider()
