@@ -323,6 +323,7 @@ struct SkwadApp: App {
               !agent.isCompanion else { return }
         guard let newId = agentManager.addAgent(
             folder: agent.folder,
+            name: "Shell",
             agentType: "shell",
             createdBy: agent.id,
             isCompanion: true,
