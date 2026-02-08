@@ -1,4 +1,4 @@
-.PHONY: help build clean archive export notarize dmg release install increment-build appcast get-version get-build set-version prerelease latest
+.PHONY: help build clean archive export notarize dmg release install increment-build appcast get-version get-build set-version prerelease latest check-changelog
 
 # Load .env file if it exists
 -include .env
@@ -188,7 +188,10 @@ appcast:
 	@echo "Generating appcast..."
 	@./scripts/generate-appcast.sh "$(ZIP_PATH)" "$(EXPORT_PATH)/$(APP_NAME).app" "$(APPCAST_PATH)" "$(DOWNLOAD_URL)"
 
-release: increment-build notarize
+check-changelog:
+	@./scripts/check-changelog.sh
+
+release: check-changelog increment-build notarize
 	@echo ""
 	@echo "Release build complete!"
 	@echo "   Distribution package: $(DMG_PATH)"
@@ -207,14 +210,14 @@ install:
 	@echo "$(APP_NAME).app installed to /Applications"
 
 # GitHub Actions release targets
-prerelease:
+prerelease: check-changelog
 	@git diff --quiet || (echo "Error: There are uncommitted changes. Commit or stash them first." && exit 1)
 	@$(MAKE) increment-build
 	@echo "Triggering GitHub Action for prerelease build..."
 	gh workflow run build.yml --ref $(CURRENT_BRANCH) -f release_type=prerelease
 	@echo "Workflow triggered. Monitor at: https://github.com/Kochava-Studios/skwad/actions"
 
-latest:
+latest: check-changelog
 	@git diff --quiet || (echo "Error: There are uncommitted changes. Commit or stash them first." && exit 1)
 	@$(MAKE) increment-build
 	@echo "Triggering GitHub Action for latest release build..."

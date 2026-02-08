@@ -66,6 +66,10 @@ jobs:
           # Set partition list to allow access without prompting
           security set-key-partition-list -S apple-tool:,apple:,security: -k "${{ secrets.APPLE_PASSWORD }}" $KEYCHAIN_PATH
 
+      - name: Check changelog
+        if: ${{ inputs.release_type == 'latest' }}
+        run: make check-changelog
+
       - name: Get version
         id: version
         run: |

@@ -56,6 +56,35 @@ echo "  Size: $FILE_SIZE bytes"
 echo "  Signature: ${SIGNATURE:0:20}..."
 echo "  Min macOS: $MIN_OS"
 
+# Extract changelog section for this version and convert to HTML
+CHANGELOG_FILE="$(dirname "$0")/../CHANGELOG.md"
+RELEASE_NOTES=""
+if [ -f "$CHANGELOG_FILE" ]; then
+    # Extract the section between ## [VERSION] and the next ## [
+    SECTION=$(sed -n "/^## \[$VERSION\]/,/^## \[/p" "$CHANGELOG_FILE" | sed '$d')
+    if [ -n "$SECTION" ]; then
+        # Convert markdown to HTML
+        RELEASE_NOTES=$(echo "$SECTION" | \
+            sed '1d' | \
+            sed '/^$/d' | \
+            sed 's/^### \(.*\)/<h3>\1<\/h3>/' | \
+            sed 's/^- \(.*\)/<li>\1<\/li>/' | \
+            sed 's/^  - \(.*\)/<li>\1<\/li>/' | \
+            tr '\n' ' ')
+        echo "  Release notes: included from CHANGELOG.md"
+    else
+        echo "  Release notes: no changelog section found for $VERSION"
+    fi
+else
+    echo "  Release notes: CHANGELOG.md not found"
+fi
+
+# Build description block
+DESCRIPTION_BLOCK=""
+if [ -n "$RELEASE_NOTES" ]; then
+    DESCRIPTION_BLOCK="      <description><![CDATA[$RELEASE_NOTES]]></description>"
+fi
+
 # Generate appcast.xml
 cat > "$OUTPUT_PATH" << EOF
 <?xml version="1.0" encoding="utf-8"?>
@@ -71,6 +100,7 @@ cat > "$OUTPUT_PATH" << EOF
       <sparkle:version>$BUILD</sparkle:version>
       <sparkle:shortVersionString>$VERSION</sparkle:shortVersionString>
       <sparkle:minimumSystemVersion>$MIN_OS</sparkle:minimumSystemVersion>
+$DESCRIPTION_BLOCK
       <enclosure url="$DOWNLOAD_URL"
                  sparkle:edSignature="$SIGNATURE"
                  length="$FILE_SIZE"
