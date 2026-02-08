@@ -134,6 +134,12 @@ struct SkwadApp: App {
                 }
                 .keyboardShortcut("t", modifiers: .command)
 
+                Button("New Shell Companion") {
+                    createCompanionShell()
+                }
+                .keyboardShortcut("s", modifiers: [.command, .shift])
+                .disabled(agentManager.activeAgentId == nil)
+
                 Divider()
 
                 recentAgentsMenu
@@ -310,6 +316,19 @@ struct SkwadApp: App {
     private func closeCurrentWorkspace() {
         guard let workspace = agentManager.currentWorkspace else { return }
         NotificationCenter.default.post(name: .closeWorkspace, object: workspace)
+    }
+
+    private func createCompanionShell() {
+        guard let agent = agentManager.agents.first(where: { $0.id == agentManager.activeAgentId }),
+              !agent.isCompanion else { return }
+        guard let newId = agentManager.addAgent(
+            folder: agent.folder,
+            agentType: "shell",
+            createdBy: agent.id,
+            isCompanion: true,
+            insertAfterId: agent.id
+        ) else { return }
+        agentManager.enterSplitWithNewAgent(newAgentId: newId, creatorId: agent.id)
     }
 
     private func openActiveAgentInDefaultApp() {

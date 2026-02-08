@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 ## [1.4.1] - WIP
 
 ### Added
-- N/A
+- New Shell Companion menu item (Shift+Cmd+S) to quickly create a shell companion for the active agent
 
 ### Changed
 - Faster repository discovery
