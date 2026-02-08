@@ -310,32 +310,15 @@ actor MCPService: MCPServiceProtocol {
     // MARK: - Repository Operations
 
     func listRepos() async -> [RepoInfoResponse] {
-        let baseFolder = await MainActor.run {
-            AppSettings.shared.expandedSourceBaseFolder
+        let repos = await MainActor.run {
+            RepoDiscoveryService.shared.repos
         }
-
-        guard !baseFolder.isEmpty else {
-            logger.warning("[skwad] Source base folder not configured")
-            return []
-        }
-
-        let repos = GitWorktreeManager.shared.discoverRepos(in: baseFolder)
         return repos.map { repo in
             RepoInfoResponse(
                 name: repo.name,
-                path: repo.path,
-                worktreeCount: repo.worktreeCount
-            )
-        }
-    }
-
-    func listWorktrees(for repoPath: String) -> [WorktreeInfoResponse] {
-        let worktrees = GitWorktreeManager.shared.listWorktrees(for: repoPath)
-        return worktrees.map { wt in
-            WorktreeInfoResponse(
-                path: wt.path,
-                branch: wt.branch,
-                isMain: wt.isMain
+                worktrees: repo.worktrees.map { wt in
+                    WorktreeInfoResponse(name: wt.name, path: wt.path)
+                }
             )
         }
     }
@@ -378,17 +361,11 @@ actor MCPService: MCPServiceProtocol {
                 return CreateAgentResponse(success: false, agentId: nil, message: "Worktree destination already exists: \(destinationPath)")
             }
 
-            // Check if branch exists locally or remotely
-            let localBranches = GitWorktreeManager.shared.listLocalBranches(for: repoPath)
-            let remoteBranches = GitWorktreeManager.shared.listRemoteBranches(for: repoPath)
-            let branchExists = localBranches.contains(branch) || remoteBranches.contains(branch)
-
             do {
                 try GitWorktreeManager.shared.createWorktree(
                     repoPath: repoPath,
                     branchName: branch,
-                    destinationPath: destinationPath,
-                    createBranch: !branchExists
+                    destinationPath: destinationPath
                 )
                 folder = destinationPath
                 logger.info("[skwad] Created worktree at \(destinationPath) for branch \(branch)")

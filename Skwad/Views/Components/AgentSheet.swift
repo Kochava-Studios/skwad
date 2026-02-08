@@ -49,9 +49,6 @@ struct AgentSheet: View {
 
     // Git data
     @State private var recentRepoInfos: [RepoInfo] = []
-    @State private var allRepos: [RepoInfo] = []
-    @State private var isLoadingRepos = false
-    @State private var worktrees: [WorktreeInfo] = []
     @State private var shouldApplyPrefillWorktree = false
 
     private var isEditing: Bool { editingAgent != nil }
@@ -206,12 +203,7 @@ struct AgentSheet: View {
             if let repo = selectedRepo {
                 NewWorktreeSheet(repo: repo) { worktree in
                     if let worktree = worktree {
-                        worktrees = GitWorktreeManager.shared.listWorktrees(for: repo.path)
-                        selectedWorktree = worktree
-                        selectedFolder = worktree.path
-                        if name.isEmpty {
-                            name = URL(fileURLWithPath: worktree.path).lastPathComponent
-                        }
+                        selectWorktree(worktree)
                     }
                 }
             }
@@ -231,12 +223,8 @@ struct AgentSheet: View {
             applyPrefillWorktreeIfNeeded()
         }
         .onChange(of: repoDiscovery.repos) { _, repos in
-            allRepos = repos
             updateRecentRepos(from: repos)
             applyPrefillWorktreeIfNeeded()
-        }
-        .onChange(of: repoDiscovery.isLoading) { _, loading in
-            isLoadingRepos = loading
         }
     }
 
@@ -249,7 +237,7 @@ struct AgentSheet: View {
             Menu {
                 // Recent repos first
                 if !recentRepoInfos.isEmpty {
-                    ForEach(recentRepoInfos, id: \.path) { repo in
+                    ForEach(recentRepoInfos) { repo in
                         Button {
                             selectRepo(repo)
                         } label: {
@@ -266,11 +254,11 @@ struct AgentSheet: View {
                 }
 
                 // All repos (excluding recent)
-                if isLoadingRepos {
+                if repoDiscovery.isLoading {
                     Text("Loading repositories...")
                         .foregroundColor(.secondary)
                 } else {
-                    ForEach(nonRecentRepos, id: \.path) { repo in
+                    ForEach(nonRecentRepos) { repo in
                         Button {
                             selectRepo(repo)
                         } label: {
@@ -302,24 +290,18 @@ struct AgentSheet: View {
         }
 
         // Worktree picker (only shown when repo is selected)
-        if selectedRepo != nil {
+        if let repo = selectedRepo {
             LabeledContent("Worktree") {
                 Menu {
-                    ForEach(worktrees, id: \.path) { worktree in
+                    ForEach(repo.worktrees, id: \.path) { worktree in
                         Button {
                             selectWorktree(worktree)
                         } label: {
-                            HStack {
-                                Text(worktree.branch)
-                                if worktree.isMain {
-                                    Text("(main)")
-                                        .foregroundColor(.secondary)
-                                }
-                            }
+                            Text(worktree.name)
                         }
                     }
 
-                    if !worktrees.isEmpty {
+                    if !repo.worktrees.isEmpty {
                         Divider()
                     }
 
@@ -330,7 +312,7 @@ struct AgentSheet: View {
                     }
                 } label: {
                     HStack {
-                        Text(selectedWorktree?.branch ?? "Select worktree")
+                        Text(selectedWorktree?.name ?? "Select worktree")
                             .foregroundColor(selectedWorktree == nil ? .secondary : .primary)
                         Spacer()
                         Image(systemName: "chevron.up.chevron.down")
@@ -392,19 +374,15 @@ struct AgentSheet: View {
     }
 
     private var nonRecentRepos: [RepoInfo] {
-        return allRepos
+        return repoDiscovery.repos
     }
 
     // MARK: - Actions
 
     private func loadRepos() {
-        repoDiscovery.start()
+        updateRecentRepos(from: repoDiscovery.repos)
 
-        allRepos = repoDiscovery.repos
-        isLoadingRepos = repoDiscovery.isLoading
-        updateRecentRepos(from: allRepos)
-
-        if allRepos.isEmpty && !repoDiscovery.isLoading {
+        if repoDiscovery.repos.isEmpty && !repoDiscovery.isLoading {
             populateRecentReposFallback()
         }
     }
@@ -429,7 +407,7 @@ struct AgentSheet: View {
             let gitPath = (repoPath as NSString).appendingPathComponent(".git")
             var isDirectory: ObjCBool = false
             if FileManager.default.fileExists(atPath: gitPath, isDirectory: &isDirectory), isDirectory.boolValue {
-                return RepoInfo(name: name, path: repoPath, worktreeCount: 0)
+                return RepoInfo(name: name, worktrees: [WorktreeInfo(name: name, path: repoPath)])
             }
             return nil
         }
@@ -437,10 +415,9 @@ struct AgentSheet: View {
 
     private func selectRepo(_ repo: RepoInfo) {
         selectedRepo = repo
-        worktrees = GitWorktreeManager.shared.listWorktrees(for: repo.path)
 
         // Auto-select first worktree
-        if let first = worktrees.first {
+        if let first = repo.worktrees.first {
             selectWorktree(first)
         } else {
             selectedWorktree = nil
@@ -470,12 +447,9 @@ struct AgentSheet: View {
         }
 
         let folder = prefill.folder
-        let reposByPath = Dictionary(uniqueKeysWithValues: allRepos.map { ($0.path, $0) })
-
-        for (repoPath, repoWorktrees) in repoDiscovery.worktreesByRepoPath {
-            if let match = repoWorktrees.first(where: { $0.path == folder }) {
-                selectedRepo = reposByPath[repoPath]
-                worktrees = repoWorktrees
+        for repo in repoDiscovery.repos {
+            if let match = repo.worktrees.first(where: { $0.path == folder }) {
+                selectedRepo = repo
                 selectedWorktree = match
                 selectedFolder = match.path
                 return

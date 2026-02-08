@@ -104,7 +104,6 @@
 		TS000010 /* MCPServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100009 /* MCPServiceTests.swift */; };
 		TS000011 /* MockAgentDataProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100010 /* MockAgentDataProvider.swift */; };
 		TS000012 /* GitWorktreeManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100011 /* GitWorktreeManagerTests.swift */; };
-		TS000013 /* GitWorktreeFixtures.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100012 /* GitWorktreeFixtures.swift */; };
 		TS000014 /* DiffViewHelpersTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100013 /* DiffViewHelpersTests.swift */; };
 		TS000015 /* AgentSheetHelpersTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100014 /* AgentSheetHelpersTests.swift */; };
 		TS000016 /* SidebarViewHelpersTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100015 /* SidebarViewHelpersTests.swift */; };
@@ -128,6 +127,7 @@
 		TS000034 /* GitPanelViewHelpersTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100033 /* GitPanelViewHelpersTests.swift */; };
 		TS000035 /* VoiceInputHelpersTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100034 /* VoiceInputHelpersTests.swift */; };
 		TS000036 /* AgentContextMenuTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100035 /* AgentContextMenuTests.swift */; };
+		TS000037 /* RepoDiscoveryServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100036 /* RepoDiscoveryServiceTests.swift */; };
 		UP000001 /* UpdaterManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = UP100001 /* UpdaterManager.swift */; };
 		UT000001 /* Clipboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = UT100001 /* Clipboard.swift */; };
 		UT000002 /* TerminalTextCleaner.swift in Sources */ = {isa = PBXBuildFile; fileRef = UT100002 /* TerminalTextCleaner.swift */; };
@@ -242,7 +242,6 @@
 		TS100009 /* MCPServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPServiceTests.swift; sourceTree = "<group>"; };
 		TS100010 /* MockAgentDataProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockAgentDataProvider.swift; sourceTree = "<group>"; };
 		TS100011 /* GitWorktreeManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitWorktreeManagerTests.swift; sourceTree = "<group>"; };
-		TS100012 /* GitWorktreeFixtures.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitWorktreeFixtures.swift; sourceTree = "<group>"; };
 		TS100013 /* DiffViewHelpersTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiffViewHelpersTests.swift; sourceTree = "<group>"; };
 		TS100014 /* AgentSheetHelpersTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentSheetHelpersTests.swift; sourceTree = "<group>"; };
 		TS100015 /* SidebarViewHelpersTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarViewHelpersTests.swift; sourceTree = "<group>"; };
@@ -266,6 +265,7 @@
 		TS100033 /* GitPanelViewHelpersTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitPanelViewHelpersTests.swift; sourceTree = "<group>"; };
 		TS100034 /* VoiceInputHelpersTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceInputHelpersTests.swift; sourceTree = "<group>"; };
 		TS100035 /* AgentContextMenuTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentContextMenuTests.swift; sourceTree = "<group>"; };
+		TS100036 /* RepoDiscoveryServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepoDiscoveryServiceTests.swift; sourceTree = "<group>"; };
 		TS100100 /* SkwadTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SkwadTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		UP100001 /* UpdaterManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdaterManager.swift; sourceTree = "<group>"; };
 		UT100001 /* Clipboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Clipboard.swift; sourceTree = "<group>"; };
@@ -547,6 +547,7 @@
 				TS500001 /* Git */,
 				TS500005 /* MCP */,
 				TS500006 /* Models */,
+				TS500013 /* Services */,
 				TS500011 /* Utilities */,
 				TS500002 /* Views */,
 				TS500012 /* Voice */,
@@ -581,7 +582,6 @@
 			isa = PBXGroup;
 			children = (
 				TS100002 /* GitOutputFixtures.swift */,
-				TS100012 /* GitWorktreeFixtures.swift */,
 			);
 			path = Fixtures;
 			sourceTree = "<group>";
@@ -677,6 +677,14 @@
 				TS100034 /* VoiceInputHelpersTests.swift */,
 			);
 			path = Voice;
+			sourceTree = "<group>";
+		};
+		TS500013 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				TS100036 /* RepoDiscoveryServiceTests.swift */,
+			);
+			path = Services;
 			sourceTree = "<group>";
 		};
 		UP200000 /* Updater */ = {
@@ -926,7 +934,6 @@
 				TS000010 /* MCPServiceTests.swift in Sources */,
 				TS000011 /* MockAgentDataProvider.swift in Sources */,
 				TS000012 /* GitWorktreeManagerTests.swift in Sources */,
-				TS000013 /* GitWorktreeFixtures.swift in Sources */,
 				TS000014 /* DiffViewHelpersTests.swift in Sources */,
 				TS000015 /* AgentSheetHelpersTests.swift in Sources */,
 				TS000016 /* SidebarViewHelpersTests.swift in Sources */,
@@ -950,6 +957,7 @@
 				TS000034 /* GitPanelViewHelpersTests.swift in Sources */,
 				TS000035 /* VoiceInputHelpersTests.swift in Sources */,
 				TS000036 /* AgentContextMenuTests.swift in Sources */,
+				TS000037 /* RepoDiscoveryServiceTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

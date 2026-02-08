@@ -53,39 +53,34 @@ class GitRepository {
         return GitOutputParser.parseDiff(output)
     }
 
-    /// Get diff statistics
-    func diffStats(staged: Bool = false, includeUntracked: Bool = true) -> (insertions: Int, deletions: Int, files: Int) {
-        var args = ["diff", "--stat", "--numstat"]
-        if staged {
-            args.append("--staged")
+    /// Get combined diff statistics (unstaged + staged) in minimal git calls
+    func combinedDiffStats() -> GitLineStats {
+        // One call for unstaged, one for staged
+        let unstagedResult = cli.run(["diff", "--numstat"], in: path)
+        let stagedResult = cli.run(["diff", "--staged", "--numstat"], in: path)
+
+        var insertions = 0, deletions = 0, files = 0
+
+        if case .success(let output) = unstagedResult {
+            let s = GitOutputParser.parseNumstat(output)
+            insertions += s.insertions; deletions += s.deletions; files += s.files
+        }
+        if case .success(let output) = stagedResult {
+            let s = GitOutputParser.parseNumstat(output)
+            insertions += s.insertions; deletions += s.deletions; files += s.files
         }
 
-        let result = cli.run(args, in: path)
-        guard case .success(let output) = result else {
-            return (0, 0, 0)
-        }
-
-        var stats = parseNumstatOutput(output)
-
-        let shouldIncludeUntracked = includeUntracked && !staged
-        if shouldIncludeUntracked {
-            let untrackedFiles = status().untrackedFiles
-            for file in untrackedFiles {
-                let untrackedResult = cli.run(["diff", "--numstat", "--no-index", "--", "/dev/null", file.path], in: path)
-                if case .success(let untrackedOutput) = untrackedResult {
-                    let untrackedStats = parseNumstatOutput(untrackedOutput)
-                    stats.insertions += untrackedStats.insertions
-                    stats.deletions += untrackedStats.deletions
-                    stats.files += untrackedStats.files
-                }
+        // Untracked files: count via status (already one call)
+        let untrackedFiles = status().untrackedFiles
+        for file in untrackedFiles {
+            let r = cli.run(["diff", "--numstat", "--no-index", "--", "/dev/null", file.path], in: path)
+            if case .success(let output) = r {
+                let s = GitOutputParser.parseNumstat(output)
+                insertions += s.insertions; deletions += s.deletions; files += s.files
             }
         }
 
-        return stats
-    }
-
-    private func parseNumstatOutput(_ output: String) -> (insertions: Int, deletions: Int, files: Int) {
-        return GitOutputParser.parseNumstat(output)
+        return GitLineStats(insertions: insertions, deletions: deletions, files: files)
     }
 
     // MARK: - Staging

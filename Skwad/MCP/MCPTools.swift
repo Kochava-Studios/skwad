@@ -291,8 +291,12 @@ actor MCPToolHandler {
             return errorResult("Missing required parameter: repoPath")
         }
 
-        let worktrees = await mcpService.listWorktrees(for: repoPath)
-        let response = ListWorktreesResponse(repoPath: repoPath, worktrees: worktrees)
+        let repos = await MainActor.run { RepoDiscoveryService.shared.repos }
+        let repo = repos.first { $0.path == repoPath }
+        let worktrees = repo?.worktrees ?? []
+        let response = ListWorktreesResponse(repoPath: repoPath, worktrees: worktrees.map {
+            WorktreeInfoResponse(name: $0.name, path: $0.path)
+        })
         return successResult(response)
     }
 

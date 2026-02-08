@@ -9,7 +9,6 @@ final class RepoDiscoveryService {
     static let shared = RepoDiscoveryService()
 
     private(set) var repos: [RepoInfo] = []
-    private(set) var worktreesByRepoPath: [String: [WorktreeInfo]] = [:]
     private(set) var isLoading: Bool = false
 
     private let queue = DispatchQueue(label: "RepoDiscoveryService", qos: .utility)
@@ -47,7 +46,6 @@ final class RepoDiscoveryService {
         debounceTask = nil
 
         repos = []
-        worktreesByRepoPath = [:]
         isLoading = false
 
         guard !trimmed.isEmpty else { return }
@@ -57,26 +55,26 @@ final class RepoDiscoveryService {
             return
         }
 
-        refreshRepos()
-        startWatcher(path: expanded)
+        refreshRepos(thenWatch: expanded)
     }
 
-    private func refreshRepos() {
+    private func refreshRepos(thenWatch watchPath: String? = nil) {
         let baseFolder = baseFolderRaw
         guard !baseFolder.isEmpty else { return }
 
         isLoading = true
 
         Task.detached(priority: .userInitiated) {
-            let discovered = GitWorktreeManager.shared.discoverReposWithWorktrees(in: baseFolder)
-            let repos = discovered.map { $0.repo }
-            let worktreesMap = Dictionary(uniqueKeysWithValues: discovered.map { ($0.repo.path, $0.worktrees) })
+            let repos = Self.scanRepos(in: baseFolder)
 
             await MainActor.run { [weak self] in
                 guard let self, baseFolder == self.baseFolderRaw else { return }
                 self.repos = repos
-                self.worktreesByRepoPath = worktreesMap
                 self.isLoading = false
+
+                if let watchPath {
+                    self.startWatcher(path: watchPath)
+                }
             }
         }
     }
@@ -157,6 +155,72 @@ final class RepoDiscoveryService {
         }
     }
 
+    // MARK: - Filesystem Scanning
+
+    /// Pure filesystem scan — no git commands.
+    nonisolated static func scanRepos(in baseFolder: String) -> [RepoInfo] {
+        let expandedPath = NSString(string: baseFolder).expandingTildeInPath
+        let fileManager = FileManager.default
+
+        guard let contents = try? fileManager.contentsOfDirectory(atPath: expandedPath) else {
+            return []
+        }
+
+        var repoNames: [String: String] = [:]
+        var worktreesByRepoPath: [String: [WorktreeInfo]] = [:]
+
+        for item in contents {
+            let itemPath = (expandedPath as NSString).appendingPathComponent(item)
+            let gitPath = (itemPath as NSString).appendingPathComponent(".git")
+
+            var isDirectory: ObjCBool = false
+            guard fileManager.fileExists(atPath: gitPath, isDirectory: &isDirectory) else { continue }
+
+            if isDirectory.boolValue {
+                repoNames[itemPath] = item
+                let branchName = parseBranchFromHead(gitPath) ?? item
+                worktreesByRepoPath[itemPath, default: []].insert(
+                    WorktreeInfo(name: branchName, path: itemPath), at: 0
+                )
+            } else {
+                if let repoPath = parseWorktreeGitFile(gitPath) {
+                    let repoName = (repoPath as NSString).lastPathComponent
+                    let wtName = item.hasPrefix("\(repoName)-") ? String(item.dropFirst(repoName.count + 1)) : item
+                    worktreesByRepoPath[repoPath, default: []].append(
+                        WorktreeInfo(name: wtName, path: itemPath)
+                    )
+                }
+            }
+        }
+
+        var result: [RepoInfo] = []
+        for (repoPath, name) in repoNames {
+            let worktrees = worktreesByRepoPath[repoPath] ?? []
+            result.append(RepoInfo(name: name, worktrees: worktrees))
+        }
+
+        return result.sorted { $0.name.lowercased() < $1.name.lowercased() }
+    }
+
+    private nonisolated static func parseBranchFromHead(_ gitDirPath: String) -> String? {
+        let headPath = (gitDirPath as NSString).appendingPathComponent("HEAD")
+        guard let content = try? String(contentsOfFile: headPath, encoding: .utf8) else { return nil }
+        let trimmed = content.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmed.hasPrefix("ref: refs/heads/") else { return nil }
+        return String(trimmed.dropFirst("ref: refs/heads/".count))
+    }
+
+    private nonisolated static func parseWorktreeGitFile(_ path: String) -> String? {
+        guard let content = try? String(contentsOfFile: path, encoding: .utf8) else { return nil }
+        let trimmed = content.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmed.hasPrefix("gitdir: ") else { return nil }
+        let gitdir = String(trimmed.dropFirst("gitdir: ".count))
+        guard let range = gitdir.range(of: "/.git/worktrees/") else { return nil }
+        return String(gitdir[gitdir.startIndex..<range.lowerBound])
+    }
+
+    // MARK: - FSEvents Filtering
+
     private func shouldRefresh(for paths: [String]) -> Bool {
         let basePath = baseFolderExpanded
         guard !basePath.isEmpty else { return false }
@@ -174,14 +238,12 @@ final class RepoDiscoveryService {
                 return true // direct child added/removed
             }
 
+            // .git event: only care if this is a new repo we don't know about yet
+            // (FSEvents reports .git/ for any activity inside it, not just creation)
             if components.count == 2, components[1] == ".git" {
-                return true // git init (repo created)
-            }
-
-            if components.count == 3, components[1] == ".git" {
-                let tail = components[2]
-                if tail == "HEAD" || tail == "index" {
-                    return true
+                let folderName = String(components[0])
+                if !repos.contains(where: { $0.name == folderName }) {
+                    return true 
                 }
             }
         }

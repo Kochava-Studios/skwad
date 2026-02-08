@@ -7,28 +7,19 @@ struct NewWorktreeSheet: View {
     let onComplete: (WorktreeInfo?) -> Void
 
     @State private var branchName: String = ""
-    @State private var createNewBranch: Bool = true
-    @State private var selectedExistingBranch: String = ""
     @State private var destinationPath: String = ""
     @State private var isLoading: Bool = false
     @State private var errorMessage: String?
 
-    @State private var localBranches: [String] = []
-    @State private var remoteBranches: [String] = []
-
-    private var effectiveBranchName: String {
-        createNewBranch ? branchName : selectedExistingBranch
-    }
-
     private var suggestedPath: String {
         GitWorktreeManager.shared.suggestedWorktreePath(
             repoPath: repo.path,
-            branchName: effectiveBranchName
+            branchName: branchName
         )
     }
 
     private var canCreate: Bool {
-        !effectiveBranchName.isEmpty && !destinationPath.isEmpty && !isLoading
+        !branchName.isEmpty && !destinationPath.isEmpty && !isLoading
     }
 
     var body: some View {
@@ -47,64 +38,12 @@ struct NewWorktreeSheet: View {
 
             Form {
                 Section {
-                    // Branch mode toggle
-                    Picker("Branch", selection: $createNewBranch) {
-                        Text("New branch").tag(true)
-                        Text("Existing branch").tag(false)
-                    }
-                    .pickerStyle(.segmented)
-                    .onChange(of: createNewBranch) { _, _ in
-                        updateDestinationPath()
-                    }
-
-                    if createNewBranch {
-                        // New branch name
-                        LabeledContent("Name") {
-                            TextField("", text: $branchName, prompt: Text("feature/my-feature"))
-                                .textFieldStyle(.plain)
-                                .onChange(of: branchName) { _, _ in
-                                    updateDestinationPath()
-                                }
-                        }
-                    } else {
-                        // Existing branch picker
-                        LabeledContent("Branch") {
-                            Menu {
-                                if !localBranches.isEmpty {
-                                    Section("Local") {
-                                        ForEach(localBranches, id: \.self) { branch in
-                                            Button(branch) {
-                                                selectedExistingBranch = branch
-                                                updateDestinationPath()
-                                            }
-                                        }
-                                    }
-                                }
-
-                                if !remoteBranches.isEmpty {
-                                    Section("Remote") {
-                                        ForEach(remoteBranches, id: \.self) { branch in
-                                            Button(branch) {
-                                                selectedExistingBranch = branch
-                                                updateDestinationPath()
-                                            }
-                                        }
-                                    }
-                                }
-                            } label: {
-                                HStack {
-                                    Text(selectedExistingBranch.isEmpty ? "Select branch" : selectedExistingBranch)
-                                        .foregroundColor(selectedExistingBranch.isEmpty ? .secondary : .primary)
-                                    Spacer()
-                                    Image(systemName: "chevron.up.chevron.down")
-                                        .foregroundColor(.secondary)
-                                        .font(.caption)
-                                }
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .contentShape(Rectangle())
+                    LabeledContent("Branch") {
+                        TextField("", text: $branchName, prompt: Text("feature/my-feature"))
+                            .textFieldStyle(.plain)
+                            .onChange(of: branchName) { _, _ in
+                                updateDestinationPath()
                             }
-                            .menuStyle(.borderlessButton)
-                        }
                     }
 
                     // Destination path
@@ -138,7 +77,7 @@ struct NewWorktreeSheet: View {
             }
             .formStyle(.grouped)
         }
-        .frame(width: 450, height: 320)
+        .frame(width: 450, height: 260)
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
                 Button("Cancel") {
@@ -153,28 +92,12 @@ struct NewWorktreeSheet: View {
                 .disabled(!canCreate)
             }
         }
-        .onAppear {
-            loadBranches()
-            updateDestinationPath()
-        }
     }
 
     // MARK: - Actions
 
-    private func loadBranches() {
-        localBranches = GitWorktreeManager.shared.listLocalBranches(for: repo.path)
-        remoteBranches = GitWorktreeManager.shared.listRemoteBranches(for: repo.path)
-
-        // Filter out branches that already have worktrees
-        let existingWorktrees = GitWorktreeManager.shared.listWorktrees(for: repo.path)
-        let existingBranches = Set(existingWorktrees.map { $0.branch })
-
-        localBranches = localBranches.filter { !existingBranches.contains($0) }
-        remoteBranches = remoteBranches.filter { !existingBranches.contains($0) }
-    }
-
     private func updateDestinationPath() {
-        if !effectiveBranchName.isEmpty {
+        if !branchName.isEmpty {
             destinationPath = suggestedPath
         }
     }
@@ -203,16 +126,14 @@ struct NewWorktreeSheet: View {
         do {
             try GitWorktreeManager.shared.createWorktree(
                 repoPath: repo.path,
-                branchName: effectiveBranchName,
-                destinationPath: destinationPath,
-                createBranch: createNewBranch
+                branchName: branchName,
+                destinationPath: destinationPath
             )
 
-            // Return the newly created worktree info
+            let folderName = (destinationPath as NSString).lastPathComponent
             let worktree = WorktreeInfo(
-                path: destinationPath,
-                branch: effectiveBranchName,
-                isMain: false
+                name: folderName,
+                path: destinationPath
             )
 
             onComplete(worktree)
@@ -226,5 +147,5 @@ struct NewWorktreeSheet: View {
 }
 
 #Preview {
-    NewWorktreeSheet(repo: RepoInfo(name: "skwad", path: "/Users/nbonamy/src/skwad", worktreeCount: 2)) { _ in }
+    NewWorktreeSheet(repo: RepoInfo(name: "skwad", worktrees: [WorktreeInfo(name: "main", path: "/Users/nbonamy/src/skwad")])) { _ in }
 }

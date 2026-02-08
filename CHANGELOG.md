@@ -2,7 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.4.0] - WIP
+## [1.4.1] - WIP
+
+### Added
+- N/A
+
+### Changed
+- Faster repository discovery
+
+### Fixed
+- Spurious activity detection on hidden terminals
+
+### Removed
+- Worktree creation from existing branch
+
+
+## [1.4.0] - 2026-02-07
 
 ### Added
 - Companion agents: create lightweight agents linked to an owner agent (automatically share screen with their owner)

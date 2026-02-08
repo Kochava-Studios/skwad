@@ -59,8 +59,7 @@ struct BroadcastResponse: Codable {
 
 struct RepoInfoResponse: Codable {
     let name: String
-    let path: String
-    let worktreeCount: Int
+    let worktrees: [WorktreeInfoResponse]
 }
 
 struct ListReposResponse: Codable {
@@ -68,9 +67,8 @@ struct ListReposResponse: Codable {
 }
 
 struct WorktreeInfoResponse: Codable {
+    let name: String
     let path: String
-    let branch: String
-    let isMain: Bool
 }
 
 struct ListWorktreesResponse: Codable {

@@ -821,14 +821,7 @@ final class AgentManager {
         let folder = agent.folder
         Task.detached(priority: .userInitiated) {
             let repo = GitRepository(path: folder)
-            let unstaged = repo.diffStats()
-            let staged = repo.diffStats(staged: true, includeUntracked: false)
-
-            let stats = GitLineStats(
-                insertions: unstaged.insertions + staged.insertions,
-                deletions: unstaged.deletions + staged.deletions,
-                files: unstaged.files + staged.files
-            )
+            let stats = repo.combinedDiffStats()
 
             await MainActor.run { [weak self] in
                 guard let self,

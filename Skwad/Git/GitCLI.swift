@@ -36,25 +36,6 @@ class GitCLI {
         }
     }
 
-    /// Run a git command asynchronously
-    /// - Parameters:
-    ///   - arguments: Git command arguments (without "git" prefix)
-    ///   - directory: Working directory for the command
-    /// - Returns: Result with output string or GitError
-    func runAsync(_ arguments: [String], in directory: String) async -> Result<String, GitError> {
-        await withCheckedContinuation { continuation in
-            DispatchQueue.global(qos: .userInitiated).async {
-                let result = self.run(arguments, in: directory)
-                continuation.resume(returning: result)
-            }
-        }
-    }
-
-    /// Run a git command and return raw result (for cases where non-zero exit is expected)
-    func runRaw(_ arguments: [String], in directory: String) -> CommandResult {
-        execute(arguments, in: directory)
-    }
-
     // MARK: - Private
 
     private func execute(_ arguments: [String], in directory: String) -> CommandResult {
