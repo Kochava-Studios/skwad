@@ -48,13 +48,13 @@ struct AgentTerminalView: View {
     let agent: Agent
     let paneIndex: Int
     @Binding var sidebarVisible: Bool
+    @Binding var forkPrefill: AgentPrefill?
     let onGitStatsTap: () -> Void
     let onPaneTap: () -> Void
 
     @State private var isWindowResizing = false
     @State private var controller: TerminalSessionController?
     @State private var agentToEdit: Agent?
-    @State private var forkPrefill: AgentPrefill?
 
     private var isActive: Bool {
         agentManager.activeAgentId == agent.id
@@ -132,10 +132,6 @@ struct AgentTerminalView: View {
         }
         .sheet(item: $agentToEdit) { agent in
             AgentSheet(editing: agent)
-                .environment(agentManager)
-        }
-        .sheet(item: $forkPrefill) { prefill in
-            AgentSheet(prefill: prefill)
                 .environment(agentManager)
         }
     }

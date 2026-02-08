@@ -21,6 +21,7 @@ struct ContentView: View {
   @Binding var showNewAgentSheet: Bool
   @Binding var toggleGitPanel: Bool
   @Binding var toggleSidebar: Bool
+  @Binding var forkPrefill: AgentPrefill?
 
   private let minSidebarWidth: CGFloat = 200
   private let maxSidebarWidth: CGFloat = 400
@@ -44,7 +45,7 @@ struct ContentView: View {
       }
 
       if !agentManager.currentWorkspaceAgents.isEmpty && sidebarVisible {
-        SidebarView(sidebarVisible: $sidebarVisible)
+        SidebarView(sidebarVisible: $sidebarVisible, forkPrefill: $forkPrefill)
           .frame(width: sidebarWidth)
           .transition(.move(edge: .leading).combined(with: .opacity))
 
@@ -82,6 +83,7 @@ struct ContentView: View {
               agent: agent,
               paneIndex: paneIdx,
               sidebarVisible: $sidebarVisible,
+              forkPrefill: $forkPrefill,
               onGitStatsTap: {
                 if GitWorktreeManager.shared.isGitRepo(agent.folder) {
                   // Focus this agent's pane first so git panel opens for it
@@ -758,11 +760,13 @@ struct ContentView: View {
   @Previewable @State var showNewAgentSheet = false
   @Previewable @State var toggleGitPanel = false
   @Previewable @State var toggleSidebar = false
+  @Previewable @State var forkPrefill: AgentPrefill? = nil
 
   ContentView(
     showNewAgentSheet: $showNewAgentSheet,
     toggleGitPanel: $toggleGitPanel,
-    toggleSidebar: $toggleSidebar
+    toggleSidebar: $toggleSidebar,
+    forkPrefill: $forkPrefill
   )
     .environment(AgentManager())
 }

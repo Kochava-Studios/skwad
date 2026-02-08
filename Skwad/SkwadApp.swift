@@ -21,8 +21,15 @@ struct SkwadApp: App {
     @State private var showNewWorkspaceSheet = false
     @State private var toggleGitPanel = false
     @State private var toggleSidebar = false
+    @State private var forkPrefill: AgentPrefill?
 
     private var settings: AppSettings { AppSettings.shared }
+
+    private var activeAgentForMenu: Agent? {
+        guard let agent = agentManager.agents.first(where: { $0.id == agentManager.activeAgentId }),
+              !agent.isCompanion else { return nil }
+        return agent
+    }
 
     private var defaultOpenWithAppName: String? {
         guard !settings.defaultOpenWithApp.isEmpty else { return nil }
@@ -56,7 +63,8 @@ struct SkwadApp: App {
             ContentView(
                 showNewAgentSheet: $showNewAgentSheet,
                 toggleGitPanel: $toggleGitPanel,
-                toggleSidebar: $toggleSidebar
+                toggleSidebar: $toggleSidebar,
+                forkPrefill: $forkPrefill
             )
                 .environment(agentManager)
                 .alert("Folder Not Found", isPresented: $showAlert) {
@@ -79,6 +87,10 @@ struct SkwadApp: App {
                 }
                 .sheet(isPresented: $showNewWorkspaceSheet) {
                     WorkspaceSheet()
+                        .environment(agentManager)
+                }
+                .sheet(item: $forkPrefill) { prefill in
+                    AgentSheet(prefill: prefill)
                         .environment(agentManager)
                 }
                 .onAppear {
@@ -203,6 +215,30 @@ struct SkwadApp: App {
                 }
                 .keyboardShortcut("r", modifiers: .command)
                 .disabled(agentManager.activeAgentId == nil)
+
+                Divider()
+
+                Button("Duplicate Agent") {
+                    if let agent = agentManager.agents.first(where: { $0.id == agentManager.activeAgentId }) {
+                        agentManager.duplicateAgent(agent)
+                    }
+                }
+                .keyboardShortcut("d", modifiers: .command)
+                .disabled(activeAgentForMenu == nil)
+
+                Button("Fork Agent...") {
+                    if let agent = agentManager.agents.first(where: { $0.id == agentManager.activeAgentId }) {
+                        forkPrefill = AgentPrefill(
+                            name: agent.name + " (fork)",
+                            avatar: agent.avatar,
+                            folder: agent.folder,
+                            agentType: agent.agentType,
+                            insertAfterId: agent.id
+                        )
+                    }
+                }
+                .keyboardShortcut("f", modifiers: .command)
+                .disabled(activeAgentForMenu == nil)
             }
 
             // View menu - agent navigation and UI toggles (before fullscreen)

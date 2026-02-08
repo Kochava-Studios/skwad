@@ -529,11 +529,17 @@ final class AgentManager {
         agents[index].terminalTitle = ""
     }
 
-    func updateAgent(id: UUID, name: String, avatar: String) {
-        if let index = agents.firstIndex(where: { $0.id == id }) {
-            agents[index].name = name
-            agents[index].avatar = avatar
-            saveAgents()
+    func updateAgent(id: UUID, name: String, avatar: String, folder: String? = nil) {
+        guard let index = agents.firstIndex(where: { $0.id == id }) else { return }
+        let folderChanged = folder != nil && folder != agents[index].folder
+        agents[index].name = name
+        agents[index].avatar = avatar
+        if let folder = folder {
+            agents[index].folder = folder
+        }
+        saveAgents()
+        if folderChanged {
+            restartAgent(agents[index])
         }
     }
 

@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - New Shell Companion menu item (Shift+Cmd+S) to quickly create a shell companion for the active agent
+- Duplicate Agent (Cmd+D) and Fork Agent (Cmd+F) in Edit menu
+- Edit Agent now allows changing the folder/worktree (agent restarts automatically)
 
 ### Changed
 - Faster repository discovery

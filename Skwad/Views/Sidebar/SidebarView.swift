@@ -4,9 +4,9 @@ struct SidebarView: View {
     @Environment(AgentManager.self) var agentManager
     @ObservedObject private var settings = AppSettings.shared
     @Binding var sidebarVisible: Bool
+    @Binding var forkPrefill: AgentPrefill?
     @State private var showingNewAgentSheet = false
     @State private var agentToEdit: Agent?
-    @State private var forkPrefill: AgentPrefill?
     @State private var showBroadcastSheet = false
     @State private var broadcastMessage = ""
     @State private var showRestartAllConfirmation = false
@@ -202,9 +202,6 @@ struct SidebarView: View {
         .background(settings.sidebarBackgroundColor)
         .sheet(isPresented: $showingNewAgentSheet) {
             AgentSheet()
-        }
-        .sheet(item: $forkPrefill) { prefill in
-            AgentSheet(prefill: prefill)
         }
         .sheet(item: $agentToEdit) { agent in
             AgentSheet(editing: agent)
@@ -426,7 +423,7 @@ private func previewAgent(_ name: String, _ avatar: String, _ folder: String, st
 }
 
 #Preview("Sidebar") {
-    SidebarView(sidebarVisible: .constant(true))
+    SidebarView(sidebarVisible: .constant(true), forkPrefill: .constant(nil))
         .environment(previewAgentManager())
         .frame(width: 250, height: 500)
 }

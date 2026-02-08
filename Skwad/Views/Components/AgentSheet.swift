@@ -76,6 +76,7 @@ struct AgentSheet: View {
             _name = State(initialValue: agent.name)
             _avatar = State(initialValue: agent.avatar ?? "🤖")
             _selectedAgentType = State(initialValue: agent.agentType)
+            _shouldApplyPrefillWorktree = State(initialValue: true)
         } else if let prefill = prefill {
             _selectedFolder = State(initialValue: prefill.folder)
             _name = State(initialValue: prefill.name)
@@ -152,15 +153,7 @@ struct AgentSheet: View {
 
                 // Section 3: Folder/Repository
                 Section {
-                    if isEditing {
-                        // Editing mode: show folder read-only
-                        LabeledContent("Folder") {
-                            Text(shortenedPath)
-                                .foregroundColor(.primary)
-                                .lineLimit(1)
-                                .truncationMode(.middle)
-                        }
-                    } else if hasWorktreeFeatures {
+                    if hasWorktreeFeatures {
                         // Worktree mode: repo + worktree pickers
                         worktreeSelectionView
                     } else {
@@ -171,7 +164,7 @@ struct AgentSheet: View {
             }
             .formStyle(.grouped)
         }
-        .frame(width: 480, height: hasWorktreeFeatures && !isEditing ? 420 : 340)
+        .frame(width: 480, height: hasWorktreeFeatures ? 420 : 340)
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
                 Button("Cancel") {
@@ -217,7 +210,7 @@ struct AgentSheet: View {
             Text(validationError ?? "")
         }
         .onAppear {
-            if hasWorktreeFeatures && !isEditing {
+            if hasWorktreeFeatures {
                 loadRepos()
             }
             applyPrefillWorktreeIfNeeded()
@@ -436,17 +429,23 @@ struct AgentSheet: View {
 
     private func applyPrefillWorktreeIfNeeded() {
         guard shouldApplyPrefillWorktree else { return }
-        guard let prefill = prefill, !prefill.folder.isEmpty else { return }
-        guard !isEditing else { return }
+
+        let folder: String
+        if let agent = editingAgent {
+            folder = agent.folder
+        } else if let prefill = prefill, !prefill.folder.isEmpty {
+            folder = prefill.folder
+        } else {
+            return
+        }
 
         shouldApplyPrefillWorktree = false
 
         if !hasWorktreeFeatures {
-            selectedFolder = prefill.folder
+            selectedFolder = folder
             return
         }
 
-        let folder = prefill.folder
         for repo in repoDiscovery.repos {
             if let match = repo.worktrees.first(where: { $0.path == folder }) {
                 selectedRepo = repo
@@ -544,10 +543,12 @@ struct AgentSheet: View {
 
     private func updateAgent() {
         guard let agent = editingAgent else { return }
+        let folderChanged = !selectedFolder.isEmpty && selectedFolder != agent.folder
         agentManager.updateAgent(
             id: agent.id,
             name: name.isEmpty ? agent.folder.split(separator: "/").last.map(String.init) ?? "Agent" : name,
-            avatar: avatar
+            avatar: avatar,
+            folder: folderChanged ? selectedFolder : nil
         )
         dismiss()
     }
