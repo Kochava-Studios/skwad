@@ -173,6 +173,12 @@ final class AgentManager {
         saveWorkspaces()
         currentWorkspaceId = workspaceId
         settings.currentWorkspaceId = workspaceId
+
+        // Auto-select first agent if none is active
+        if activeAgentIds.isEmpty, let firstAgent = currentWorkspaceAgents.first {
+            layoutMode = .single
+            activeAgentIds = [firstAgent.id]
+        }
     }
 
     func switchToWorkspaceAtIndex(_ index: Int) {
