@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 - Spurious activity detection on hidden terminals
+- Auto-select first agent when switching to workspace with no active selection
 
 ### Removed
 - Worktree creation from existing branch
