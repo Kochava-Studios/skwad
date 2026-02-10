@@ -220,14 +220,12 @@ actor MCPToolHandler {
             return await agentNotFoundError(from)
         }
 
-        let success = await mcpService.sendMessage(from: from, to: to, content: content)
-
-        if success {
-            let response = SendMessageResponse(success: true, message: "Message sent successfully. Don't check for a response right away - you will be notified when the other agent responds.")
-            return successResult(response)
-        } else {
-            return errorResult("Failed to send message: recipient not found or sender not registered")
+        if let error = await mcpService.sendMessage(from: from, to: to, content: content) {
+            return errorResult("Failed to send message: \(error)")
         }
+
+        let response = SendMessageResponse(success: true, message: "Message sent successfully. Don't check for a response right away - you will be notified when the other agent responds.")
+        return successResult(response)
     }
 
     private func handleCheckMessages(_ arguments: [String: Any]) async -> ToolCallResult {

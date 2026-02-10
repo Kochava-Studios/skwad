@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 
 
+## [1.4.3] - 2026-02-10
+
+### Added
+- N/A
+
+### Changed
+- Shell agents are now hidden from MCP list-agents results
+- Companion agents are only visible to their owner in MCP list-agents
+- Companion agents can only exchange messages with their owner
+
+### Fixed
+- Sending messages to shell agents now returns a clear error
+
+### Removed
+- N/A
+
+
 ## [1.4.2] - 2026-02-10
 
 ### Added

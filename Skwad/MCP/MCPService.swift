@@ -7,7 +7,7 @@ protocol MCPServiceProtocol {
     func listAgents(callerAgentId: String) async -> [AgentInfo]
     func registerAgent(agentId: String) async -> Bool
     func unregisterAgent(agentId: String) async -> Bool
-    func sendMessage(from: String, to: String, content: String) async -> Bool
+    func sendMessage(from: String, to: String, content: String) async -> String?
     func checkMessages(for agentId: String, markAsRead: Bool) async -> [MCPMessage]
     func broadcastMessage(from: String, content: String) async -> Int
     func hasUnreadMessages(for agentId: String) async -> Bool
@@ -68,7 +68,14 @@ actor MCPService: MCPServiceProtocol {
         }
 
         // Only return agents in the same workspace as the caller
-        let agents = await provider.getAgentsInSameWorkspace(as: callerUUID)
+        let allAgents = await provider.getAgentsInSameWorkspace(as: callerUUID)
+        let agents = allAgents.filter { agent in
+            // Never include shell agents
+            if agent.isShell { return false }
+            // Only include companion agents if the caller is their owner
+            if agent.isCompanion { return agent.createdBy == callerUUID }
+            return true
+        }
         return agents.map { agent in
             AgentInfo(
                 id: agent.id.uuidString,
@@ -163,22 +170,41 @@ actor MCPService: MCPServiceProtocol {
 
     // MARK: - Message Operations
 
-    func sendMessage(from: String, to: String, content: String) async -> Bool {
+    /// Returns nil on success, or an error message string on failure
+    func sendMessage(from: String, to: String, content: String) async -> String? {
         // Verify sender exists and is registered
         guard let sender = await findAgent(byNameOrId: from) else {
             logger.warning("[skwad] Sender not found: \(from)")
-            return false
+            return "Sender not found"
         }
 
         guard sender.isRegistered else {
             logger.warning("[skwad] Sender not registered: \(from)")
-            return false
+            return "Sender not registered"
         }
 
         // Find recipient - must be in same workspace as sender
         guard let recipient = await findAgentInSameWorkspace(callerAgentId: sender.id, identifier: to) else {
             logger.warning("[skwad] Recipient not found in same workspace: \(to)")
-            return false
+            return "Recipient not found"
+        }
+
+        // Cannot send messages to shell agents
+        if recipient.isShell {
+            logger.warning("[skwad] Cannot send message to shell agent: \(to)")
+            return "Cannot send messages to shell agents"
+        }
+
+        // Only the owner can send messages to a companion agent
+        if recipient.isCompanion && recipient.createdBy != sender.id {
+            logger.warning("[skwad] Non-owner tried to message companion agent: \(to)")
+            return "Only the owner can send messages to a companion agent"
+        }
+
+        // Companions can only send messages to their owner
+        if sender.isCompanion && recipient.id != sender.createdBy {
+            logger.warning("[skwad] Companion tried to message non-owner: \(to)")
+            return "Companion agents can only send messages to their owner"
         }
 
         // Create and store message
@@ -194,7 +220,7 @@ actor MCPService: MCPServiceProtocol {
             await notifyAgentOfMessage(recipient, messageId: message.id)
         }
 
-        return true
+        return nil
     }
 
     private func notifyAgentOfMessage(_ agent: Agent, messageId: UUID) async {
@@ -237,7 +263,9 @@ actor MCPService: MCPServiceProtocol {
         var count = 0
         var recipients: [(Agent, UUID)] = []
 
-        for agent in agents where agent.id != sender.id && agent.isRegistered {
+        for agent in agents where agent.id != sender.id && agent.isRegistered && !agent.isShell
+            && (!agent.isCompanion || agent.createdBy == sender.id)
+            && (!sender.isCompanion || agent.id == sender.createdBy) {
             let message = MCPMessage(
                 from: sender.id.uuidString,
                 to: agent.id.uuidString,

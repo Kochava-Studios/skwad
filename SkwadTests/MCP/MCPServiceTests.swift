@@ -103,13 +103,13 @@ final class MCPServiceTests: XCTestCase {
         )
         await service.setAgentDataProvider(provider)
 
-        let result = await service.sendMessage(
+        let error = await service.sendMessage(
             from: sender.id.uuidString,
             to: recipient.id.uuidString,
             content: "Hello"
         )
 
-        XCTAssertFalse(result)
+        XCTAssertNotNil(error)
     }
 
     func testValidatesRecipientExistsInSameWorkspace() async {
@@ -130,13 +130,13 @@ final class MCPServiceTests: XCTestCase {
         )
         await service.setAgentDataProvider(provider)
 
-        let result = await service.sendMessage(
+        let error = await service.sendMessage(
             from: sender.id.uuidString,
             to: recipient.id.uuidString,
             content: "Hello"
         )
 
-        XCTAssertFalse(result)
+        XCTAssertNotNil(error)
     }
 
     func testSucceedsWithValidSenderAndRecipient() async {
@@ -154,13 +154,275 @@ final class MCPServiceTests: XCTestCase {
         )
         await service.setAgentDataProvider(provider)
 
-        let result = await service.sendMessage(
+        let error = await service.sendMessage(
             from: sender.id.uuidString,
             to: recipient.id.uuidString,
             content: "Hello"
         )
 
-        XCTAssertTrue(result)
+        XCTAssertNil(error)
+    }
+
+    // MARK: - Shell Agent Restrictions
+
+    func testListAgentsExcludesShellAgents() async {
+        let service = MCPService.shared
+
+        var agent1 = Agent(name: "Agent1", folder: "/path/1")
+        agent1.isRegistered = true
+        var shellAgent = Agent(name: "Shell1", folder: "/path/2", agentType: "shell", shellCommand: "bash")
+        shellAgent.isRegistered = true
+
+        let workspace = Workspace(name: "Test", agentIds: [agent1.id, shellAgent.id])
+        let provider = MockAgentDataProvider(
+            agents: [agent1, shellAgent],
+            workspaces: [workspace]
+        )
+        await service.setAgentDataProvider(provider)
+
+        let agents = await service.listAgents(callerAgentId: agent1.id.uuidString)
+
+        XCTAssertEqual(agents.count, 1)
+        XCTAssertEqual(agents[0].name, "Agent1")
+    }
+
+    func testSendMessageToShellAgentFails() async {
+        let service = MCPService.shared
+
+        var sender = Agent(name: "Sender", folder: "/path/sender")
+        sender.isRegistered = true
+        var shellAgent = Agent(name: "Shell1", folder: "/path/shell", agentType: "shell", shellCommand: "bash")
+        shellAgent.isRegistered = true
+
+        let workspace = Workspace(name: "Test", agentIds: [sender.id, shellAgent.id])
+        let provider = MockAgentDataProvider(
+            agents: [sender, shellAgent],
+            workspaces: [workspace]
+        )
+        await service.setAgentDataProvider(provider)
+
+        let error = await service.sendMessage(
+            from: sender.id.uuidString,
+            to: shellAgent.id.uuidString,
+            content: "Hello"
+        )
+
+        XCTAssertNotNil(error)
+        XCTAssertTrue(error!.contains("shell"))
+    }
+
+    func testBroadcastExcludesShellAgents() async {
+        let service = MCPService.shared
+
+        var sender = Agent(name: "Sender", folder: "/path/sender")
+        sender.isRegistered = true
+        var normalAgent = Agent(name: "Normal", folder: "/path/normal")
+        normalAgent.isRegistered = true
+        var shellAgent = Agent(name: "Shell1", folder: "/path/shell", agentType: "shell", shellCommand: "bash")
+        shellAgent.isRegistered = true
+
+        let workspace = Workspace(name: "Test", agentIds: [sender.id, normalAgent.id, shellAgent.id])
+        let provider = MockAgentDataProvider(
+            agents: [sender, normalAgent, shellAgent],
+            workspaces: [workspace]
+        )
+        await service.setAgentDataProvider(provider)
+
+        let count = await service.broadcastMessage(
+            from: sender.id.uuidString,
+            content: "Broadcast"
+        )
+
+        XCTAssertEqual(count, 1)  // only normalAgent, shell excluded
+    }
+
+    // MARK: - Companion Agent Restrictions
+
+    func testListAgentsExcludesOtherOwnersCompanions() async {
+        let service = MCPService.shared
+
+        var owner = Agent(name: "Owner", folder: "/path/owner")
+        owner.isRegistered = true
+        var other = Agent(name: "Other", folder: "/path/other")
+        other.isRegistered = true
+        var companion = Agent(name: "Companion", folder: "/path/companion", createdBy: owner.id, isCompanion: true)
+        companion.isRegistered = true
+
+        let workspace = Workspace(name: "Test", agentIds: [owner.id, other.id, companion.id])
+        let provider = MockAgentDataProvider(
+            agents: [owner, other, companion],
+            workspaces: [workspace]
+        )
+        await service.setAgentDataProvider(provider)
+
+        // Owner should see companion
+        let ownerAgents = await service.listAgents(callerAgentId: owner.id.uuidString)
+        XCTAssertTrue(ownerAgents.contains { $0.name == "Companion" })
+
+        // Other agent should NOT see companion
+        let otherAgents = await service.listAgents(callerAgentId: other.id.uuidString)
+        XCTAssertFalse(otherAgents.contains { $0.name == "Companion" })
+    }
+
+    func testSendMessageToCompanionByNonOwnerFails() async {
+        let service = MCPService.shared
+
+        var owner = Agent(name: "Owner", folder: "/path/owner")
+        owner.isRegistered = true
+        var other = Agent(name: "Other", folder: "/path/other")
+        other.isRegistered = true
+        var companion = Agent(name: "Companion", folder: "/path/companion", createdBy: owner.id, isCompanion: true)
+        companion.isRegistered = true
+
+        let workspace = Workspace(name: "Test", agentIds: [owner.id, other.id, companion.id])
+        let provider = MockAgentDataProvider(
+            agents: [owner, other, companion],
+            workspaces: [workspace]
+        )
+        await service.setAgentDataProvider(provider)
+
+        let error = await service.sendMessage(
+            from: other.id.uuidString,
+            to: companion.id.uuidString,
+            content: "Hello"
+        )
+
+        XCTAssertNotNil(error)
+        XCTAssertTrue(error!.contains("owner"))
+    }
+
+    func testSendMessageToCompanionByOwnerSucceeds() async {
+        let service = MCPService.shared
+
+        var owner = Agent(name: "Owner", folder: "/path/owner")
+        owner.isRegistered = true
+        var companion = Agent(name: "Companion", folder: "/path/companion", createdBy: owner.id, isCompanion: true)
+        companion.isRegistered = true
+
+        let workspace = Workspace(name: "Test", agentIds: [owner.id, companion.id])
+        let provider = MockAgentDataProvider(
+            agents: [owner, companion],
+            workspaces: [workspace]
+        )
+        await service.setAgentDataProvider(provider)
+
+        let error = await service.sendMessage(
+            from: owner.id.uuidString,
+            to: companion.id.uuidString,
+            content: "Hello"
+        )
+
+        XCTAssertNil(error)
+    }
+
+    func testCompanionCanOnlyMessageOwner() async {
+        let service = MCPService.shared
+
+        var owner = Agent(name: "Owner", folder: "/path/owner")
+        owner.isRegistered = true
+        var other = Agent(name: "Other", folder: "/path/other")
+        other.isRegistered = true
+        var companion = Agent(name: "Companion", folder: "/path/companion", createdBy: owner.id, isCompanion: true)
+        companion.isRegistered = true
+
+        let workspace = Workspace(name: "Test", agentIds: [owner.id, other.id, companion.id])
+        let provider = MockAgentDataProvider(
+            agents: [owner, other, companion],
+            workspaces: [workspace]
+        )
+        await service.setAgentDataProvider(provider)
+
+        // Companion to owner: OK
+        let errorToOwner = await service.sendMessage(
+            from: companion.id.uuidString,
+            to: owner.id.uuidString,
+            content: "Hello owner"
+        )
+        XCTAssertNil(errorToOwner)
+
+        // Companion to other: FAIL
+        let errorToOther = await service.sendMessage(
+            from: companion.id.uuidString,
+            to: other.id.uuidString,
+            content: "Hello other"
+        )
+        XCTAssertNotNil(errorToOther)
+        XCTAssertTrue(errorToOther!.contains("owner"))
+    }
+
+    func testBroadcastExcludesOtherOwnersCompanions() async {
+        let service = MCPService.shared
+
+        var sender = Agent(name: "Sender", folder: "/path/sender")
+        sender.isRegistered = true
+        var other = Agent(name: "Other", folder: "/path/other")
+        other.isRegistered = true
+        var otherCompanion = Agent(name: "OtherCompanion", folder: "/path/comp", createdBy: other.id, isCompanion: true)
+        otherCompanion.isRegistered = true
+
+        let workspace = Workspace(name: "Test", agentIds: [sender.id, other.id, otherCompanion.id])
+        let provider = MockAgentDataProvider(
+            agents: [sender, other, otherCompanion],
+            workspaces: [workspace]
+        )
+        await service.setAgentDataProvider(provider)
+
+        let count = await service.broadcastMessage(
+            from: sender.id.uuidString,
+            content: "Broadcast"
+        )
+
+        XCTAssertEqual(count, 1)  // only "Other", not their companion
+    }
+
+    func testBroadcastFromOwnerIncludesOwnCompanions() async {
+        let service = MCPService.shared
+
+        var owner = Agent(name: "Owner", folder: "/path/owner")
+        owner.isRegistered = true
+        var other = Agent(name: "Other", folder: "/path/other")
+        other.isRegistered = true
+        var ownCompanion = Agent(name: "OwnCompanion", folder: "/path/comp", createdBy: owner.id, isCompanion: true)
+        ownCompanion.isRegistered = true
+
+        let workspace = Workspace(name: "Test", agentIds: [owner.id, other.id, ownCompanion.id])
+        let provider = MockAgentDataProvider(
+            agents: [owner, other, ownCompanion],
+            workspaces: [workspace]
+        )
+        await service.setAgentDataProvider(provider)
+
+        let count = await service.broadcastMessage(
+            from: owner.id.uuidString,
+            content: "Broadcast"
+        )
+
+        XCTAssertEqual(count, 2)  // "Other" + own companion
+    }
+
+    func testBroadcastFromCompanionOnlyReachesOwner() async {
+        let service = MCPService.shared
+
+        var owner = Agent(name: "Owner", folder: "/path/owner")
+        owner.isRegistered = true
+        var other = Agent(name: "Other", folder: "/path/other")
+        other.isRegistered = true
+        var companion = Agent(name: "Companion", folder: "/path/comp", createdBy: owner.id, isCompanion: true)
+        companion.isRegistered = true
+
+        let workspace = Workspace(name: "Test", agentIds: [owner.id, other.id, companion.id])
+        let provider = MockAgentDataProvider(
+            agents: [owner, other, companion],
+            workspaces: [workspace]
+        )
+        await service.setAgentDataProvider(provider)
+
+        let count = await service.broadcastMessage(
+            from: companion.id.uuidString,
+            content: "Broadcast from companion"
+        )
+
+        XCTAssertEqual(count, 1)  // only owner
     }
 
     // MARK: - Broadcast Message
