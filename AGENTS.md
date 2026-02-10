@@ -164,6 +164,16 @@ Currently no automated tests. Manual testing checklist:
 9. Quit and relaunch, verify restore works
 10. Drag and drop to reorder agents
 
+## Version Bump
+
+To bump the marketing version, use the Makefile target:
+
+```bash
+make set-version VERSION=x.y.z
+```
+
+This updates `MARKETING_VERSION` in all build configurations in the Xcode project file.
+
 ## Known Limitations
 
 - Terminal colors set by claude/shell may override app colors (Ghostty respects config)
