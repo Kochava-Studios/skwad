@@ -315,8 +315,9 @@ final class AgentManager {
     /// Enqueue a shell agent's command for staggered execution
     private func enqueueShellStart(_ controller: TerminalSessionController, isCompanion: Bool) {
         // Show a waiting banner in the terminal
+        // Prefix with space to prevent shell history pollution
         let banner = [
-            "clear",
+            " clear",
             "printf '\\n'",
             "printf '          \\e[2m╭─────────────────────────────╮\\e[0m\\n'",
             "printf '          \\e[2m│                             │\\e[0m\\n'",
