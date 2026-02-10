@@ -3,7 +3,7 @@
 All notable changes to this project will be documented in this file.
 
 
-## [1.4.2] - WIP
+## [1.4.2] - 2026-02-10
 
 ### Added
 - Option to relocate companions when change directory of main agent
