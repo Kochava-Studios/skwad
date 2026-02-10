@@ -47,6 +47,9 @@ final class AgentManager {
     // Controllers for each agent (keyed by agent ID)
     private var controllers: [UUID: TerminalSessionController] = [:]
 
+    // Serial queue for git stats refresh to avoid thundering herd at startup
+    private let gitStatsQueue = DispatchQueue(label: "AgentManager.gitStats", qos: .utility)
+
     init() {
         guard ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] != "1" else { return }
         if settings.restoreLayoutOnLaunch {
@@ -844,11 +847,11 @@ final class AgentManager {
         }
 
         let folder = agent.folder
-        Task.detached(priority: .userInitiated) {
+        gitStatsQueue.async { [weak self] in
             let repo = GitRepository(path: folder)
             let stats = repo.combinedDiffStats()
 
-            await MainActor.run { [weak self] in
+            DispatchQueue.main.async {
                 guard let self,
                       let index = self.agents.firstIndex(where: { $0.id == agentId }) else { return }
                 self.agents[index].gitStats = stats

@@ -70,13 +70,18 @@ class GitRepository {
             insertions += s.insertions; deletions += s.deletions; files += s.files
         }
 
-        // Untracked files: count via status (already one call)
+        // Untracked files: count lines directly instead of spawning git per file
         let untrackedFiles = status().untrackedFiles
         for file in untrackedFiles {
-            let r = cli.run(["diff", "--numstat", "--no-index", "--", "/dev/null", file.path], in: path)
-            if case .success(let output) = r {
-                let s = GitOutputParser.parseNumstat(output)
-                insertions += s.insertions; deletions += s.deletions; files += s.files
+            let fullPath = (path as NSString).appendingPathComponent(file.path)
+            if let data = FileManager.default.contents(atPath: fullPath),
+               let content = String(data: data, encoding: .utf8) {
+                let lineCount = content.isEmpty ? 0 : content.components(separatedBy: "\n").count
+                insertions += lineCount
+                files += 1
+            } else {
+                // Binary or unreadable file — just count it
+                files += 1
             }
         }
 
