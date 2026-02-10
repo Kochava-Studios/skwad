@@ -12,7 +12,7 @@ All notable changes to this project will be documented in this file.
 - N/A
 
 ### Fixed
-- Startup time fix
+- Startup time fix (especially when using shell agents/companions)
 
 ### Removed
 - N/A

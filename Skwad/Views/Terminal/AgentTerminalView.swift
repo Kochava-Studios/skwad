@@ -168,7 +168,12 @@ struct AgentFullHeader: View {
             }
             .background(WindowDragView(onTap: onPaneTap))
 
-            if !agent.isShell {
+            if agent.isShell && agent.isPendingStart {
+                Text("Starting...")
+                    .font(.body)
+                    .foregroundColor(Theme.secondaryText)
+                    .opacity(isUnfocusedInSplit ? Theme.unfocusedHeaderOpacity : 1.0)
+            } else if !agent.isShell {
                 VStack(alignment: .trailing, spacing: 2) {
                     HStack(spacing: 8) {
                         Circle()

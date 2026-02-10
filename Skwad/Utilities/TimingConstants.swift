@@ -25,7 +25,16 @@ enum TimingConstants {
     static let registrationFirstIdleDelayLong: TimeInterval = 5.0
     
     /// Subsequent idle delay before injecting MCP registration prompt
-    static let registrationSubsequentIdleDelay: TimeInterval = 1.5
+    static let registrationSubsequentIdleDelay: TimeInterval = 0.5
+
+    // MARK: - Shell Startup Queue
+
+    /// Initial delay before processing the deferred shell startup queue
+    /// Gives non-shell agents time to initialize without contention
+    static let shellStartInitialDelay: TimeInterval = 5.0
+
+    /// Delay between launching each queued shell agent
+    static let shellStartStaggerDelay: TimeInterval = 1.0
 
     // MARK: - Git Operations
 

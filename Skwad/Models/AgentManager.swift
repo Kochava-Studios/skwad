@@ -271,6 +271,14 @@ final class AgentManager {
                 self?.updateTitle(for: agent.id, title: title)
             }
         )
+
+        // Restored shell agents defer their command to avoid startup congestion
+        if agent.isPendingStart {
+            controller.onDeferredStart = { [weak self] ctrl in
+                self?.enqueueShellStart(ctrl, isCompanion: agent.isCompanion)
+            }
+        }
+
         controllers[agent.id] = controller
         return controller
     }
@@ -295,6 +303,67 @@ final class AgentManager {
         controllers.removeAll()
         terminals.removeAll()
         print("[skwad] All agents terminated")
+    }
+
+    // MARK: - Deferred Shell Startup
+
+    /// Pending shell controllers waiting to be started, ordered by priority
+    /// (main shells first, companion shells second)
+    private var shellStartQueue: [TerminalSessionController] = []
+    private var shellStartTask: Task<Void, Never>?
+
+    /// Enqueue a shell agent's command for staggered execution
+    private func enqueueShellStart(_ controller: TerminalSessionController, isCompanion: Bool) {
+        // Show a waiting banner in the terminal
+        let banner = [
+            "clear",
+            "printf '\\n'",
+            "printf '          \\e[2m╭─────────────────────────────╮\\e[0m\\n'",
+            "printf '          \\e[2m│                             │\\e[0m\\n'",
+            "printf '          \\e[2m│     \\e[0m\\e[1;97m⏳ Starting soon...\\e[0m\\e[2m     │\\e[0m\\n'",
+            "printf '          \\e[2m│                             │\\e[0m\\n'",
+            "printf '          \\e[2m╰─────────────────────────────╯\\e[0m\\n'",
+            "printf '\\n'",
+            "printf '\\n'",
+            "printf '\\n'"
+        ].joined(separator: " && ")
+        controller.sendCommand(banner)
+
+        if isCompanion {
+            shellStartQueue.append(controller)
+        } else {
+            // Main shells go before companions
+            let firstCompanionIndex = shellStartQueue.firstIndex { ctrl in
+                agents.first { $0.id == ctrl.agentId }?.isCompanion == true
+            } ?? shellStartQueue.endIndex
+            shellStartQueue.insert(controller, at: firstCompanionIndex)
+        }
+        drainShellStartQueue()
+    }
+
+    /// Process the queue: wait for initial delay, then send one command at a time with stagger
+    private func drainShellStartQueue() {
+        guard shellStartTask == nil, !shellStartQueue.isEmpty else { return }
+        shellStartTask = Task { [weak self] in
+            // Initial delay to let non-shell agents settle
+            try? await Task.sleep(for: .seconds(TimingConstants.shellStartInitialDelay))
+
+            while let self, !self.shellStartQueue.isEmpty {
+                let controller = self.shellStartQueue.removeFirst()
+
+                // Clear pending state
+                if let index = self.agents.firstIndex(where: { $0.id == controller.agentId }) {
+                    self.agents[index].isPendingStart = false
+                }
+
+                let command = controller.buildDeferredCommand()
+                if !command.isEmpty {
+                    controller.sendCommand(command)
+                }
+                try? await Task.sleep(for: .seconds(TimingConstants.shellStartStaggerDelay))
+            }
+            self?.shellStartTask = nil
+        }
     }
 
     // MARK: - Terminal Management (for forceRefresh on resize)

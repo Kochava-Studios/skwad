@@ -35,6 +35,7 @@ struct Agent: Identifiable, Codable, Hashable {
     // Runtime state (not persisted)
     var status: AgentStatus = .idle
     var isRegistered: Bool = false  // Set true when agent calls register-agent with MCP
+    var isPendingStart: Bool = false  // Shell agents waiting in the startup queue
     var terminalTitle: String = ""  // Current terminal title
     var restartToken: UUID = UUID()  // Changes on restart to force terminal recreation
     var gitStats: GitLineStats? = nil

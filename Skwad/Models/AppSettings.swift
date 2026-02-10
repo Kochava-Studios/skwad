@@ -234,7 +234,12 @@ class AppSettings: ObservableObject {
     }
 
     func loadSavedAgents() -> [Agent] {
-        savedAgents.map { Agent(id: $0.id, name: $0.name, avatar: $0.avatar, folder: $0.folder, agentType: $0.agentType, createdBy: $0.createdBy, isCompanion: $0.isCompanion, shellCommand: $0.shellCommand) }
+        savedAgents.map {
+            var agent = Agent(id: $0.id, name: $0.name, avatar: $0.avatar, folder: $0.folder, agentType: $0.agentType, createdBy: $0.createdBy, isCompanion: $0.isCompanion, shellCommand: $0.shellCommand)
+            // Shell agents restored from persistence get deferred startup
+            agent.isPendingStart = agent.isShell
+            return agent
+        }
     }
 
     // MARK: - Workspaces

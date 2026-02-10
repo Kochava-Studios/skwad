@@ -50,6 +50,9 @@ class TerminalSessionController: ObservableObject {
     private let onStatusChange: (AgentStatus) -> Void
     private let onTitleChange: ((String) -> Void)?
 
+    /// Called when a deferred-start agent's terminal is ready and needs its command queued
+    var onDeferredStart: ((TerminalSessionController) -> Void)?
+
     /// Attached terminal adapter (strong reference - controller owns the adapter)
     private var adapter: TerminalAdapter?
 
@@ -151,35 +154,56 @@ class TerminalSessionController: ObservableObject {
         TerminalCommandBuilder.supportsInlineRegistration(agentType: agentType)
     }
 
+    /// Whether this agent's command should be deferred (not sent via initial_input)
+    /// True when onDeferredStart is set by AgentManager for restored shell agents
+    var defersCommand: Bool {
+        onDeferredStart != nil
+    }
+
     /// Build the initialization command for this terminal session
     /// Used by views that need the command at creation time (Ghostty)
     func buildInitializationCommand() -> String {
-        // Pass agentId for inline registration if MCP is enabled
-        let agentIdForRegistration = settings.mcpServerEnabled ? agentId : nil
+        // Deferred agents will get their command later via the startup queue
+        if defersCommand { return "" }
+
+        let command = buildCommand(withRegistration: true)
+        Self.logger.info("[skwad][\(String(self.agentId.uuidString.prefix(8)).lowercased())] Command: \(command)")
+        return command
+    }
+
+    /// Build the deferred command for shell agents (called later by the startup queue)
+    func buildDeferredCommand() -> String {
+        buildCommand(withRegistration: false)
+    }
+
+    /// Core command builder — shared by both immediate and deferred paths
+    private func buildCommand(withRegistration: Bool) -> String {
+        let agentIdForRegistration = (withRegistration && settings.mcpServerEnabled) ? agentId : nil
         let agentCommand = TerminalCommandBuilder.buildAgentCommand(
             for: agentType,
             settings: settings,
             agentId: agentIdForRegistration,
             shellCommand: shellCommand
         )
-        let command = TerminalCommandBuilder.buildInitializationCommand(
+        return TerminalCommandBuilder.buildInitializationCommand(
             folder: folder,
             agentCommand: agentCommand
         )
-        Self.logger.info("[skwad][\(String(self.agentId.uuidString.prefix(8)).lowercased())] Command: \(command)")
-        return command
     }
 
     /// Start the terminal session
     /// Behavior depends on adapter's commandMode:
-    /// - .atCreation: command already sent, just schedule registration
+    /// - .atCreation: command already sent (unless deferred), just schedule registration
     /// - .afterReady: send command then schedule registration
     private func start() {
         guard !isDisposed, !didStart, let adapter = adapter else { return }
         didStart = true
 
-        // Send command if adapter expects it after ready
-        if adapter.commandMode == .afterReady {
+        if defersCommand {
+            // Shell agents: notify manager to queue our command
+            onDeferredStart?(self)
+        } else if adapter.commandMode == .afterReady {
+            // SwiftTerm: send command after ready
             let command = buildInitializationCommand()
             sendCommand(command)
         }

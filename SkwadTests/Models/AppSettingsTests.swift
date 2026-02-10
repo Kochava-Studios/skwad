@@ -386,4 +386,58 @@ final class AppSettingsTests: XCTestCase {
         // Restore
         settings.recentAgents = original
     }
+
+    // MARK: - Load Saved Agents (isPendingStart)
+
+    @MainActor
+    func testLoadSavedAgentsSetsIsPendingStartForShell() {
+        let settings = AppSettings.shared
+        let originalSaved = settings.savedAgents
+
+        let shell = Agent(name: "MyShell", avatar: "🐚", folder: "/tmp/shell", agentType: "shell", shellCommand: "htop")
+        settings.saveAgents([shell])
+
+        let loaded = settings.loadSavedAgents()
+        XCTAssertEqual(loaded.count, 1)
+        XCTAssertTrue(loaded[0].isPendingStart)
+
+        // Restore
+        settings.savedAgents = originalSaved
+    }
+
+    @MainActor
+    func testLoadSavedAgentsDoesNotSetIsPendingStartForNonShell() {
+        let settings = AppSettings.shared
+        let originalSaved = settings.savedAgents
+
+        let claude = Agent(name: "MyClaude", avatar: "🤖", folder: "/tmp/claude", agentType: "claude")
+        settings.saveAgents([claude])
+
+        let loaded = settings.loadSavedAgents()
+        XCTAssertEqual(loaded.count, 1)
+        XCTAssertFalse(loaded[0].isPendingStart)
+
+        // Restore
+        settings.savedAgents = originalSaved
+    }
+
+    @MainActor
+    func testLoadSavedAgentsMixedTypes() {
+        let settings = AppSettings.shared
+        let originalSaved = settings.savedAgents
+
+        let claude = Agent(name: "Claude", avatar: "🤖", folder: "/tmp/claude", agentType: "claude")
+        let shell = Agent(name: "Shell", avatar: "🐚", folder: "/tmp/shell", agentType: "shell", shellCommand: "top")
+        let codex = Agent(name: "Codex", avatar: "📦", folder: "/tmp/codex", agentType: "codex")
+        settings.saveAgents([claude, shell, codex])
+
+        let loaded = settings.loadSavedAgents()
+        XCTAssertEqual(loaded.count, 3)
+        XCTAssertFalse(loaded[0].isPendingStart)  // claude
+        XCTAssertTrue(loaded[1].isPendingStart)    // shell
+        XCTAssertFalse(loaded[2].isPendingStart)   // codex
+
+        // Restore
+        settings.savedAgents = originalSaved
+    }
 }

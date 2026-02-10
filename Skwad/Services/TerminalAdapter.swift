@@ -91,11 +91,18 @@ class GhosttyTerminalAdapter: TerminalAdapter {
     /// Called by controller after all callbacks are set
     func activate() {
         activateCallbacks(terminal: terminal, callbacksWired: &callbacksWired) { [weak self] terminal in
-            terminal.onActivity = { [weak self] in
-                self?.onActivity?()
+            // Only wire activity callbacks if controller set them — leaving nil
+            // prevents Ghostty from dispatching thousands of main-thread no-ops
+            // during high-output shell startup
+            if self?.onActivity != nil {
+                terminal.onActivity = { [weak self] in
+                    self?.onActivity?()
+                }
             }
-            terminal.onUserInput = { [weak self] in
-                self?.onUserInput?()
+            if self?.onUserInput != nil {
+                terminal.onUserInput = { [weak self] in
+                    self?.onUserInput?()
+                }
             }
             terminal.onReady = { [weak self] in
                 self?.onReady?()

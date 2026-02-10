@@ -101,4 +101,38 @@ final class AgentTests: XCTestCase {
         XCTAssertFalse(decoded.isCompanion)
         XCTAssertNil(decoded.createdBy)
     }
+
+    // MARK: - Shell Agent
+
+    func testIsShellForShellAgent() {
+        let agent = Agent(name: "Shell", folder: "/tmp", agentType: "shell")
+        XCTAssertTrue(agent.isShell)
+    }
+
+    func testIsShellFalseForClaudeAgent() {
+        let agent = Agent(name: "Claude", folder: "/tmp", agentType: "claude")
+        XCTAssertFalse(agent.isShell)
+    }
+
+    func testTracksActivityFalseForShell() {
+        let agent = Agent(name: "Shell", folder: "/tmp", agentType: "shell")
+        XCTAssertFalse(agent.tracksActivity)
+    }
+
+    func testTracksActivityTrueForNonShell() {
+        let agent = Agent(name: "Claude", folder: "/tmp", agentType: "claude")
+        XCTAssertTrue(agent.tracksActivity)
+    }
+
+    // MARK: - Pending Start
+
+    func testIsPendingStartDefaultsFalse() {
+        let agent = Agent(name: "Test", folder: "/tmp", agentType: "shell")
+        XCTAssertFalse(agent.isPendingStart)
+    }
+
+    func testIsPendingStartDefaultsFalseForFolderInit() {
+        let agent = Agent(folder: "/tmp", agentType: "shell")
+        XCTAssertFalse(agent.isPendingStart)
+    }
 }
