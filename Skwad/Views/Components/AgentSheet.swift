@@ -165,10 +165,7 @@ struct AgentSheet: View {
 
                 // Section 3: Folder/Repository
                 Section {
-                    if isEditing {
-                        // Edit mode: simple folder picker (no worktree creation)
-                        simpleFolderPickerView
-                    } else if hasWorktreeFeatures {
+                    if hasWorktreeFeatures {
                         // Worktree mode: repo + worktree pickers
                         worktreeSelectionView
                     } else {
@@ -389,7 +386,7 @@ struct AgentSheet: View {
     // MARK: - Computed Properties
 
     private var sheetHeight: CGFloat {
-        var height: CGFloat = isEditing ? 340 : (hasWorktreeFeatures ? 420 : 340)
+        var height: CGFloat = hasWorktreeFeatures ? 420 : 340
         let showCompanionToggle = hasCompanions && ((isEditing && folderChanged) || isForking)
         if showCompanionToggle { height += 40 }
         return height
