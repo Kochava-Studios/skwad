@@ -191,6 +191,53 @@ struct AgentManagerTests {
             #expect(manager.agents[0].avatar == "🚀")
         }
 
+        @Test("updateAgent with folder change updates folder")
+        @MainActor
+        func updateAgentWithFolderChange() async {
+            let manager = AgentManagerTests.setupManager(agentCount: 1)
+            let agentId = manager.agents[0].id
+
+            manager.updateAgent(id: agentId, name: "Updated", avatar: "🚀", folder: "/tmp/new-folder")
+
+            #expect(manager.agents[0].folder == "/tmp/new-folder")
+        }
+
+        @Test("updateAgent with relocateCompanions updates matching companions")
+        @MainActor
+        func updateAgentRelocatesCompanions() async {
+            let manager = AgentManagerTests.setupManager(agentCount: 1)
+            let parent = manager.agents[0]
+
+            // Add companions: one with same folder, one with different folder
+            let companion1 = Agent(name: "Comp1", folder: parent.folder, createdBy: parent.id, isCompanion: true)
+            let companion2 = Agent(name: "Comp2", folder: "/tmp/other", createdBy: parent.id, isCompanion: true)
+            manager.agents.append(companion1)
+            manager.agents.append(companion2)
+
+            manager.updateAgent(id: parent.id, name: parent.name, avatar: "🤖", folder: "/tmp/new-folder", relocateCompanions: true)
+
+            #expect(manager.agents[0].folder == "/tmp/new-folder")
+            // companion1 had same folder as parent -> relocated
+            #expect(manager.agents.first(where: { $0.id == companion1.id })?.folder == "/tmp/new-folder")
+            // companion2 had different folder -> unchanged
+            #expect(manager.agents.first(where: { $0.id == companion2.id })?.folder == "/tmp/other")
+        }
+
+        @Test("updateAgent without relocateCompanions leaves companions unchanged")
+        @MainActor
+        func updateAgentDoesNotRelocateCompanions() async {
+            let manager = AgentManagerTests.setupManager(agentCount: 1)
+            let parent = manager.agents[0]
+
+            let companion = Agent(name: "Comp", folder: parent.folder, createdBy: parent.id, isCompanion: true)
+            manager.agents.append(companion)
+
+            manager.updateAgent(id: parent.id, name: parent.name, avatar: "🤖", folder: "/tmp/new-folder", relocateCompanions: false)
+
+            #expect(manager.agents[0].folder == "/tmp/new-folder")
+            #expect(manager.agents.first(where: { $0.id == companion.id })?.folder == parent.folder)
+        }
+
         @Test("duplicateAgent creates copy with suffix")
         @MainActor
         func duplicateAgentCreatesCopy() async {
@@ -202,6 +249,51 @@ struct AgentManagerTests {
             #expect(manager.agents.count == 2)
             #expect(manager.agents[1].name == "\(original.name) (copy)")
             #expect(manager.agents[1].folder == original.folder)
+        }
+
+        @Test("duplicateCompanions copies companions to new agent")
+        @MainActor
+        func duplicateCompanionsCopies() async {
+            let manager = AgentManagerTests.setupManager(agentCount: 1)
+            let source = manager.agents[0]
+
+            // Add companions to source
+            let comp1 = Agent(name: "Comp1", avatar: "🔧", folder: source.folder, agentType: "shell", createdBy: source.id, isCompanion: true)
+            let comp2 = Agent(name: "Comp2", avatar: "🔨", folder: source.folder, agentType: "claude", createdBy: source.id, isCompanion: true)
+            manager.agents.append(comp1)
+            manager.agents.append(comp2)
+
+            // Create a new "forked" agent
+            let newAgentId = manager.addAgent(folder: "/tmp/forked", name: "Forked")!
+
+            // Duplicate companions from source to new agent with new folder
+            manager.duplicateCompanions(from: source.id, to: newAgentId, newFolder: "/tmp/forked")
+
+            let newCompanions = manager.companions(of: newAgentId)
+            #expect(newCompanions.count == 2)
+            #expect(newCompanions.allSatisfy { $0.folder == "/tmp/forked" })
+            #expect(newCompanions.allSatisfy { $0.isCompanion })
+            #expect(newCompanions.allSatisfy { $0.createdBy == newAgentId })
+            // Original companions unchanged
+            #expect(manager.companions(of: source.id).count == 2)
+        }
+
+        @Test("duplicateCompanions with nil folder keeps original folders")
+        @MainActor
+        func duplicateCompanionsKeepsOriginalFolders() async {
+            let manager = AgentManagerTests.setupManager(agentCount: 1)
+            let source = manager.agents[0]
+
+            let comp = Agent(name: "Comp", folder: source.folder, createdBy: source.id, isCompanion: true)
+            manager.agents.append(comp)
+
+            let newAgentId = manager.addAgent(folder: source.folder, name: "Forked")!
+
+            manager.duplicateCompanions(from: source.id, to: newAgentId, newFolder: nil)
+
+            let newCompanions = manager.companions(of: newAgentId)
+            #expect(newCompanions.count == 1)
+            #expect(newCompanions[0].folder == source.folder)
         }
 
         @Test("moveAgent reorders in workspace")

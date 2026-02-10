@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+
+## [1.4.2] - WIP
+
+### Added
+- Option to relocate companions when change directory of main agent
+
+### Changed
+- N/A
+
+### Fixed
+- Startup time fix
+
+### Removed
+- N/A
+
+
 ## [1.4.1] - 2026-02-08
 
 ### Added

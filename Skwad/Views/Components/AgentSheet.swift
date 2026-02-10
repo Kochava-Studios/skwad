@@ -47,12 +47,24 @@ struct AgentSheet: View {
     @State private var selectedImage: NSImage?
     @State private var showingCropper = false
 
+    // Companion options
+    @State private var relocateCompanions = true
+    @State private var includeCompanions = false
+
     // Git data
     @State private var recentRepoInfos: [RepoInfo] = []
     @State private var shouldApplyPrefillWorktree = false
 
     private var isEditing: Bool { editingAgent != nil }
+    private var isForking: Bool { !isEditing && prefill != nil && prefill?.isCompanion != true }
     private var hasWorktreeFeatures: Bool { settings.hasValidSourceBaseFolder }
+    private var folderChanged: Bool { isEditing && selectedFolder != editingAgent?.folder }
+    /// The source agent ID: the editing agent or the fork source
+    private var sourceAgentId: UUID? { editingAgent?.id ?? prefill?.insertAfterId }
+    private var hasCompanions: Bool {
+        guard let id = sourceAgentId else { return false }
+        return !agentManager.companions(of: id).isEmpty
+    }
 
     private let avatarOptions = [
         // Agent icons (from our available agents)
@@ -153,18 +165,30 @@ struct AgentSheet: View {
 
                 // Section 3: Folder/Repository
                 Section {
-                    if hasWorktreeFeatures {
+                    if isEditing {
+                        // Edit mode: simple folder picker (no worktree creation)
+                        simpleFolderPickerView
+                    } else if hasWorktreeFeatures {
                         // Worktree mode: repo + worktree pickers
                         worktreeSelectionView
                     } else {
                         // Fallback: simple folder picker with hint
                         simpleFolderPickerView
                     }
+
+                    if hasCompanions && isEditing && folderChanged {
+                        Toggle("Relocate companions", isOn: $relocateCompanions)
+                            .help("Update companion agents that share this folder and restart them")
+                    }
+                    if hasCompanions && isForking {
+                        Toggle("Include companions", isOn: $includeCompanions)
+                            .help("Create copies of companion agents for the forked agent")
+                    }
                 }
             }
             .formStyle(.grouped)
         }
-        .frame(width: 480, height: hasWorktreeFeatures ? 420 : 340)
+        .frame(width: 480, height: sheetHeight)
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
                 Button("Cancel") {
@@ -349,18 +373,27 @@ struct AgentSheet: View {
             }
         }
 
-        // Hint about worktree features
-        HStack(spacing: 6) {
-            Image(systemName: "info.circle")
-                .foregroundColor(.secondary)
-            Text("Configure source folder in Settings → General to enable git worktree features")
-                .font(.caption)
-                .foregroundColor(.secondary)
+        // Hint about worktree features (only for new agents)
+        if !isEditing {
+            HStack(spacing: 6) {
+                Image(systemName: "info.circle")
+                    .foregroundColor(.secondary)
+                Text("Configure source folder in Settings → General to enable git worktree features")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+            .padding(.vertical, 4)
         }
-        .padding(.vertical, 4)
     }
 
     // MARK: - Computed Properties
+
+    private var sheetHeight: CGFloat {
+        var height: CGFloat = isEditing ? 340 : (hasWorktreeFeatures ? 420 : 340)
+        let showCompanionToggle = hasCompanions && ((isEditing && folderChanged) || isForking)
+        if showCompanionToggle { height += 40 }
+        return height
+    }
 
     private var shortenedPath: String {
         PathUtils.shortened(selectedFolder)
@@ -538,6 +571,12 @@ struct AgentSheet: View {
             agentManager.enterSplitWithNewAgent(newAgentId: newAgentId, creatorId: createdBy)
         }
 
+        // Duplicate companions when forking with "Include companions" checked
+        if let newAgentId, let sourceId = prefill?.insertAfterId, includeCompanions && isForking {
+            let newFolder = selectedFolder != prefill?.folder ? selectedFolder : nil
+            agentManager.duplicateCompanions(from: sourceId, to: newAgentId, newFolder: newFolder)
+        }
+
         dismiss()
     }
 
@@ -548,7 +587,8 @@ struct AgentSheet: View {
             id: agent.id,
             name: name.isEmpty ? agent.folder.split(separator: "/").last.map(String.init) ?? "Agent" : name,
             avatar: avatar,
-            folder: folderChanged ? selectedFolder : nil
+            folder: folderChanged ? selectedFolder : nil,
+            relocateCompanions: relocateCompanions
         )
         dismiss()
     }

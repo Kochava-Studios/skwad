@@ -532,6 +532,24 @@ final class AgentManager {
         enterSplitWithNewAgent(newAgentId: newId, creatorId: agent.id)
     }
 
+    /// Duplicate companions of sourceAgent onto newAgent, optionally at a new folder
+    func duplicateCompanions(from sourceAgentId: UUID, to newAgentId: UUID, newFolder: String?) {
+        for companion in companions(of: sourceAgentId) {
+            let folder = (newFolder != nil && companion.folder == agents.first(where: { $0.id == sourceAgentId })?.folder)
+                ? newFolder! : companion.folder
+            addAgent(
+                folder: folder,
+                name: companion.name,
+                avatar: companion.avatar,
+                agentType: companion.agentType,
+                createdBy: newAgentId,
+                isCompanion: true,
+                insertAfterId: newAgentId,
+                shellCommand: companion.shellCommand
+            )
+        }
+    }
+
     func restartAgent(_ agent: Agent) {
         // Keep same ID but regenerate restart token to force terminal recreation
         guard let index = agents.firstIndex(where: { $0.id == agent.id }) else { return }
@@ -545,18 +563,29 @@ final class AgentManager {
         agents[index].terminalTitle = ""
     }
 
-    func updateAgent(id: UUID, name: String, avatar: String, folder: String? = nil) {
+    func updateAgent(id: UUID, name: String, avatar: String, folder: String? = nil, relocateCompanions: Bool = false) {
         guard let index = agents.firstIndex(where: { $0.id == id }) else { return }
-        let folderChanged = folder != nil && folder != agents[index].folder
+        let oldFolder = agents[index].folder
         agents[index].name = name
         agents[index].avatar = avatar
-        if let folder = folder {
+
+        if let folder = folder, folder != oldFolder {
             agents[index].folder = folder
-        }
-        saveAgents()
-        if folderChanged {
+            // Restart the agent itself since folder changed
             restartAgent(agents[index])
+
+            if relocateCompanions {
+                for companion in companions(of: id) {
+                    guard companion.folder == oldFolder else { continue }
+                    if let ci = agents.firstIndex(where: { $0.id == companion.id }) {
+                        agents[ci].folder = folder
+                        restartAgent(agents[ci])
+                    }
+                }
+            }
         }
+
+        saveAgents()
     }
 
     func moveAgent(from source: IndexSet, to destination: Int) {
