@@ -9,7 +9,7 @@ Skwad is a macOS SwiftUI application that manages multiple AI coding agents, eac
 ## Tech Stack
 
 - **Language**: Swift 5.9+
-- **UI Framework**: SwiftUI (macOS 14+)
+- **UI Framework**: SwiftUI (macOS 26+)
 - **Terminal Engines**:
   - Ghostty (libghostty) - GPU-accelerated, default
   - SwiftTerm - fallback option

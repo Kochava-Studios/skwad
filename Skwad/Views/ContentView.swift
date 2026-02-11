@@ -328,11 +328,18 @@ struct ContentView: View {
 
       // Markdown panel (sliding from right)
       if let agent = activeAgent, let filePath = agent.markdownFilePath {
-        MarkdownPanelView(filePath: filePath) {
-          withAnimation(.easeInOut(duration: 0.2)) {
-            agentManager.closeMarkdownPanel(for: agent.id)
+        MarkdownPanelView(
+          filePath: filePath,
+          agentId: agent.id,
+          onClose: {
+            withAnimation(.easeInOut(duration: 0.2)) {
+              agentManager.closeMarkdownPanel(for: agent.id)
+            }
+          },
+          onComment: { text in
+            agentManager.sendText(text, for: agent.id)
           }
-        }
+        )
         .transition(.move(edge: .trailing))
       }
     }

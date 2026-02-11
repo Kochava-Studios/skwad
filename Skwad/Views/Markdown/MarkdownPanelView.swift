@@ -1,10 +1,11 @@
 import SwiftUI
-import MarkdownUI
 
 /// Sliding panel showing markdown content for a file
 struct MarkdownPanelView: View {
     let filePath: String
+    let agentId: UUID
     let onClose: () -> Void
+    let onComment: (String) -> Void  // formatted comment text -> inject into terminal
 
     @Environment(\.colorScheme) private var colorScheme
     @ObservedObject private var settings = AppSettings.shared
@@ -13,6 +14,13 @@ struct MarkdownPanelView: View {
     @State private var errorMessage: String?
     @State private var isLoading = true
     @State private var fileWatcher: FileWatcher?
+
+    // Comment popup state
+    @State private var selectedText: String?
+    @State private var commentText: String = ""
+    @State private var commentSessionStarted = false
+    @State private var selectionY: CGFloat = 0
+    @FocusState private var isCommentFocused: Bool
 
     private var backgroundColor: Color {
         settings.effectiveBackgroundColor
@@ -32,7 +40,15 @@ struct MarkdownPanelView: View {
                 Divider()
                     .background(Color.primary.opacity(0.2))
 
-                contentView
+                ZStack(alignment: .topLeading) {
+                    contentView
+
+                    if selectedText != nil {
+                        commentPopup
+                            .offset(y: selectionY + 16)
+                            .transition(.opacity)
+                    }
+                }
             }
             .frame(width: panelWidth)
         }
@@ -46,6 +62,7 @@ struct MarkdownPanelView: View {
         }
         .onChange(of: filePath) { _, _ in
             stopWatching()
+            dismissComment()
             loadContent()
             startWatching()
         }
@@ -56,23 +73,121 @@ struct MarkdownPanelView: View {
     @ViewBuilder
     private var contentView: some View {
         if isLoading && content == nil {
-            // Only show loading on initial load, not on reload
             loadingView
         } else if let error = errorMessage {
             errorView(error)
         } else if let markdown = content {
-            ScrollView {
-                Markdown(markdown)
-                    .markdownTheme(.basic)
-                    .markdownTextStyle { FontSize(15) }
-                    .foregroundStyle(colorScheme == .dark ? Color.white : Color.black)
-                    .padding(16)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(backgroundColor)
+            MarkdownWebView(
+                markdown: markdown,
+                backgroundColor: backgroundColor,
+                isDarkMode: colorScheme == .dark
+            ) { text, y in
+                withAnimation(.easeInOut(duration: 0.15)) {
+                    selectedText = text
+                    commentText = ""
+                    selectionY = y
+                }
+                isCommentFocused = true
             }
-            .scrollContentBackground(.hidden)
-            .background(backgroundColor)
         }
+    }
+
+    // MARK: - Comment Popup
+
+    private var commentPopup: some View {
+        VStack(spacing: 8) {
+            // Selected text preview
+            HStack {
+                Image(systemName: "text.quote")
+                    .foregroundColor(.secondary)
+                    .font(.caption)
+                Text(selectedText ?? "")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .lineLimit(2)
+                    .truncationMode(.tail)
+                Spacer()
+            }
+
+            // Comment text area
+            TextEditor(text: $commentText)
+                .font(.system(size: 13))
+                .scrollContentBackground(.hidden)
+                .frame(height: 60)
+                .padding(6)
+                .background(
+                    RoundedRectangle(cornerRadius: 6)
+                        .fill(Color.primary.opacity(0.05))
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 6)
+                        .stroke(Color.primary.opacity(0.15), lineWidth: 1)
+                )
+                .focused($isCommentFocused)
+                .onKeyPress(.return, phases: .down) { press in
+                    if press.modifiers.contains(.command) {
+                        submitComment()
+                        return .handled
+                    }
+                    return .ignored
+                }
+                .onKeyPress(.escape) {
+                    withAnimation(.easeInOut(duration: 0.15)) {
+                        dismissComment()
+                    }
+                    return .handled
+                }
+
+            // Buttons
+            HStack {
+                Spacer()
+
+                Button("Cancel") {
+                    withAnimation(.easeInOut(duration: 0.15)) {
+                        dismissComment()
+                    }
+                }
+                .buttonStyle(.plain)
+                .foregroundColor(.secondary)
+
+                Button("Comment") {
+                    submitComment()
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.small)
+                .disabled(commentText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+            }
+        }
+        .padding(12)
+        .background(
+            RoundedRectangle(cornerRadius: 10)
+                .fill(.ultraThinMaterial)
+                .shadow(color: .black.opacity(0.2), radius: 8, y: -2)
+        )
+        .padding(.horizontal, 12)
+    }
+
+    private func submitComment() {
+        guard let selected = selectedText else { return }
+        let comment = commentText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !comment.isEmpty else { return }
+
+        var text = ""
+        if !commentSessionStarted {
+            commentSessionStarted = true
+            text += "While reviewing \(fileName), user made the following comments:\n"
+        }
+        text += "- Re \"\(selected)\": \(comment)\n"
+        onComment(text)
+
+        withAnimation(.easeInOut(duration: 0.15)) {
+            dismissComment()
+        }
+    }
+
+    private func dismissComment() {
+        selectedText = nil
+        commentText = ""
     }
 
     // MARK: - Resize Handle
@@ -155,10 +270,10 @@ struct MarkdownPanelView: View {
     private func loadContent() {
         isLoading = true
         errorMessage = nil
+        commentSessionStarted = false
 
         DispatchQueue.global(qos: .userInitiated).async {
             do {
-                // Check file exists
                 guard FileManager.default.fileExists(atPath: filePath) else {
                     DispatchQueue.main.async {
                         self.errorMessage = "File not found:\n\(filePath)"
@@ -167,7 +282,6 @@ struct MarkdownPanelView: View {
                     return
                 }
 
-                // Check it's readable
                 guard FileManager.default.isReadableFile(atPath: filePath) else {
                     DispatchQueue.main.async {
                         self.errorMessage = "Cannot read file:\n\(filePath)"
@@ -176,7 +290,6 @@ struct MarkdownPanelView: View {
                     return
                 }
 
-                // Read content
                 let fileContent = try String(contentsOfFile: filePath, encoding: .utf8)
 
                 DispatchQueue.main.async {
@@ -210,7 +323,11 @@ struct MarkdownPanelView: View {
 #Preview("Markdown Panel") {
     MarkdownPanelView(
         filePath: "/Users/nbonamy/src/skwad/README.md",
-        onClose: {}
+        agentId: UUID(),
+        onClose: {},
+        onComment: { text in
+            print("Comment: \(text)")
+        }
     )
     .frame(height: 600)
 }
