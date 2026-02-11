@@ -67,7 +67,7 @@ class TerminalSessionController: ObservableObject {
     private var isDisposed = false
     private var hasBecomeIdle = false
     private var didStart = false
-    private var lastTimerSchedule: CFAbsoluteTime = 0
+    private var lastActivityTime: CFAbsoluteTime = 0
 
     // Registration prompt scheduling
     private let registrationTimer = ManagedTimer()
@@ -255,30 +255,25 @@ class TerminalSessionController: ObservableObject {
 
     // MARK: - Activity Detection
 
-    /// Signals that activity has been detected in the terminal
-    /// This resets the idle timer and sets status to running
+    /// Signals that activity has been detected in the terminal.
+    /// Stamps the time and ensures exactly one idle timer is running.
     /// - Parameter fromUserInput: If true, uses longer timeout for user typing
     private func activityDetected(fromUserInput: Bool) {
         guard !isDisposed else { return }
 
+        // Stamp activity time (always — cheap, no allocation)
+        lastActivityTime = CFAbsoluteTimeGetCurrent()
+
         // Set status to running (cheap: guarded by didSet)
         status = .running
 
-        // Throttle timer rescheduling to avoid excessive Timer churn under heavy output.
-        // Under rapid terminal output, this can fire thousands of times/sec. We only need
-        // to reschedule the idle timer periodically — the 200ms gate keeps idle detection
-        // accurate (well within the 2s idle timeout) while reducing timer ops ~1000x.
-        let now = CFAbsoluteTimeGetCurrent()
-        let elapsed = now - lastTimerSchedule
-        guard fromUserInput || elapsed >= 0.2 else { return }
-        lastTimerSchedule = now
-
-        // Use longer timeout for user input (typing/thinking) vs terminal output
-        let timeout = fromUserInput ? TimingConstants.userInputIdleTimeout : idleTimeout
-
-        // Start new timer for idle state (automatically cancels existing timer)
-        idleTimer.schedule(after: timeout) { [weak self] in
-            self?.markIdle()
+        // Schedule idle timer only if none is running — the timer itself
+        // handles rescheduling when it finds recent activity
+        if !idleTimer.isActive {
+            let timeout = fromUserInput ? TimingConstants.userInputIdleTimeout : idleTimeout
+            idleTimer.schedule(after: timeout) { [weak self] in
+                self?.idleTimerFired()
+            }
         }
     }
     
@@ -336,6 +331,20 @@ class TerminalSessionController: ObservableObject {
     
     // MARK: - Private Methods
     
+    private func idleTimerFired() {
+        guard !isDisposed else { return }
+        let sinceLastActivity = CFAbsoluteTimeGetCurrent() - lastActivityTime
+        if sinceLastActivity >= idleTimeout {
+            markIdle()
+        } else {
+            // Activity happened since timer was scheduled — reschedule
+            let remaining = idleTimeout - sinceLastActivity
+            idleTimer.schedule(after: remaining) { [weak self] in
+                self?.idleTimerFired()
+            }
+        }
+    }
+
     private func markIdle() {
         guard !isDisposed else { return }
         status = .idle

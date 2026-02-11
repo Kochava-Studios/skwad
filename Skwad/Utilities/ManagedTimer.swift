@@ -28,13 +28,17 @@ import Foundation
 class ManagedTimer {
     private var timer: Timer?
 
+    /// Whether a timer is currently scheduled and hasn't fired yet
+    var isActive: Bool { timer != nil }
+
     /// Schedule a new timer, invalidating any existing timer
     /// - Parameters:
     ///   - delay: Time interval in seconds before the timer fires
     ///   - action: Closure to execute when the timer fires
     func schedule(after delay: TimeInterval, action: @escaping () -> Void) {
         invalidate()
-        timer = Timer.scheduledTimer(withTimeInterval: delay, repeats: false) { _ in
+        timer = Timer.scheduledTimer(withTimeInterval: delay, repeats: false) { [weak self] _ in
+            self?.timer = nil
             action()
         }
     }
