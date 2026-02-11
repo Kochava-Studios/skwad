@@ -3,30 +3,10 @@
 All notable changes to this project will be documented in this file.
 
 
-## [1.5.0] - 2026-02-10
+## [1.5.0] - WIP
 
 ### Added
 - Markdown panel comment feature: select text and add comments that are injected into the agent terminal
-- WKWebView-based markdown renderer replacing MarkdownUI for native text selection support
-- Comment session tracking with contextual headers (resets on file reload or panel change)
-- Cmd+Enter to submit comments, Escape to cancel
-- Comment popup positioned below text selection
-- MarkdownToHTML unit tests
-
-### Changed
-- N/A
-
-### Fixed
-- N/A
-
-### Removed
-- N/A
-
-
-## [1.4.3] - 2026-02-10
-
-### Added
-- N/A
 
 ### Changed
 - Shell agents are now hidden from MCP list-agents results
