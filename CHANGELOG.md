@@ -2,8 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-
-## [1.5.0] - WIP
+## [1.5.0] - 2026-02-11
 
 ### Added
 - Markdown panel comment feature: select text and add comments that are injected into the agent terminal
