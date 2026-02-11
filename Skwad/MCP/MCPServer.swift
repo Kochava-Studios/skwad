@@ -36,6 +36,11 @@ actor MCPServer: MCPTransportProtocol {
             await handleSSERequest(request, context: context)
         }
 
+        // Hook-based activity status endpoint
+        router.post("/api/v1/agent/status") { [self] request, context in
+            await handleActivityStatus(request, context: context)
+        }
+
         let app = Application(
             router: router,
             configuration: .init(
@@ -140,6 +145,38 @@ actor MCPServer: MCPTransportProtocol {
             headers: headers,
             body: .init(byteBuffer: .init(string: event.formatted()))
         )
+    }
+
+    // MARK: - Activity Status Handler
+
+    private func handleActivityStatus(_ request: Request, context: BasicRequestContext) async -> Response {
+        // Extract query parameters: session_id and status
+        let sessionId = request.uri.queryParameters.get("session_id")
+        let statusString = request.uri.queryParameters.get("status")
+
+        guard let sessionId = sessionId, !sessionId.isEmpty else {
+            return plainResponse(status: .badRequest, body: "Missing session_id parameter")
+        }
+        guard let statusString = statusString,
+              let agentStatus = (statusString == "running" ? AgentStatus.running : statusString == "idle" ? AgentStatus.idle : nil) else {
+            return plainResponse(status: .badRequest, body: "Invalid status parameter (expected: running or idle)")
+        }
+
+        // Look up agent by session ID
+        guard let agent = await mcpService.findAgentBySessionId(sessionId) else {
+            logger.warning("[skwad] Activity status: no agent found for session_id=\(sessionId)")
+            return plainResponse(status: .notFound, body: "No agent found for session_id")
+        }
+
+        // Update agent status via hook path
+        await mcpService.updateAgentStatus(for: agent.id, status: agentStatus, fromHook: true)
+        logger.debug("[skwad][\(String(agent.id.uuidString.prefix(8)).lowercased())] Hook status: \(statusString)")
+
+        return plainResponse(status: .ok, body: "OK")
+    }
+
+    private func plainResponse(status: HTTPResponse.Status, body: String) -> Response {
+        Response(status: status, body: .init(byteBuffer: .init(string: body)))
     }
 
     // MARK: - JSON-RPC Handler
