@@ -140,6 +140,7 @@
 		WS000001 /* Workspace.swift in Sources */ = {isa = PBXBuildFile; fileRef = WS100001 /* Workspace.swift */; };
 		WS000002 /* WorkspaceBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = WS100002 /* WorkspaceBarView.swift */; };
 		WS000003 /* WorkspaceSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = WS100003 /* WorkspaceSheet.swift */; };
+		PL000001 /* plugin in Resources */ = {isa = PBXBuildFile; fileRef = PL100001 /* plugin */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -281,6 +282,7 @@
 		WS100001 /* Workspace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Workspace.swift; sourceTree = "<group>"; };
 		WS100002 /* WorkspaceBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkspaceBarView.swift; sourceTree = "<group>"; };
 		WS100003 /* WorkspaceSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkspaceSheet.swift; sourceTree = "<group>"; };
+		PL100001 /* plugin */ = {isa = PBXFileReference; lastKnownFileType = folder; path = plugin; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -476,6 +478,7 @@
 				TS500000 /* SkwadTests */,
 				SF200000 /* Frameworks */,
 				F8000101 /* Products */,
+				PL100001 /* plugin */,
 			);
 			sourceTree = "<group>";
 		};
@@ -844,6 +847,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				AS000001 /* Assets.xcassets in Resources */,
+				PL000001 /* plugin in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

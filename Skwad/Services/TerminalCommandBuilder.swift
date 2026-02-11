@@ -61,6 +61,17 @@ struct TerminalCommandBuilder {
 
   // MARK: - Inline Registration
 
+  /// Check if an agent type uses hook-based activity detection (via plugin)
+  /// When true, terminal-level activity tracking is disabled
+  static func usesActivityHooks(agentType: String) -> Bool {
+    switch agentType {
+    case "claude":
+      return true
+    default:
+      return false
+    }
+  }
+
   /// Check if an agent type supports system prompt injection
   static func supportsSystemPrompt(agentType: String) -> Bool {
     switch agentType {
@@ -121,7 +132,12 @@ struct TerminalCommandBuilder {
     switch agentType {
     case "claude":
       let mcpConfig = #"--mcp-config '{"mcpServers":{"skwad":{"type":"http","url":"\#(mcpURL)"}}}'"#
-      return " \(mcpConfig) --allowed-tools 'mcp__skwad__*'"
+      var args = " \(mcpConfig) --allowed-tools 'mcp__skwad__*'"
+      // Add plugin directory for hook-based activity detection
+      if let pluginPath = resolvePluginPath() {
+        args += " --plugin-dir \"\(pluginPath)\""
+      }
+      return args
       
     case "gemini":
       return " --allowed-mcp-server-names skwad"
@@ -163,6 +179,26 @@ struct TerminalCommandBuilder {
     return " cd '\(folder)' && clear && \(agentCommand)"
   }
   
+  /// Resolves the plugin directory path.
+  /// In release builds, the plugin is bundled inside the app.
+  /// In dev builds (Xcode), fall back to the source tree.
+  private static func resolvePluginPath() -> String? {
+    // Try app bundle first (release / archived builds)
+    if let bundled = Bundle.main.url(forResource: "plugin", withExtension: nil)?.path,
+       FileManager.default.fileExists(atPath: bundled) {
+      return bundled
+    }
+    // Dev fallback: derive source root from this file's compile-time path
+    let sourceFile = #filePath
+    let sourceDir = (sourceFile as NSString).deletingLastPathComponent  // .../Skwad/Services
+    let projectRoot = ((sourceDir as NSString).deletingLastPathComponent as NSString).deletingLastPathComponent
+    let devPath = (projectRoot as NSString).appendingPathComponent("plugin")
+    if FileManager.default.fileExists(atPath: devPath) {
+      return devPath
+    }
+    return nil
+  }
+
   /// Gets the default shell executable path
   static func getDefaultShell() -> String {
     return ProcessInfo.processInfo.environment["SHELL"] ?? "/bin/zsh"

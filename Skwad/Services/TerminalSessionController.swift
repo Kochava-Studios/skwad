@@ -1,6 +1,23 @@
 import Foundation
 import OSLog
 
+/// Bitfield controlling which terminal activity sources trigger status changes.
+///
+/// - `.userInput`: user typing in the terminal (bit 0)
+/// - `.terminalOutput`: agent writing to stdout (bit 1)
+///
+/// Presets:
+/// - shell agents → `.none` (no status tracking at all)
+/// - hook-detected agents (e.g. Claude+MCP) → `.userInput` (hooks handle agent output)
+/// - all other agents → `.all` (full terminal-based detection)
+struct ActivityTracking: OptionSet {
+    let rawValue: Int
+    static let userInput      = ActivityTracking(rawValue: 1 << 0)
+    static let terminalOutput = ActivityTracking(rawValue: 1 << 1)
+    static let none: ActivityTracking = []
+    static let all: ActivityTracking  = [.userInput, .terminalOutput]
+}
+
 /// Central controller for managing a terminal session's lifecycle and state.
 ///
 /// This controller owns all business logic for a terminal session:
@@ -16,11 +33,11 @@ import OSLog
 class TerminalSessionController: ObservableObject {
 
     /// Current session state
-    /// Agents that don't track activity are forced to .idle
+    /// Agents with no activity tracking (shell) are forced to .idle
     var status: AgentStatus {
-        get { tracksActivity ? _status : .idle }
+        get { activityTracking.isEmpty ? .idle : _status }
         set {
-            let effective = tracksActivity ? newValue : .idle
+            let effective = activityTracking.isEmpty ? .idle : newValue
             guard _status != effective else { return }
             let oldValue = _status
             _status = effective
@@ -41,13 +58,15 @@ class TerminalSessionController: ObservableObject {
     /// Optional command for shell agent type
     let shellCommand: String?
 
-    /// Whether this agent tracks activity (Working/Idle status transitions)
-    let tracksActivity: Bool
+    /// Which terminal activity sources trigger status changes.
+    /// Starts as `.all` for non-shell agents; downgraded to `.userInput`
+    /// once hook-based detection is confirmed (sessionId set).
+    private(set) var activityTracking: ActivityTracking
 
     // MARK: - Dependencies
 
     private let settings = AppSettings.shared
-    private let onStatusChange: (AgentStatus) -> Void
+    private let onStatusChange: (_ status: AgentStatus, _ fromUserInput: Bool) -> Void
     private let onTitleChange: ((String) -> Void)?
 
     /// Called when a deferred-start agent's terminal is ready and needs its command queued
@@ -68,6 +87,7 @@ class TerminalSessionController: ObservableObject {
     private var hasBecomeIdle = false
     private var didStart = false
     private var lastActivityTime: CFAbsoluteTime = 0
+    private var lastActivityFromUserInput = false
 
     // Registration prompt scheduling
     private let registrationTimer = ManagedTimer()
@@ -93,16 +113,16 @@ class TerminalSessionController: ObservableObject {
         folder: String,
         agentType: String,
         shellCommand: String? = nil,
-        tracksActivity: Bool = true,
+        activityTracking: ActivityTracking = .all,
         idleTimeout: TimeInterval = TimingConstants.idleTimeout,
-        onStatusChange: @escaping (AgentStatus) -> Void,
+        onStatusChange: @escaping (_ status: AgentStatus, _ fromUserInput: Bool) -> Void,
         onTitleChange: ((String) -> Void)? = nil
     ) {
         self.agentId = agentId
         self.folder = folder
         self.agentType = agentType
         self.shellCommand = shellCommand
-        self.tracksActivity = tracksActivity
+        self.activityTracking = activityTracking
         self.monitorsMCP = AppSettings.shared.mcpServerEnabled
         self.idleTimeout = idleTimeout
         self.onStatusChange = onStatusChange
@@ -121,10 +141,10 @@ class TerminalSessionController: ObservableObject {
     func attach(to adapter: TerminalAdapter) {
         self.adapter = adapter
 
-        // Wire adapter events to controller methods
-        // Only wire activity callbacks when tracking is enabled — when nil,
-        // the terminal engines skip dispatching entirely (zero overhead)
-        if tracksActivity {
+        // Wire both callbacks for non-shell agents. Filtering by
+        // activityTracking happens in activityDetected() so the bitfield
+        // can be downgraded at runtime (e.g. when hooks take over).
+        if !activityTracking.isEmpty {
             adapter.onActivity = { [weak self] in
                 self?.activityDetected(fromUserInput: false)
             }
@@ -247,6 +267,12 @@ class TerminalSessionController: ObservableObject {
         adapter?.focus()
     }
     
+    /// Downgrade activity tracking when hook-based detection takes over.
+    /// Terminal output callbacks remain wired but are filtered in activityDetected().
+    func setActivityTracking(_ tracking: ActivityTracking) {
+        activityTracking = tracking
+    }
+
     /// Notify terminal to resize/relayout
     /// Called when the available terminal space changes (e.g., git panel toggle)
     func notifyResize() {
@@ -261,8 +287,13 @@ class TerminalSessionController: ObservableObject {
     private func activityDetected(fromUserInput: Bool) {
         guard !isDisposed else { return }
 
+        // Check if this source is enabled in the current tracking bitfield
+        let source: ActivityTracking = fromUserInput ? .userInput : .terminalOutput
+        guard activityTracking.contains(source) else { return }
+
         // Stamp activity time (always — cheap, no allocation)
         lastActivityTime = CFAbsoluteTimeGetCurrent()
+        lastActivityFromUserInput = fromUserInput
 
         // Set status to running (cheap: guarded by didSet)
         status = .running
@@ -403,7 +434,8 @@ class TerminalSessionController: ObservableObject {
     }
     
     private func statusDidChange(from oldValue: AgentStatus, to newValue: AgentStatus) {
-        onStatusChange(newValue)
+        onStatusChange(newValue, lastActivityFromUserInput)
+        lastActivityFromUserInput = false
     }
     
     private func checkForUnreadMessages() {

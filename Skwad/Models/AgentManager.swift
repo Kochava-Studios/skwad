@@ -258,14 +258,17 @@ final class AgentManager {
 
     /// Create a controller for an agent
     func createController(for agent: Agent) -> TerminalSessionController {
+        // All non-shell agents start with full tracking (.all).
+        // Hook-detected agents get downgraded to .userInput once sessionId is set.
+        let tracking: ActivityTracking = agent.isShell ? .none : .all
         let controller = TerminalSessionController(
             agentId: agent.id,
             folder: agent.folder,
             agentType: agent.agentType,
             shellCommand: agent.shellCommand,
-            tracksActivity: agent.tracksActivity,
-            onStatusChange: { [weak self] status in
-                self?.updateStatus(for: agent.id, status: status)
+            activityTracking: tracking,
+            onStatusChange: { [weak self] status, fromUserInput in
+                self?.updateStatus(for: agent.id, status: status, fromUserInput: fromUserInput)
             },
             onTitleChange: { [weak self] title in
                 self?.updateTitle(for: agent.id, title: title)
@@ -425,6 +428,10 @@ final class AgentManager {
     func setSessionId(for agentId: UUID, sessionId: String) {
         if let index = agents.firstIndex(where: { $0.id == agentId }) {
             agents[index].sessionId = sessionId
+            // Only downgrade if this agent type has hook-based activity detection
+            if TerminalCommandBuilder.usesActivityHooks(agentType: agents[index].agentType) {
+                controllers[agentId]?.setActivityTracking(.userInput)
+            }
         }
     }
 
@@ -703,19 +710,19 @@ final class AgentManager {
         settings.saveAgents(agents)
     }
 
-    func updateStatus(for agentId: UUID, status: AgentStatus, fromHook: Bool = false) {
-        Task { @MainActor in
-            if let index = agents.firstIndex(where: { $0.id == agentId }) {
-                // When agent has a sessionId (hook-based detection active),
-                // ignore terminal-based status updates — hooks take precedence
-                if !fromHook && agents[index].sessionId != nil {
-                    return
-                }
-                guard agents[index].status != status else { return }
-                agents[index].status = status
-                if status == .idle && !agents[index].isShell {
-                    refreshGitStats(for: agentId)
-                }
+    func updateStatus(for agentId: UUID, status: AgentStatus, fromHook: Bool = false, fromUserInput: Bool = false) {
+        if let index = agents.firstIndex(where: { $0.id == agentId }) {
+            // When hook-based detection is active (sessionId + agent supports hooks),
+            // only allow hook updates and user input — block terminal output
+            let hookActive = agents[index].sessionId != nil
+                && TerminalCommandBuilder.usesActivityHooks(agentType: agents[index].agentType)
+            if hookActive && !fromHook && !fromUserInput {
+                return
+            }
+            guard agents[index].status != status else { return }
+            agents[index].status = status
+            if status == .idle && !agents[index].isShell {
+                refreshGitStats(for: agentId)
             }
         }
     }

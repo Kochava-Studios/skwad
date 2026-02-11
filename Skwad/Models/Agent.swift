@@ -89,11 +89,6 @@ struct Agent: Identifiable, Codable, Hashable {
         agentType == "shell"
     }
 
-    /// Whether this agent needs activity tracking (Working/Idle status, git stats on idle, etc.)
-    var tracksActivity: Bool {
-        !isShell
-    }
-
     /// Terminal title (cleaned on update in AgentManager)
     var displayTitle: String {
         terminalTitle
