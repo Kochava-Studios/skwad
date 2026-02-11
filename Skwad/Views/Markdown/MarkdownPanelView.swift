@@ -6,6 +6,7 @@ struct MarkdownPanelView: View {
     let agentId: UUID
     let onClose: () -> Void
     let onComment: (String) -> Void  // formatted comment text -> inject into terminal
+    let onSubmitReview: () -> Void  // send return to submit the prompt
 
     @Environment(\.colorScheme) private var colorScheme
     @ObservedObject private var settings = AppSettings.shared
@@ -227,6 +228,26 @@ struct MarkdownPanelView: View {
 
             Spacer()
 
+            if commentSessionStarted {
+                Button {
+                    onSubmitReview()
+                    commentSessionStarted = false
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: "paperplane.fill")
+                        Text("Submit Review")
+                    }
+                    .font(.caption)
+                    .foregroundColor(.primary)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 4)
+                    .background(Color.green.opacity(0.8))
+                    .cornerRadius(4)
+                }
+                .buttonStyle(.plain)
+                .help("Submit review comments to agent")
+            }
+
             Button {
                 onClose()
             } label: {
@@ -327,6 +348,9 @@ struct MarkdownPanelView: View {
         onClose: {},
         onComment: { text in
             print("Comment: \(text)")
+        },
+        onSubmitReview: {
+            print("Submit review")
         }
     )
     .frame(height: 600)

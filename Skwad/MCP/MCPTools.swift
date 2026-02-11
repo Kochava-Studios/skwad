@@ -386,7 +386,7 @@ actor MCPToolHandler {
         if success {
             let response = ShowMarkdownResponse(
                 success: true,
-                message: "Markdown panel opened for: \(filePath). Inform the user they can highlight text in the preview to make comments."
+                message: "Markdown panel opened for: \(filePath). Inform the user they can highlight text in the preview to make comments, then click 'Submit Review' to send them to you."
             )
             return successResult(response)
         } else {

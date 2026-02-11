@@ -338,6 +338,9 @@ struct ContentView: View {
           },
           onComment: { text in
             agentManager.sendText(text, for: agent.id)
+          },
+          onSubmitReview: {
+            agentManager.sendReturn(for: agent.id)
           }
         )
         .transition(.move(edge: .trailing))
