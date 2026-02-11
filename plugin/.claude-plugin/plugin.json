@@ -1,0 +1,19 @@
+{
+  "name": "skwad",
+  "description": "Skwad agent manager integration for Claude Code",
+  "version": "1.0.0",
+  "author": {
+    "name": "Nicolas Bonamy"
+  },
+  "commands": [
+    "./commands/list-agents.md",
+    "./commands/send.md",
+    "./commands/check.md",
+    "./commands/broadcast.md",
+    "./commands/create-agent.md",
+    "./commands/list-repos.md",
+    "./commands/list-worktrees.md",
+    "./commands/show-markdown.md",
+    "./commands/worktree.md"
+  ]
+}
