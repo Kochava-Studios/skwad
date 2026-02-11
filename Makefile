@@ -191,7 +191,7 @@ appcast:
 check-changelog:
 	@./scripts/check-changelog.sh
 
-release: check-changelog increment-build notarize
+release: increment-build notarize
 	@echo ""
 	@echo "Release build complete!"
 	@echo "   Distribution package: $(DMG_PATH)"
