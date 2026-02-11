@@ -422,6 +422,16 @@ final class AgentManager {
         agents.first { $0.id == agentId }?.isRegistered ?? false
     }
 
+    func setSessionId(for agentId: UUID, sessionId: String) {
+        if let index = agents.firstIndex(where: { $0.id == agentId }) {
+            agents[index].sessionId = sessionId
+        }
+    }
+
+    func findAgentBySessionId(_ sessionId: String) -> Agent? {
+        agents.first { $0.sessionId == sessionId }
+    }
+
     // MARK: - Agent CRUD
 
     @discardableResult
@@ -630,6 +640,7 @@ final class AgentManager {
         agents[index].restartToken = UUID()
         agents[index].status = .idle
         agents[index].isRegistered = false
+        agents[index].sessionId = nil
         agents[index].terminalTitle = ""
     }
 
@@ -692,9 +703,14 @@ final class AgentManager {
         settings.saveAgents(agents)
     }
 
-    func updateStatus(for agentId: UUID, status: AgentStatus) {
+    func updateStatus(for agentId: UUID, status: AgentStatus, fromHook: Bool = false) {
         Task { @MainActor in
             if let index = agents.firstIndex(where: { $0.id == agentId }) {
+                // When agent has a sessionId (hook-based detection active),
+                // ignore terminal-based status updates — hooks take precedence
+                if !fromHook && agents[index].sessionId != nil {
+                    return
+                }
                 guard agents[index].status != status else { return }
                 agents[index].status = status
                 if status == .idle && !agents[index].isShell {
