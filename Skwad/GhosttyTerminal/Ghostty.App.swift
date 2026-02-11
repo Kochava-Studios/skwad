@@ -275,6 +275,9 @@ extension Ghostty {
                 }
             }()
 
+            // DEBUG: Log all actions to understand which ones fire for hidden terminals
+            // Ghostty.logger.debug("[skwad][ghostty] action: \(action.tag.rawValue) surface=\(terminalView != nil ? "yes" : "nil") isContent=\(isContentAction)")
+
             if let terminalView, isContentAction, terminalView.onActivity != nil {
                 DispatchQueue.main.async {
                     terminalView.onActivity?()

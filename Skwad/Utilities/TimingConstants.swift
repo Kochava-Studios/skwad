@@ -13,7 +13,7 @@ enum TimingConstants {
     static let terminalReadyDelay: TimeInterval = 0.5
 
     /// Timeout for marking terminal as idle after last terminal output
-    static let idleTimeout: TimeInterval = 2.0
+    static let idleTimeout: TimeInterval = 3.0
 
     /// Timeout for marking terminal as idle after last user input (keypress)
     static let userInputIdleTimeout: TimeInterval = 10.0

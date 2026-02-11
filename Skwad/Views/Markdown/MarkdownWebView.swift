@@ -30,11 +30,24 @@ struct MarkdownWebView: NSViewRepresentable {
 
     func updateNSView(_ webView: WKWebView, context: Context) {
         context.coordinator.onSelection = onSelection
-        // Only reload if content changed
-        if context.coordinator.lastMarkdown != markdown || context.coordinator.lastDarkMode != isDarkMode {
-            context.coordinator.lastMarkdown = markdown
-            context.coordinator.lastDarkMode = isDarkMode
+        let markdownChanged = context.coordinator.lastMarkdown != markdown
+        let darkModeChanged = context.coordinator.lastDarkMode != isDarkMode
+        guard markdownChanged || darkModeChanged else { return }
+
+        context.coordinator.lastMarkdown = markdown
+        context.coordinator.lastDarkMode = isDarkMode
+
+        if darkModeChanged {
+            // Theme changed — full reload needed (CSS is different)
             loadHTML(in: webView)
+        } else {
+            // Content changed — update body via JS to preserve scroll position
+            let htmlBody = MarkdownToHTML.convert(markdown)
+            let escaped = htmlBody
+                .replacingOccurrences(of: "\\", with: "\\\\")
+                .replacingOccurrences(of: "`", with: "\\`")
+                .replacingOccurrences(of: "$", with: "\\$")
+            webView.evaluateJavaScript("document.getElementById('content').innerHTML = `\(escaped)`") { _, _ in }
         }
     }
 
@@ -113,7 +126,7 @@ struct MarkdownWebView: NSViewRepresentable {
         </style>
         </head>
         <body>
-        \(htmlBody)
+        <div id="content">\(htmlBody)</div>
         <script>
         document.addEventListener('mouseup', function() {
             setTimeout(function() {
