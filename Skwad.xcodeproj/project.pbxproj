@@ -132,6 +132,9 @@
 		TS000036 /* AgentContextMenuTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100035 /* AgentContextMenuTests.swift */; };
 		TS000037 /* RepoDiscoveryServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100036 /* RepoDiscoveryServiceTests.swift */; };
 		TS000038 /* MarkdownToHTMLTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100037 /* MarkdownToHTMLTests.swift */; };
+		TS000039 /* MockTerminalAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100038 /* MockTerminalAdapter.swift */; };
+		TS000040 /* TerminalSessionControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100039 /* TerminalSessionControllerTests.swift */; };
+		TS000041 /* NotificationServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100040 /* NotificationServiceTests.swift */; };
 		UP000001 /* UpdaterManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = UP100001 /* UpdaterManager.swift */; };
 		UT000001 /* Clipboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = UT100001 /* Clipboard.swift */; };
 		UT000002 /* TerminalTextCleaner.swift in Sources */ = {isa = PBXBuildFile; fileRef = UT100002 /* TerminalTextCleaner.swift */; };
@@ -287,6 +290,9 @@
 		TS100035 /* AgentContextMenuTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentContextMenuTests.swift; sourceTree = "<group>"; };
 		TS100036 /* RepoDiscoveryServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepoDiscoveryServiceTests.swift; sourceTree = "<group>"; };
 		TS100037 /* MarkdownToHTMLTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownToHTMLTests.swift; sourceTree = "<group>"; };
+		TS100038 /* MockTerminalAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockTerminalAdapter.swift; sourceTree = "<group>"; };
+		TS100039 /* TerminalSessionControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalSessionControllerTests.swift; sourceTree = "<group>"; };
+		TS100040 /* NotificationServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationServiceTests.swift; sourceTree = "<group>"; };
 		TS100100 /* SkwadTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SkwadTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		UP100001 /* UpdaterManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdaterManager.swift; sourceTree = "<group>"; };
 		UT100001 /* Clipboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Clipboard.swift; sourceTree = "<group>"; };
@@ -707,9 +713,20 @@
 		TS500013 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				TS500015 /* Mocks */,
 				TS100036 /* RepoDiscoveryServiceTests.swift */,
+				TS100039 /* TerminalSessionControllerTests.swift */,
+				TS100040 /* NotificationServiceTests.swift */,
 			);
 			path = Services;
+			sourceTree = "<group>";
+		};
+		TS500015 /* Mocks */ = {
+			isa = PBXGroup;
+			children = (
+				TS100038 /* MockTerminalAdapter.swift */,
+			);
+			path = Mocks;
 			sourceTree = "<group>";
 		};
 		TS500014 /* Markdown */ = {
@@ -995,6 +1012,9 @@
 				TS000036 /* AgentContextMenuTests.swift in Sources */,
 				TS000037 /* RepoDiscoveryServiceTests.swift in Sources */,
 				TS000038 /* MarkdownToHTMLTests.swift in Sources */,
+				TS000039 /* MockTerminalAdapter.swift in Sources */,
+				TS000040 /* TerminalSessionControllerTests.swift in Sources */,
+				TS000041 /* NotificationServiceTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

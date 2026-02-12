@@ -21,6 +21,7 @@ final class AgentTests: XCTestCase {
     func testStatusColors() {
         XCTAssertEqual(AgentStatus.idle.color, .green)
         XCTAssertEqual(AgentStatus.running.color, .orange)
+        XCTAssertEqual(AgentStatus.blocked.color, .red)
         XCTAssertEqual(AgentStatus.error.color, .red)
     }
 
