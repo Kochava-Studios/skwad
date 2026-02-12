@@ -13,21 +13,28 @@ class ActivityDetectingTerminalView: LocalProcessTerminalView {
         onActivity?()
     }
 
-    // Called when user sends data (input) - e.g., typing
-    // Map raw bytes to macOS keyCodes for Return (36) and Escape (53)
-    override func send(source: Terminal, data: ArraySlice<UInt8>) {
-        super.send(source: source, data: data)
-        let keyCode: UInt16
-        if let firstByte = data.first {
-            switch firstByte {
-            case 0x0D: keyCode = 36  // Return
-            case 0x1B: keyCode = 53  // Escape
-            default:   keyCode = 0
+    // SwiftTerm's keyDown is not open for override, so we use a local event monitor
+    // to capture keyCodes for blocked state handling (Return/Escape detection)
+    private var keyMonitor: Any?
+
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        if window != nil && keyMonitor == nil {
+            keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
+                if let self = self, event.window === self.window, self.window?.firstResponder === self {
+                    self.onUserInput?(event.keyCode)
+                }
+                return event
             }
-        } else {
-            keyCode = 0
         }
-        onUserInput?(keyCode)
+    }
+
+    override func viewDidMoveToSuperview() {
+        super.viewDidMoveToSuperview()
+        if superview == nil, let monitor = keyMonitor {
+            NSEvent.removeMonitor(monitor)
+            keyMonitor = nil
+        }
     }
 }
 
