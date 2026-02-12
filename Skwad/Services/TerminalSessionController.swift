@@ -289,6 +289,13 @@ class TerminalSessionController: ObservableObject {
 
         // Check if this source is enabled in the current tracking bitfield
         let source: ActivityTracking = fromUserInput ? .userInput : .terminalOutput
+        
+        // in any case idle is not happening anymore
+        if idleTimer.isActive {
+            idleTimer.invalidate()
+        }
+        
+        // now only process if relevant
         guard activityTracking.contains(source) else { return }
 
         // Stamp activity time (always — cheap, no allocation)
