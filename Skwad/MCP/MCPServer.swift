@@ -64,7 +64,7 @@ actor MCPServer: MCPTransportProtocol {
     private func handleMCPRequest(_ request: Request, context: BasicRequestContext) async -> Response {
         // Get session ID from header
         let sessionId = request.headers[.init("Mcp-Session-Id")!]
-        
+
         // Check if client wants SSE streaming
         let acceptsSSE = request.headers[.accept]?.contains("text/event-stream") ?? false
 
@@ -79,6 +79,11 @@ actor MCPServer: MCPTransportProtocol {
 
             logger.debug("Received MCP request: \(jsonRequest.method)")
 
+            // Per MCP spec: notifications (no id) must return 202 Accepted with no body
+            if jsonRequest.method.starts(with: "notifications/") {
+                return Response(status: .accepted)
+            }
+
             // Handle the request
             let response = await handleJSONRPCRequest(jsonRequest, sessionId: sessionId)
 
@@ -86,20 +91,26 @@ actor MCPServer: MCPTransportProtocol {
             guard let responseData = try? JSONEncoder().encode(response) else {
                 return errorResponse(code: -32603, message: "Internal error: could not encode response")
             }
-            
+
+            // Generate session ID for initialize responses
+            let responseSessionId: String
+            if jsonRequest.method == MCPMethod.initialize.rawValue {
+                responseSessionId = UUID().uuidString
+            } else {
+                responseSessionId = sessionId ?? UUID().uuidString
+            }
+
             // Return as SSE if requested
             if acceptsSSE {
                 let responseString = String(data: responseData, encoding: .utf8) ?? "{}"
                 let event = SSEEvent(event: "message", data: responseString, id: nil)
-                
+
                 var headers = HTTPFields()
                 headers[.contentType] = "text/event-stream"
                 headers[.cacheControl] = "no-cache"
                 headers[.init("Connection")!] = "keep-alive"
-                if let sessionId = sessionId {
-                    headers[.init("Mcp-Session-Id")!] = sessionId
-                }
-                
+                headers[.init("Mcp-Session-Id")!] = responseSessionId
+
                 return Response(
                     status: .ok,
                     headers: headers,
@@ -110,9 +121,7 @@ actor MCPServer: MCPTransportProtocol {
             // Return as JSON by default
             var headers = HTTPFields()
             headers[.contentType] = "application/json"
-            if let sessionId = sessionId {
-                headers[.init("Mcp-Session-Id")!] = sessionId
-            }
+            headers[.init("Mcp-Session-Id")!] = responseSessionId
 
             return Response(
                 status: .ok,
@@ -159,10 +168,6 @@ actor MCPServer: MCPTransportProtocol {
             return JSONRPCResponse.success(id: request.id, result: EmptyResult())
 
         default:
-            // Check if it's a notification (no response needed)
-            if request.method.starts(with: "notifications/") {
-                return JSONRPCResponse.success(id: request.id, result: EmptyResult())
-            }
             return JSONRPCResponse.error(id: request.id, code: -32601, message: "Method not found: \(request.method)")
         }
     }
