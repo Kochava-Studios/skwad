@@ -23,7 +23,7 @@ protocol AgentDataProvider: Sendable {
     func setRegistered(for agentId: UUID, registered: Bool) async
     func setSessionId(for agentId: UUID, sessionId: String) async
     func findAgentBySessionId(_ sessionId: String) async -> Agent?
-    func updateAgentStatus(for agentId: UUID, status: AgentStatus, fromHook: Bool) async
+    func updateAgentStatus(for agentId: UUID, status: AgentStatus, source: ActivitySource) async
     func injectText(_ text: String, for agentId: UUID) async
     func addAgent(folder: String, name: String, avatar: String?, agentType: String, createdBy: UUID?, companion: Bool, shellCommand: String?) async -> UUID?
     func removeAgent(id: UUID) async -> Bool
@@ -481,9 +481,9 @@ actor MCPService: MCPServiceProtocol {
     }
 
     /// Update agent status from hook-based activity detection
-    func updateAgentStatus(for agentId: UUID, status: AgentStatus, fromHook: Bool) async {
+    func updateAgentStatus(for agentId: UUID, status: AgentStatus, source: ActivitySource) async {
         guard let provider = agentDataProvider else { return }
-        await provider.updateAgentStatus(for: agentId, status: status, fromHook: fromHook)
+        await provider.updateAgentStatus(for: agentId, status: status, source: source)
     }
 
     // MARK: - Cleanup
@@ -553,9 +553,9 @@ final class AgentManagerWrapper: AgentDataProvider, @unchecked Sendable {
         }
     }
 
-    func updateAgentStatus(for agentId: UUID, status: AgentStatus, fromHook: Bool) async {
+    func updateAgentStatus(for agentId: UUID, status: AgentStatus, source: ActivitySource) async {
         await MainActor.run {
-            manager?.updateStatus(for: agentId, status: status, fromHook: fromHook)
+            manager?.updateStatus(for: agentId, status: status, source: source)
         }
     }
 

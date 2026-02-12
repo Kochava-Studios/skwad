@@ -174,7 +174,7 @@ actor MCPServer: MCPTransportProtocol {
         }
 
         // Update agent status via hook path
-        await mcpService.updateAgentStatus(for: agent.id, status: agentStatus, fromHook: true)
+        await mcpService.updateAgentStatus(for: agent.id, status: agentStatus, source: .hook)
         logger.info("[skwad][\(String(agent.id.uuidString.prefix(8)).lowercased())] Hook status: \(statusString)")
 
         return plainResponse(status: .ok, body: "OK")

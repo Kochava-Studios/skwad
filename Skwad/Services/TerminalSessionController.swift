@@ -18,6 +18,13 @@ struct ActivityTracking: OptionSet {
     static let all: ActivityTracking  = [.userInput, .terminalOutput]
 }
 
+/// Identifies where a status update originated
+enum ActivitySource {
+    case terminal   // terminal output detection
+    case user       // user typing in terminal
+    case hook       // plugin hook (UserPromptSubmit / Stop)
+}
+
 /// Central controller for managing a terminal session's lifecycle and state.
 ///
 /// This controller owns all business logic for a terminal session:
@@ -66,7 +73,7 @@ class TerminalSessionController: ObservableObject {
     // MARK: - Dependencies
 
     private let settings = AppSettings.shared
-    private let onStatusChange: (_ status: AgentStatus, _ fromUserInput: Bool) -> Void
+    private let onStatusChange: (_ status: AgentStatus, _ source: ActivitySource) -> Void
     private let onTitleChange: ((String) -> Void)?
 
     /// Called when a deferred-start agent's terminal is ready and needs its command queued
@@ -87,7 +94,7 @@ class TerminalSessionController: ObservableObject {
     private var hasBecomeIdle = false
     private var didStart = false
     private var lastActivityTime: CFAbsoluteTime = 0
-    private var lastActivityFromUserInput = false
+    private var lastActivitySource: ActivitySource = .terminal
 
     // Registration prompt scheduling
     private let registrationTimer = ManagedTimer()
@@ -115,7 +122,7 @@ class TerminalSessionController: ObservableObject {
         shellCommand: String? = nil,
         activityTracking: ActivityTracking = .all,
         idleTimeout: TimeInterval = TimingConstants.idleTimeout,
-        onStatusChange: @escaping (_ status: AgentStatus, _ fromUserInput: Bool) -> Void,
+        onStatusChange: @escaping (_ status: AgentStatus, _ source: ActivitySource) -> Void,
         onTitleChange: ((String) -> Void)? = nil
     ) {
         self.agentId = agentId
@@ -300,7 +307,7 @@ class TerminalSessionController: ObservableObject {
 
         // Stamp activity time (always — cheap, no allocation)
         lastActivityTime = CFAbsoluteTimeGetCurrent()
-        lastActivityFromUserInput = fromUserInput
+        lastActivitySource = fromUserInput ? .user : .terminal
 
         // Set status to running (cheap: guarded by didSet)
         status = .running
@@ -441,8 +448,8 @@ class TerminalSessionController: ObservableObject {
     }
     
     private func statusDidChange(from oldValue: AgentStatus, to newValue: AgentStatus) {
-        onStatusChange(newValue, lastActivityFromUserInput)
-        lastActivityFromUserInput = false
+        onStatusChange(newValue, lastActivitySource)
+        lastActivitySource = .terminal
     }
     
     private func checkForUnreadMessages() {

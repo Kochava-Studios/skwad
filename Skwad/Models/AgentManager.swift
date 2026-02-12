@@ -267,8 +267,8 @@ final class AgentManager {
             agentType: agent.agentType,
             shellCommand: agent.shellCommand,
             activityTracking: tracking,
-            onStatusChange: { [weak self] status, fromUserInput in
-                self?.updateStatus(for: agent.id, status: status, fromUserInput: fromUserInput)
+            onStatusChange: { [weak self] status, source in
+                self?.updateStatus(for: agent.id, status: status, source: source)
             },
             onTitleChange: { [weak self] title in
                 self?.updateTitle(for: agent.id, title: title)
@@ -710,13 +710,13 @@ final class AgentManager {
         settings.saveAgents(agents)
     }
 
-    func updateStatus(for agentId: UUID, status: AgentStatus, fromHook: Bool = false, fromUserInput: Bool = false) {
+    func updateStatus(for agentId: UUID, status: AgentStatus, source: ActivitySource = .terminal) {
         if let index = agents.firstIndex(where: { $0.id == agentId }) {
             // When hook-based detection is active (sessionId + agent supports hooks),
             // only allow hook updates and user input — block terminal output
             let hookActive = agents[index].sessionId != nil
                 && TerminalCommandBuilder.usesActivityHooks(agentType: agents[index].agentType)
-            if hookActive && !fromHook && !fromUserInput {
+            if hookActive && source == .terminal {
                 return
             }
             guard agents[index].status != status else { return }
