@@ -39,6 +39,7 @@
 		8D7622B32F2C67CE006B6280 /* MCPTools.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D7622AC2F2C67CE006B6280 /* MCPTools.swift */; };
 		8D7622B42F2C67CE006B6280 /* MCPSessionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D7622AB2F2C67CE006B6280 /* MCPSessionManager.swift */; };
 		8DD8074D2F2E52E900D7A935 /* AgentSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DD8074C2F2E52E900D7A935 /* AgentSheet.swift */; };
+		8DEF1A6B2F3DB4DB00247C2C /* plugin in CopyFiles */ = {isa = PBXBuildFile; fileRef = 8DEF1A682F3DB49500247C2C /* plugin */; };
 		914A53BB8DBD66EC96B19BDA /* GitPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBECFB308DA186BC15E6AE50 /* GitPanelView.swift */; };
 		A0622F92A9748B402B7D8403 /* MenuItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = B85319AD6169FDBF46AAE73E /* MenuItem.swift */; };
 		A1789C06B8425D64920E2446 /* GitCLI.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCD187651343B17CF0D9CCCF /* GitCLI.swift */; };
@@ -140,7 +141,6 @@
 		WS000001 /* Workspace.swift in Sources */ = {isa = PBXBuildFile; fileRef = WS100001 /* Workspace.swift */; };
 		WS000002 /* WorkspaceBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = WS100002 /* WorkspaceBarView.swift */; };
 		WS000003 /* WorkspaceSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = WS100003 /* WorkspaceSheet.swift */; };
-		PL000001 /* plugin in Resources */ = {isa = PBXBuildFile; fileRef = PL100001 /* plugin */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -152,6 +152,19 @@
 			remoteInfo = Skwad;
 		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		8DEF1A6A2F3DB4D100247C2C /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 7;
+			files = (
+				8DEF1A6B2F3DB4DB00247C2C /* plugin in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		137C060CFAE6151E52210D1A /* GitRepository.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GitRepository.swift; sourceTree = "<group>"; };
@@ -177,6 +190,7 @@
 		8D7622AD2F2C67CE006B6280 /* MCPTransport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPTransport.swift; sourceTree = "<group>"; };
 		8D7622AE2F2C67CE006B6280 /* MCPTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPTypes.swift; sourceTree = "<group>"; };
 		8DD8074C2F2E52E900D7A935 /* AgentSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentSheet.swift; sourceTree = "<group>"; };
+		8DEF1A682F3DB49500247C2C /* plugin */ = {isa = PBXFileReference; lastKnownFileType = folder; path = plugin; sourceTree = "<group>"; };
 		A486F6A72822BE9094B02DA7 /* CommitSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CommitSheet.swift; sourceTree = "<group>"; };
 		ADCF18167D88BA578DBF2B2E /* GitTypes.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GitTypes.swift; sourceTree = "<group>"; };
 		AS100001 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -282,7 +296,6 @@
 		WS100001 /* Workspace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Workspace.swift; sourceTree = "<group>"; };
 		WS100002 /* WorkspaceBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkspaceBarView.swift; sourceTree = "<group>"; };
 		WS100003 /* WorkspaceSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkspaceSheet.swift; sourceTree = "<group>"; };
-		PL100001 /* plugin */ = {isa = PBXFileReference; lastKnownFileType = folder; path = plugin; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -478,7 +491,7 @@
 				TS500000 /* SkwadTests */,
 				SF200000 /* Frameworks */,
 				F8000101 /* Products */,
-				PL100001 /* plugin */,
+				8DEF1A682F3DB49500247C2C /* plugin */,
 			);
 			sourceTree = "<group>";
 		};
@@ -671,14 +684,6 @@
 			path = Workspace;
 			sourceTree = "<group>";
 		};
-		TS500014 /* Markdown */ = {
-			isa = PBXGroup;
-			children = (
-				TS100037 /* MarkdownToHTMLTests.swift */,
-			);
-			path = Markdown;
-			sourceTree = "<group>";
-		};
 		TS500011 /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
@@ -702,6 +707,14 @@
 				TS100036 /* RepoDiscoveryServiceTests.swift */,
 			);
 			path = Services;
+			sourceTree = "<group>";
+		};
+		TS500014 /* Markdown */ = {
+			isa = PBXGroup;
+			children = (
+				TS100037 /* MarkdownToHTMLTests.swift */,
+			);
+			path = Markdown;
 			sourceTree = "<group>";
 		};
 		UP200000 /* Updater */ = {
@@ -755,6 +768,7 @@
 				F80000FC /* Sources */,
 				F80000FD /* Frameworks */,
 				F80000FE /* Resources */,
+				8DEF1A6A2F3DB4D100247C2C /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -847,7 +861,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				AS000001 /* Assets.xcassets in Resources */,
-				PL000001 /* plugin in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1135,7 +1148,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 46;
+				CURRENT_PROJECT_VERSION = 47;
 				DEVELOPMENT_TEAM = S3Y2KVL7H7;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1167,7 +1180,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 46;
+				CURRENT_PROJECT_VERSION = 47;
 				DEVELOPMENT_TEAM = S3Y2KVL7H7;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
