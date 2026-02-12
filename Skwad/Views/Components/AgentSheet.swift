@@ -10,8 +10,9 @@ struct AgentPrefill: Identifiable {
     let insertAfterId: UUID?
     let createdBy: UUID?
     let isCompanion: Bool
+    let sessionId: String?
 
-    init(name: String, avatar: String?, folder: String, agentType: String, insertAfterId: UUID? = nil, createdBy: UUID? = nil, isCompanion: Bool = false) {
+    init(name: String, avatar: String?, folder: String, agentType: String, insertAfterId: UUID? = nil, createdBy: UUID? = nil, isCompanion: Bool = false, sessionId: String? = nil) {
         self.name = name
         self.avatar = avatar
         self.folder = folder
@@ -19,6 +20,7 @@ struct AgentPrefill: Identifiable {
         self.insertAfterId = insertAfterId
         self.createdBy = createdBy
         self.isCompanion = isCompanion
+        self.sessionId = sessionId
     }
 }
 
