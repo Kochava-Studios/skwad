@@ -158,7 +158,7 @@
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "";
-			dstSubfolderSpec = 16;
+			dstSubfolderSpec = 7;
 			files = (
 				8DEF1A6B2F3DB4DB00247C2C /* plugin in CopyFiles */,
 			);
