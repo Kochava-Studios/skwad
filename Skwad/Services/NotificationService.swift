@@ -23,8 +23,17 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
     }
 
     /// Send a desktop notification when an agent becomes blocked.
+    /// Skipped if agent is already blocked (dedup) or currently visible on screen.
     func notifyBlocked(agent: Agent, message: String? = nil) {
         guard settings.desktopNotificationsEnabled else { return }
+
+        // Skip if agent is already blocked (second hook for same event)
+        if let current = agentManager?.agents.first(where: { $0.id == agent.id }),
+           current.status == .blocked { return }
+
+        // Skip if agent is currently displayed
+        if let manager = agentManager,
+           manager.activeAgentIds.contains(agent.id) { return }
 
         let content = UNMutableNotificationContent()
         content.title = "Skwad - \(agent.name)"
