@@ -130,6 +130,15 @@ struct GeneralSettingsView: View {
       }
 
       Section {
+        Toggle("Desktop notifications when blocked", isOn: $settings.desktopNotificationsEnabled)
+      } header: {
+        Text("Notifications")
+      } footer: {
+        Text("Show a macOS notification when an agent needs your attention (e.g. permission prompt).")
+          .foregroundColor(.secondary)
+      }
+
+      Section {
         Toggle("Automatically check for updates", isOn: $automaticallyChecksForUpdates)
           .onChange(of: automaticallyChecksForUpdates) { _, newValue in
             updater.automaticallyChecksForUpdates = newValue

@@ -105,6 +105,9 @@ struct SkwadApp: App {
                     // Connect to app delegate for cleanup
                     appDelegate.agentManager = agentManager
 
+                    // Setup desktop notifications
+                    NotificationService.shared.setup(agentManager: agentManager)
+
                     // Setup menu bar if enabled
                     appDelegate.setupMenuBarIfNeeded()
 

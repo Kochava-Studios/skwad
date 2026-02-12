@@ -94,6 +94,7 @@
 		SR000004 /* TerminalCommandBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = SR100004 /* TerminalCommandBuilder.swift */; };
 		SR000006 /* TerminalSessionController.swift in Sources */ = {isa = PBXBuildFile; fileRef = SR100006 /* TerminalSessionController.swift */; };
 		SR000007 /* TerminalAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = SR100007 /* TerminalAdapter.swift */; };
+		SR000008 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = SR100008 /* NotificationService.swift */; };
 		TS000001 /* GitOutputParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100001 /* GitOutputParserTests.swift */; };
 		TS000002 /* GitOutputFixtures.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100002 /* GitOutputFixtures.swift */; };
 		TS000003 /* CommitSheetTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100003 /* CommitSheetTests.swift */; };
@@ -249,6 +250,7 @@
 		SR100004 /* TerminalCommandBuilder.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TerminalCommandBuilder.swift; sourceTree = "<group>"; };
 		SR100006 /* TerminalSessionController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TerminalSessionController.swift; sourceTree = "<group>"; };
 		SR100007 /* TerminalAdapter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TerminalAdapter.swift; sourceTree = "<group>"; };
+		SR100008 /* NotificationService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
 		TS100001 /* GitOutputParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitOutputParserTests.swift; sourceTree = "<group>"; };
 		TS100002 /* GitOutputFixtures.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitOutputFixtures.swift; sourceTree = "<group>"; };
 		TS100003 /* CommitSheetTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommitSheetTests.swift; sourceTree = "<group>"; };
@@ -558,6 +560,7 @@
 				SR100007 /* TerminalAdapter.swift */,
 				SR100004 /* TerminalCommandBuilder.swift */,
 				SR100006 /* TerminalSessionController.swift */,
+				SR100008 /* NotificationService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -877,6 +880,7 @@
 				SR000004 /* TerminalCommandBuilder.swift in Sources */,
 				SR000006 /* TerminalSessionController.swift in Sources */,
 				SR000007 /* TerminalAdapter.swift in Sources */,
+				SR000008 /* NotificationService.swift in Sources */,
 				F8001001 /* SkwadApp.swift in Sources */,
 				F8001002 /* ContentView.swift in Sources */,
 				F8001003 /* Agent.swift in Sources */,

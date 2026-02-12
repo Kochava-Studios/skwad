@@ -724,6 +724,9 @@ final class AgentManager {
             }
             guard agents[index].status != status else { return }
             agents[index].status = status
+            if status == .blocked {
+                NotificationService.shared.notifyBlocked(agent: agents[index])
+            }
             if status == .idle && !agents[index].isShell {
                 refreshGitStats(for: agentId)
             }
