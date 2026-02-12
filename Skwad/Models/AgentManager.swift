@@ -194,11 +194,14 @@ final class AgentManager {
         saveWorkspaces()
     }
 
-    /// Check if any agent in a workspace is working
-    func isWorkspaceActive(_ workspace: Workspace) -> Bool {
-        workspace.agentIds.contains { agentId in
-            agents.first { $0.id == agentId }?.status == .running
+    /// Returns the "worst" status across all agents in a workspace (blocked > running > idle)
+    func workspaceStatus(_ workspace: Workspace) -> AgentStatus? {
+        let statuses = workspace.agentIds.compactMap { agentId in
+            agents.first { $0.id == agentId }?.status
         }
+        if statuses.contains(.blocked) { return .blocked }
+        if statuses.contains(.running) { return .running }
+        return nil
     }
 
     private func saveWorkspaces() {

@@ -728,25 +728,37 @@ struct AgentManagerTests {
     @Suite("Status")
     struct StatusTests {
 
-        @Test("isWorkspaceActive returns true if any agent is running")
+        @Test("workspaceStatus returns .running if any agent is running")
         @MainActor
-        func isWorkspaceActiveReturnsTrueIfRunning() async {
+        func workspaceStatusReturnsRunningIfRunning() async {
             let manager = AgentManagerTests.setupManager(agentCount: 2)
             manager.agents[0].status = .running
 
-            let isActive = manager.isWorkspaceActive(manager.currentWorkspace!)
+            let status = manager.workspaceStatus(manager.currentWorkspace!)
 
-            #expect(isActive == true)
+            #expect(status == .running)
         }
 
-        @Test("isWorkspaceActive returns false if all agents idle")
+        @Test("workspaceStatus returns nil if all agents idle")
         @MainActor
-        func isWorkspaceActiveReturnsFalseIfAllIdle() async {
+        func workspaceStatusReturnsNilIfAllIdle() async {
             let manager = AgentManagerTests.setupManager(agentCount: 2)
 
-            let isActive = manager.isWorkspaceActive(manager.currentWorkspace!)
+            let status = manager.workspaceStatus(manager.currentWorkspace!)
 
-            #expect(isActive == false)
+            #expect(status == nil)
+        }
+
+        @Test("workspaceStatus returns .blocked if any agent is blocked")
+        @MainActor
+        func workspaceStatusReturnsBlockedIfBlocked() async {
+            let manager = AgentManagerTests.setupManager(agentCount: 2)
+            manager.agents[0].status = .running
+            manager.agents[1].status = .blocked
+
+            let status = manager.workspaceStatus(manager.currentWorkspace!)
+
+            #expect(status == .blocked)
         }
     }
 

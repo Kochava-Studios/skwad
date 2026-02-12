@@ -37,7 +37,7 @@ struct WorkspaceBarView: View {
                     WorkspaceAvatarView(
                         workspace: workspace,
                         isSelected: workspace.id == agentManager.currentWorkspaceId,
-                        isActive: agentManager.isWorkspaceActive(workspace)
+                        activityStatus: agentManager.workspaceStatus(workspace)
                     )
                     .onTapGesture {
                         agentManager.switchToWorkspace(workspace.id)
@@ -61,7 +61,7 @@ struct WorkspaceBarView: View {
                         WorkspaceAvatarView(
                             workspace: workspace,
                             isSelected: true,
-                            isActive: false
+                            activityStatus: nil
                         )
                         .opacity(0.8)
                     }
@@ -142,7 +142,7 @@ struct WorkspaceBarView: View {
 struct WorkspaceAvatarView: View {
     let workspace: Workspace
     let isSelected: Bool
-    let isActive: Bool
+    let activityStatus: AgentStatus?
 
     private let size: CGFloat = 32
     private let unselectedColor = Color(hex: "#848CAF")!
@@ -158,10 +158,10 @@ struct WorkspaceAvatarView: View {
                         .foregroundColor(.white)
                 )
 
-            // Activity indicator (subtle orange dot)
-            if isActive {
+            // Activity indicator dot (color reflects workspace status)
+            if let status = activityStatus {
                 Circle()
-                    .fill(Color.orange)
+                    .fill(status.color)
                     .frame(width: 10, height: 10)
                     .overlay(
                         Circle()
