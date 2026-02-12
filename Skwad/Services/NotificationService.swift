@@ -23,12 +23,12 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
     }
 
     /// Send a desktop notification when an agent becomes blocked.
-    func notifyBlocked(agent: Agent) {
+    func notifyBlocked(agent: Agent, message: String? = nil) {
         guard settings.desktopNotificationsEnabled else { return }
 
         let content = UNMutableNotificationContent()
-        content.title = agent.name
-        content.body = "Needs your attention"
+        content.title = "Skwad - \(agent.name)"
+        content.body = message ?? "Needs your attention"
         content.sound = .default
         content.userInfo = ["agentId": agent.id.uuidString]
 

@@ -214,9 +214,13 @@ actor MCPServer: MCPTransportProtocol {
             let agentPrefix = "[skwad][\(String(agent.id.uuidString.prefix(8)).lowercased())]"
             logger.info("\(agentPrefix) Hook event: \(hookType) (notification_type=\(notificationType ?? "none"))")
 
-            // Notification hook with permission_prompt → blocked status
-            if hookType == "Notification" && notificationType == "permission_prompt" {
+            // Notification hook with permission_prompt → blocked status + desktop notification
+            if (hookType.lowercased() == "permission_request" || (hookType.lowercased() == "notification" && notificationType?.lowercased() == "permission_prompt")) {
                 await mcpService.updateAgentStatus(for: agent.id, status: .blocked, source: .hook)
+                let message = payload?["message"] as? String
+                await MainActor.run {
+                    NotificationService.shared.notifyBlocked(agent: agent, message: message)
+                }
             }
 
             return plainResponse(status: .ok, body: "OK")

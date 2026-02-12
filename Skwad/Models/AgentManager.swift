@@ -404,7 +404,6 @@ final class AgentManager {
         controllers[agentId]?.injectText(text)
     }
 
-
     /// Notify terminal to resize (e.g., when git panel toggles)
     func notifyTerminalResize(for agentId: UUID) {
         controllers[agentId]?.notifyResize()
@@ -726,7 +725,6 @@ final class AgentManager {
             agents[index].status = status
             if status == .blocked {
                 controllers[agentId]?.status = .blocked
-                NotificationService.shared.notifyBlocked(agent: agents[index])
             }
             if status == .idle && !agents[index].isShell {
                 refreshGitStats(for: agentId)
