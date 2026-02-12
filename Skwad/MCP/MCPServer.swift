@@ -208,11 +208,14 @@ actor MCPServer: MCPTransportProtocol {
                 return plainResponse(status: .notFound, body: "No agent found for session_id")
             }
 
-            let agentPrefix = "[skwad][\(String(agent.id.uuidString.prefix(8)).lowercased())]"
-            logger.info("\(agentPrefix) Hook event: \(hookType)")
+            let payload = json["payload"] as? [String: Any]
+            let notificationType = payload?["notification_type"] as? String
 
-            // Notification and permission_request hooks → blocked status
-            if hookType == "notification" || hookType == "permission_request" {
+            let agentPrefix = "[skwad][\(String(agent.id.uuidString.prefix(8)).lowercased())]"
+            logger.info("\(agentPrefix) Hook event: \(hookType) (notification_type=\(notificationType ?? "none"))")
+
+            // Notification hook with permission_prompt → blocked status
+            if hookType == "Notification" && notificationType == "permission_prompt" {
                 await mcpService.updateAgentStatus(for: agent.id, status: .blocked, source: .hook)
             }
 
