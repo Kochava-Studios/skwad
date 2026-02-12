@@ -41,6 +41,11 @@ actor MCPServer: MCPTransportProtocol {
             await handleActivityStatus(request, context: context)
         }
 
+        // Hook event logging endpoint
+        router.post("/api/v1/agent/hook-event") { [self] request, context in
+            await handleHookEvent(request, context: context)
+        }
+
         let app = Application(
             router: router,
             configuration: .init(
@@ -170,9 +175,38 @@ actor MCPServer: MCPTransportProtocol {
 
         // Update agent status via hook path
         await mcpService.updateAgentStatus(for: agent.id, status: agentStatus, fromHook: true)
-        logger.debug("[skwad][\(String(agent.id.uuidString.prefix(8)).lowercased())] Hook status: \(statusString)")
+        logger.info("[skwad][\(String(agent.id.uuidString.prefix(8)).lowercased())] Hook status: \(statusString)")
 
         return plainResponse(status: .ok, body: "OK")
+    }
+
+    // MARK: - Hook Event Logger
+
+    private func handleHookEvent(_ request: Request, context: BasicRequestContext) async -> Response {
+        do {
+            let bodyBuffer = try await request.body.collect(upTo: 64 * 1024)
+            let bodyData = Data(buffer: bodyBuffer)
+
+            guard let json = try? JSONSerialization.jsonObject(with: bodyData) as? [String: Any],
+                  let sessionId = json["session_id"] as? String,
+                  let hookType = json["hook_type"] as? String else {
+                return plainResponse(status: .badRequest, body: "Invalid hook event payload")
+            }
+
+            // Look up agent for context
+            let agentPrefix: String
+            if let agent = await mcpService.findAgentBySessionId(sessionId) {
+                agentPrefix = "[skwad][\(String(agent.id.uuidString.prefix(8)).lowercased())]"
+            } else {
+                agentPrefix = "[skwad][unknown]"
+            }
+
+            logger.info("\(agentPrefix) Hook event: \(hookType) — \(String(data: bodyData, encoding: .utf8) ?? "{}")")
+
+            return plainResponse(status: .ok, body: "OK")
+        } catch {
+            return plainResponse(status: .badRequest, body: "Failed to read body")
+        }
     }
 
     private func plainResponse(status: HTTPResponse.Status, body: String) -> Response {
