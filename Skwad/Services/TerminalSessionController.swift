@@ -88,6 +88,7 @@ class TerminalSessionController: ObservableObject {
     private var monitorsMCP: Bool
 
     private let idleTimer = ManagedTimer()
+    private let inputProtectedTimer = ManagedTimer()
     private let idleTimeout: TimeInterval
     private var lastNotifiedMessageId: UUID?
     private var isDisposed = false
@@ -265,7 +266,10 @@ class TerminalSessionController: ObservableObject {
     }
 
     /// Inject text into the terminal followed by return (for MCP messages, registration, etc.)
+    /// Skipped when input is protected (user is typing) — messages stay in MCP queue
+    /// and will be picked up on next idle.
     func injectText(_ text: String) {
+        guard !inputProtectedTimer.isActive else { return }
         sendCommand(text)
     }
 
@@ -309,17 +313,21 @@ class TerminalSessionController: ObservableObject {
         lastActivityTime = CFAbsoluteTimeGetCurrent()
         lastActivitySource = fromUserInput ? .user : .terminal
 
-        let wasBlocked = _status == .blocked
+        if fromUserInput {
+            // Protect input: block automatic injections while user is typing
+            inputProtectedTimer.schedule(after: TimingConstants.userInputIdleTimeout) { }
 
-        // Set status to running (cheap: guarded by didSet)
+            // Unblock if blocked
+            if _status == .blocked {
+                status = .running
+            }
+
+            // For hook-managed agents, user input doesn't drive the status state machine
+            if activityTracking == .userInput { return }
+        }
+
+        // Full terminal-based detection: set running + schedule idle timer
         status = .running
-
-        // Don't schedule idle timer when unblocking — the agent will produce
-        // output (or hook events) that handle the lifecycle from here
-        if wasBlocked { return }
-
-        // Schedule idle timer only if none is running — the timer itself
-        // handles rescheduling when it finds recent activity
         if !idleTimer.isActive {
             let timeout = fromUserInput ? TimingConstants.userInputIdleTimeout : idleTimeout
             idleTimer.schedule(after: timeout) { [weak self] in
@@ -374,6 +382,7 @@ class TerminalSessionController: ObservableObject {
     func dispose() {
         isDisposed = true
         idleTimer.invalidate()
+        inputProtectedTimer.invalidate()
         registrationTimer.invalidate()
 
         // Terminate the shell process
