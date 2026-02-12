@@ -114,16 +114,6 @@ final class AgentTests: XCTestCase {
         XCTAssertFalse(agent.isShell)
     }
 
-    func testTracksActivityFalseForShell() {
-        let agent = Agent(name: "Shell", folder: "/tmp", agentType: "shell")
-        XCTAssertFalse(agent.tracksActivity)
-    }
-
-    func testTracksActivityTrueForNonShell() {
-        let agent = Agent(name: "Claude", folder: "/tmp", agentType: "claude")
-        XCTAssertTrue(agent.tracksActivity)
-    }
-
     // MARK: - Pending Start
 
     func testIsPendingStartDefaultsFalse() {

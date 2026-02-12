@@ -189,7 +189,7 @@ actor MCPServer: MCPTransportProtocol {
         return plainResponse(status: .ok, body: "OK")
     }
 
-    // MARK: - Hook Event Logger
+    // MARK: - Hook Event Handler
 
     private func handleHookEvent(_ request: Request, context: BasicRequestContext) async -> Response {
         do {
@@ -202,15 +202,19 @@ actor MCPServer: MCPTransportProtocol {
                 return plainResponse(status: .badRequest, body: "Invalid hook event payload")
             }
 
-            // Look up agent for context
-            let agentPrefix: String
-            if let agent = await mcpService.findAgentBySessionId(sessionId) {
-                agentPrefix = "[skwad][\(String(agent.id.uuidString.prefix(8)).lowercased())]"
-            } else {
-                agentPrefix = "[skwad][unknown]"
+            // Look up agent by session ID
+            guard let agent = await mcpService.findAgentBySessionId(sessionId) else {
+                logger.warning("[skwad][unknown] Hook event: \(hookType) (no agent for session_id=\(sessionId))")
+                return plainResponse(status: .notFound, body: "No agent found for session_id")
             }
 
-            logger.info("\(agentPrefix) Hook event: \(hookType) — \(String(data: bodyData, encoding: .utf8) ?? "{}")")
+            let agentPrefix = "[skwad][\(String(agent.id.uuidString.prefix(8)).lowercased())]"
+            logger.info("\(agentPrefix) Hook event: \(hookType)")
+
+            // Notification and permission_request hooks → blocked status
+            if hookType == "notification" || hookType == "permission_request" {
+                await mcpService.updateAgentStatus(for: agent.id, status: .blocked, source: .hook)
+            }
 
             return plainResponse(status: .ok, body: "OK")
         } catch {
