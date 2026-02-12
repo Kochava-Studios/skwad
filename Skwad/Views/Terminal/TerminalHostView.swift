@@ -14,9 +14,20 @@ class ActivityDetectingTerminalView: LocalProcessTerminalView {
     }
 
     // Called when user sends data (input) - e.g., typing
+    // Map raw bytes to macOS keyCodes for Return (36) and Escape (53)
     override func send(source: Terminal, data: ArraySlice<UInt8>) {
         super.send(source: source, data: data)
-        onUserInput?(0)
+        let keyCode: UInt16
+        if let firstByte = data.first {
+            switch firstByte {
+            case 0x0D: keyCode = 36  // Return
+            case 0x1B: keyCode = 53  // Escape
+            default:   keyCode = 0
+            }
+        } else {
+            keyCode = 0
+        }
+        onUserInput?(keyCode)
     }
 }
 
