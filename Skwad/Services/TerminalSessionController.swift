@@ -315,7 +315,9 @@ class TerminalSessionController: ObservableObject {
 
         if fromUserInput {
             // Protect input: block automatic injections while user is typing
-            inputProtectedTimer.schedule(after: TimingConstants.userInputIdleTimeout) { }
+            inputProtectedTimer.schedule(after: TimingConstants.userInputIdleTimeout) { [weak self] in
+                self?.inputProtectionDidExpire()
+            }
 
             // Unblock if blocked
             if _status == .blocked {
@@ -437,6 +439,13 @@ class TerminalSessionController: ObservableObject {
         }
         
         // Check for messages if MCP monitoring is enabled
+        if monitorsMCP {
+            checkForUnreadMessages()
+        }
+    }
+
+    private func inputProtectionDidExpire() {
+        guard !isDisposed else { return }
         if monitorsMCP {
             checkForUnreadMessages()
         }
