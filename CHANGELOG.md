@@ -14,6 +14,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 - Sending messages to shell agents now returns a clear error
+- MCP server error in Codex
 
 ### Removed
 - N/A
