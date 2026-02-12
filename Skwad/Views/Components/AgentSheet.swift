@@ -53,6 +53,9 @@ struct AgentSheet: View {
     @State private var relocateCompanions = true
     @State private var includeCompanions = false
 
+    // Fork conversation
+    @State private var keepConversation = false
+
     // Git data
     @State private var recentRepoInfos: [RepoInfo] = []
     @State private var shouldApplyPrefillWorktree = false
@@ -63,6 +66,12 @@ struct AgentSheet: View {
     private var folderChanged: Bool { isEditing && selectedFolder != editingAgent?.folder }
     /// The source agent ID: the editing agent or the fork source
     private var sourceAgentId: UUID? { editingAgent?.id ?? prefill?.insertAfterId }
+    private var canForkConversation: Bool {
+        isForking
+            && TerminalCommandBuilder.canForkConversation(agentType: selectedAgentType)
+            && prefill?.sessionId != nil
+            && selectedFolder == prefill?.folder
+    }
     private var hasCompanions: Bool {
         guard let id = sourceAgentId else { return false }
         return !agentManager.companions(of: id).isEmpty
@@ -182,6 +191,10 @@ struct AgentSheet: View {
                     if hasCompanions && isForking {
                         Toggle("Include companions", isOn: $includeCompanions)
                             .help("Create copies of companion agents for the forked agent")
+                    }
+                    if canForkConversation {
+                        Toggle("Keep conversation history", isOn: $keepConversation)
+                            .help("Fork the source agent's conversation into the new agent")
                     }
                 }
             }
@@ -391,6 +404,7 @@ struct AgentSheet: View {
         var height: CGFloat = hasWorktreeFeatures ? 420 : 340
         let showCompanionToggle = hasCompanions && ((isEditing && folderChanged) || isForking)
         if showCompanionToggle { height += 40 }
+        if canForkConversation { height += 40 }
         return height
     }
 
@@ -563,7 +577,8 @@ struct AgentSheet: View {
             createdBy: prefill?.createdBy,
             isCompanion: prefill?.isCompanion ?? false,
             insertAfterId: prefill?.insertAfterId,
-            shellCommand: shellCommand.isEmpty ? nil : shellCommand
+            shellCommand: shellCommand.isEmpty ? nil : shellCommand,
+            forkSessionId: keepConversation ? prefill?.sessionId : nil
         )
 
         if let newAgentId, let createdBy = prefill?.createdBy, prefill?.isCompanion == true {

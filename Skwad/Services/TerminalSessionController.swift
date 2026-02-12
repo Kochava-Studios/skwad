@@ -65,6 +65,9 @@ class TerminalSessionController: ObservableObject {
     /// Optional command for shell agent type
     let shellCommand: String?
 
+    /// Session ID to fork from (used once at launch, then ignored)
+    let forkSessionId: String?
+
     /// Which terminal activity sources trigger status changes.
     /// Starts as `.all` for non-shell agents; downgraded to `.userInput`
     /// once hook-based detection is confirmed (sessionId set).
@@ -121,6 +124,7 @@ class TerminalSessionController: ObservableObject {
         folder: String,
         agentType: String,
         shellCommand: String? = nil,
+        forkSessionId: String? = nil,
         activityTracking: ActivityTracking = .all,
         idleTimeout: TimeInterval = TimingConstants.idleTimeout,
         onStatusChange: @escaping (_ status: AgentStatus, _ source: ActivitySource) -> Void,
@@ -130,6 +134,7 @@ class TerminalSessionController: ObservableObject {
         self.folder = folder
         self.agentType = agentType
         self.shellCommand = shellCommand
+        self.forkSessionId = forkSessionId
         self.activityTracking = activityTracking
         self.monitorsMCP = AppSettings.shared.mcpServerEnabled
         self.idleTimeout = idleTimeout
@@ -211,7 +216,8 @@ class TerminalSessionController: ObservableObject {
             for: agentType,
             settings: settings,
             agentId: agentIdForRegistration,
-            shellCommand: shellCommand
+            shellCommand: shellCommand,
+            forkSessionId: forkSessionId
         )
         return TerminalCommandBuilder.buildInitializationCommand(
             folder: folder,

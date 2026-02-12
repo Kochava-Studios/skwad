@@ -269,6 +269,7 @@ final class AgentManager {
             folder: agent.folder,
             agentType: agent.agentType,
             shellCommand: agent.shellCommand,
+            forkSessionId: agent.forkSessionId,
             activityTracking: tracking,
             onStatusChange: { [weak self] status, source in
                 self?.updateStatus(for: agent.id, status: status, source: source)
@@ -452,9 +453,11 @@ final class AgentManager {
         createdBy: UUID? = nil,
         isCompanion: Bool = false,
         insertAfterId: UUID? = nil,
-        shellCommand: String? = nil
+        shellCommand: String? = nil,
+        forkSessionId: String? = nil
     ) -> UUID? {
         var agent = Agent(folder: folder, avatar: avatar, agentType: agentType, createdBy: createdBy, isCompanion: isCompanion, shellCommand: shellCommand)
+        agent.forkSessionId = forkSessionId
         if let name = name {
             agent.name = name
         }
