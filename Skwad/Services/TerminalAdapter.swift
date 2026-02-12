@@ -44,7 +44,7 @@ protocol TerminalAdapter: AnyObject {
 
     // Events emitted to controller
     var onActivity: (() -> Void)? { get set }
-    var onUserInput: (() -> Void)? { get set }
+    var onUserInput: ((UInt16) -> Void)? { get set }
     var onReady: (() -> Void)? { get set }
     var onProcessExit: ((Int32?) -> Void)? { get set }
     var onTitleChange: ((String) -> Void)? { get set }
@@ -77,7 +77,7 @@ class GhosttyTerminalAdapter: TerminalAdapter {
     let commandMode: TerminalCommandMode = .atCreation
 
     var onActivity: (() -> Void)?
-    var onUserInput: (() -> Void)?
+    var onUserInput: ((UInt16) -> Void)?
     var onReady: (() -> Void)?
     var onProcessExit: ((Int32?) -> Void)?
     var onTitleChange: ((String) -> Void)?
@@ -100,8 +100,8 @@ class GhosttyTerminalAdapter: TerminalAdapter {
                 }
             }
             if self?.onUserInput != nil {
-                terminal.onUserInput = { [weak self] in
-                    self?.onUserInput?()
+                terminal.onUserInput = { [weak self] keyCode in
+                    self?.onUserInput?(keyCode)
                 }
             }
             terminal.onReady = { [weak self] in
@@ -162,7 +162,7 @@ class SwiftTermAdapter: TerminalAdapter {
     let commandMode: TerminalCommandMode = .afterReady
 
     var onActivity: (() -> Void)?
-    var onUserInput: (() -> Void)?
+    var onUserInput: ((UInt16) -> Void)?
     var onReady: (() -> Void)?
     var onProcessExit: ((Int32?) -> Void)?
     var onTitleChange: ((String) -> Void)?  // SwiftTerm ignores this
@@ -179,8 +179,8 @@ class SwiftTermAdapter: TerminalAdapter {
             terminal.onActivity = { [weak self] in
                 self?.onActivity?()
             }
-            terminal.onUserInput = { [weak self] in
-                self?.onUserInput?()
+            terminal.onUserInput = { [weak self] keyCode in
+                self?.onUserInput?(keyCode)
             }
             // Note: SwiftTerm doesn't have onReady/onProcessExit callbacks on the view
             // These are handled via LocalProcessTerminalViewDelegate and notifyReady/notifyProcessExit

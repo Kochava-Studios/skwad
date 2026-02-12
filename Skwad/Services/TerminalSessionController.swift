@@ -156,8 +156,8 @@ class TerminalSessionController: ObservableObject {
             adapter.onActivity = { [weak self] in
                 self?.activityDetected(fromUserInput: false)
             }
-            adapter.onUserInput = { [weak self] in
-                self?.activityDetected(fromUserInput: true)
+            adapter.onUserInput = { [weak self] keyCode in
+                self?.activityDetected(fromUserInput: true, keyCode: keyCode)
             }
         }
         adapter.onReady = { [weak self] in
@@ -295,7 +295,8 @@ class TerminalSessionController: ObservableObject {
     /// Signals that activity has been detected in the terminal.
     /// Stamps the time and ensures exactly one idle timer is running.
     /// - Parameter fromUserInput: If true, uses longer timeout for user typing
-    private func activityDetected(fromUserInput: Bool) {
+    /// - Parameter keyCode: macOS keyCode (only meaningful when fromUserInput is true)
+    private func activityDetected(fromUserInput: Bool, keyCode: UInt16 = 0) {
         guard !isDisposed else { return }
 
         // Check if this source is enabled in the current tracking bitfield
@@ -319,9 +320,13 @@ class TerminalSessionController: ObservableObject {
                 self?.inputProtectionDidExpire()
             }
 
-            // Unblock if blocked
+            // Unblock only on Return (answered prompt → running) or Escape (dismissed → idle)
             if _status == .blocked {
-                status = .running
+                if keyCode == 36 {       // Return
+                    status = .running
+                } else if keyCode == 53 { // Escape
+                    status = .idle
+                }
             }
 
             // For hook-managed agents, user input doesn't drive the status state machine

@@ -49,7 +49,7 @@ class GhosttyTerminalView: NSView {
     var onActivity: (() -> Void)?
 
     /// Callback invoked when user presses a key (for user input activity detection)
-    var onUserInput: (() -> Void)?
+    var onUserInput: ((UInt16) -> Void)?
 
     private(set) var didSignalReady = false
 
@@ -273,7 +273,7 @@ class GhosttyTerminalView: NSView {
 
     override func keyDown(with event: NSEvent) {
         // Notify user input activity (uses longer timeout than terminal output)
-        onUserInput?()
+        onUserInput?(event.keyCode)
 
         inputHandler.handleKeyDown(with: event) { [weak self] events in
             self?.interpretKeyEvents(events)
