@@ -216,11 +216,11 @@ actor MCPServer: MCPTransportProtocol {
 
             // Notification hook with permission_prompt → blocked status + desktop notification
             if (hookType.lowercased() == "permission_request" || (hookType.lowercased() == "notification" && notificationType?.lowercased() == "permission_prompt")) {
-                await mcpService.updateAgentStatus(for: agent.id, status: .blocked, source: .hook)
                 let message = payload?["message"] as? String
                 await MainActor.run {
                     NotificationService.shared.notifyBlocked(agent: agent, message: message)
                 }
+                await mcpService.updateAgentStatus(for: agent.id, status: .blocked, source: .hook)
             }
 
             return plainResponse(status: .ok, body: "OK")
