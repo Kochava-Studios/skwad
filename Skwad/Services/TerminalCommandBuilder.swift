@@ -16,7 +16,7 @@ struct TerminalCommandBuilder {
   ///   - agentId: The agent's UUID for inline registration (optional)
   ///   - shellCommand: Optional command to run for shell agent type
   /// - Returns: The complete agent command with all arguments
-  static func buildAgentCommand(for agentType: String, settings: AppSettings, agentId: UUID? = nil, shellCommand: String? = nil) -> String {
+  static func buildAgentCommand(for agentType: String, settings: AppSettings, agentId: UUID? = nil, shellCommand: String? = nil, forkSessionId: String? = nil) -> String {
     // Shell type: return custom command or empty
     if agentType == "shell" {
       return shellCommand ?? ""
@@ -28,6 +28,11 @@ struct TerminalCommandBuilder {
     guard !cmd.isEmpty else { return "" }
 
     var fullCommand = cmd
+
+    // Add fork session arguments (--resume <id> --fork-session)
+    if let sessionId = forkSessionId, canForkConversation(agentType: agentType) {
+      fullCommand += " --resume \(sessionId) --fork-session"
+    }
 
     // Add user-provided options first (e.g., --settings)
     if !userOpts.isEmpty {
@@ -60,6 +65,26 @@ struct TerminalCommandBuilder {
   }
 
   // MARK: - Inline Registration
+
+  /// Check if an agent type supports forking a conversation (--resume + --fork-session)
+  static func canForkConversation(agentType: String) -> Bool {
+    switch agentType {
+    case "claude":
+      return true
+    default:
+      return false
+    }
+  }
+
+  /// Check if an agent type supports resuming a conversation (--resume / --continue)
+  static func canResumeConversation(agentType: String) -> Bool {
+    switch agentType {
+    case "claude":
+      return true
+    default:
+      return false
+    }
+  }
 
   /// Check if an agent type uses hook-based activity detection (via plugin)
   /// When true, terminal-level activity tracking is disabled
