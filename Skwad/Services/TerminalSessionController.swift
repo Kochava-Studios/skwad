@@ -309,8 +309,14 @@ class TerminalSessionController: ObservableObject {
         lastActivityTime = CFAbsoluteTimeGetCurrent()
         lastActivitySource = fromUserInput ? .user : .terminal
 
+        let wasBlocked = _status == .blocked
+
         // Set status to running (cheap: guarded by didSet)
         status = .running
+
+        // Don't schedule idle timer when unblocking — the agent will produce
+        // output (or hook events) that handle the lifecycle from here
+        if wasBlocked { return }
 
         // Schedule idle timer only if none is running — the timer itself
         // handles rescheduling when it finds recent activity
