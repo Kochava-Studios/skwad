@@ -125,7 +125,7 @@ struct TerminalCommandBuilder {
     case "claude":
       // Claude: registration is handled by hooks, just inject system prompt
       let systemPrompt = registrationSystemPrompt(agentId: agentId)
-      return #" --append-system-prompt "\#(systemPrompt)" "List other agents names and project based on context.""#
+      return #" --append-system-prompt "\#(systemPrompt)" "List other agents names and project (no ID) in a table based on context.""#
 
     case "codex":
       // Codex: user prompt as last argument (no flag)
