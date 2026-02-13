@@ -78,8 +78,8 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
             manager.selectAgent(agentId)
 
             // Bring window to front
-            NSApp.activate()
             NSApp.windows.first(where: { $0.canBecomeMain })?.makeKeyAndOrderFront(nil)
+            NSRunningApplication.current.activate(options: [.activateIgnoringOtherApps])
 
             completionHandler()
         }

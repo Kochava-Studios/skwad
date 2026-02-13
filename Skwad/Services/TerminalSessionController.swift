@@ -200,7 +200,7 @@ class TerminalSessionController: ObservableObject {
         if defersCommand { return "" }
 
         let command = buildCommand(withRegistration: true)
-        Self.logger.info("[skwad][\(String(self.agentId.uuidString.prefix(8)).lowercased())] Command: \(command)")
+        Self.logger.info("[skwad][\(String(self.agentId.uuidString.prefix(8)).lowercased(), privacy: .public)] Command: \(command, privacy: .public)")
         return command
     }
 
