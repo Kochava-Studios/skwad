@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.6.0] - WIP
+
+### Added
+- Claude: detect when agent is prompting user. Shows new "Blocked" status (red dot on agent and workspace)
+- Claude: add keep conversation option when forking an agent
+- Claude: plugin with slash commands (/list-agents, /send, /check, /broadcast, /worktree, etc.)
+- Desktop notifications when an agent needs attention (with click-to-navigate)
+
+### Changed
+- Claude: registration now uses hooks instead of MCP call on startup
+- Claude: hook-based activity detection replaces terminal output parsing for more accurate status
+
+### Fixed
+- N/A
+
+### Removed
+- N/A
+
+
 ## [1.5.0] - 2026-02-12
 
 ### Added
