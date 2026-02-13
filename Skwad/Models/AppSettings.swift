@@ -212,6 +212,9 @@ class AppSettings: ObservableObject {
     @AppStorage("voicePushToTalkKey") var voicePushToTalkKey: Int = 60  // Right Shift keyCode
     @AppStorage("voiceAutoInsert") var voiceAutoInsert: Bool = true
 
+    // Notifications
+    @AppStorage("desktopNotificationsEnabled") var desktopNotificationsEnabled: Bool = true
+
     // MCP Server
     @AppStorage("mcpServerPort") var mcpServerPort: Int = 8766
     @AppStorage("mcpServerEnabled") var mcpServerEnabled: Bool = true

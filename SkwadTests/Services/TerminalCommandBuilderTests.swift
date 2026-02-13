@@ -464,6 +464,41 @@ final class TerminalCommandBuilderTests: XCTestCase {
         XCTAssertEqual(command, " cd '/path/to/project' && clear && npm run dev")
     }
 
+    // MARK: - SKWAD_AGENT_ID Env Var
+
+    func testBuildInitializationCommandInjectsAgentIdEnvVar() {
+        let agentId = UUID()
+        let command = TerminalCommandBuilder.buildInitializationCommand(
+            folder: "/path/to/project",
+            agentCommand: "claude",
+            agentId: agentId
+        )
+
+        XCTAssertTrue(command.contains("SKWAD_AGENT_ID=\(agentId.uuidString) claude"))
+    }
+
+    func testBuildInitializationCommandOmitsAgentIdWhenNil() {
+        let command = TerminalCommandBuilder.buildInitializationCommand(
+            folder: "/path/to/project",
+            agentCommand: "claude"
+        )
+
+        XCTAssertFalse(command.contains("SKWAD_AGENT_ID"))
+    }
+
+    func testBuildInitializationCommandNoAgentIdForShellMode() {
+        let agentId = UUID()
+        let command = TerminalCommandBuilder.buildInitializationCommand(
+            folder: "/path/to/project",
+            agentCommand: "",
+            agentId: agentId
+        )
+
+        // Shell mode: no agent command, no env var
+        XCTAssertFalse(command.contains("SKWAD_AGENT_ID"))
+        XCTAssertEqual(command, " cd '/path/to/project' && clear")
+    }
+
     // MARK: - Default Shell
 
     func testGetDefaultShellReturnsShellEnvOrZsh() {

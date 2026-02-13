@@ -18,7 +18,8 @@ actor MCPToolHandler {
                 description: "Register this agent with Skwad crew. Call this first before using other tools.",
                 inputSchema: ToolInputSchema(
                     properties: [
-                        "agentId": PropertySchema(type: "string", description: "The agent ID provided by Skwad")
+                        "agentId": PropertySchema(type: "string", description: "The agent ID provided by Skwad"),
+                        "sessionId": PropertySchema(type: "string", description: "Your internal session ID.")
                     ],
                     required: ["agentId"]
                 )
@@ -166,7 +167,8 @@ actor MCPToolHandler {
             return errorResult("Missing required parameter: agentId")
         }
 
-        let success = await mcpService.registerAgent(agentId: agentId)
+        let sessionId = arguments["sessionId"] as? String
+        let success = await mcpService.registerAgent(agentId: agentId, sessionId: sessionId)
 
         if success {
             // Get skwad members for context

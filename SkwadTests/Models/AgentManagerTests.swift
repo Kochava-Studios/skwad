@@ -19,17 +19,17 @@ struct AgentManagerTests {
     }
 
     /// Create test agents
-    static func createTestAgents(count: Int) -> [Agent] {
+    static func createTestAgents(count: Int, agentType: String = "claude") -> [Agent] {
         (0..<count).map { i in
-            Agent(name: "Agent\(i)", folder: "/tmp/test/agent\(i)")
+            Agent(name: "Agent\(i)", folder: "/tmp/test/agent\(i)", agentType: agentType)
         }
     }
 
     /// Set up a manager with a workspace and agents
     @MainActor
-    static func setupManager(agentCount: Int, mode: LayoutMode = .single) -> AgentManager {
+    static func setupManager(agentCount: Int, agentType: String = "claude", mode: LayoutMode = .single) -> AgentManager {
         let manager = createTestManager()
-        let agents = createTestAgents(count: agentCount)
+        let agents = createTestAgents(count: agentCount, agentType: agentType)
 
         manager.agents = agents
         let workspace = Workspace(
@@ -728,25 +728,76 @@ struct AgentManagerTests {
     @Suite("Status")
     struct StatusTests {
 
-        @Test("isWorkspaceActive returns true if any agent is running")
+        @Test("workspaceStatus returns .running if any agent is running")
         @MainActor
-        func isWorkspaceActiveReturnsTrueIfRunning() async {
+        func workspaceStatusReturnsRunningIfRunning() async {
             let manager = AgentManagerTests.setupManager(agentCount: 2)
             manager.agents[0].status = .running
 
-            let isActive = manager.isWorkspaceActive(manager.currentWorkspace!)
+            let status = manager.workspaceStatus(manager.currentWorkspace!)
 
-            #expect(isActive == true)
+            #expect(status == .running)
         }
 
-        @Test("isWorkspaceActive returns false if all agents idle")
+        @Test("workspaceStatus returns nil if all agents idle")
         @MainActor
-        func isWorkspaceActiveReturnsFalseIfAllIdle() async {
+        func workspaceStatusReturnsNilIfAllIdle() async {
             let manager = AgentManagerTests.setupManager(agentCount: 2)
 
-            let isActive = manager.isWorkspaceActive(manager.currentWorkspace!)
+            let status = manager.workspaceStatus(manager.currentWorkspace!)
 
-            #expect(isActive == false)
+            #expect(status == nil)
+        }
+
+        @Test("workspaceStatus returns .blocked if any agent is blocked")
+        @MainActor
+        func workspaceStatusReturnsBlockedIfBlocked() async {
+            let manager = AgentManagerTests.setupManager(agentCount: 2)
+            manager.agents[0].status = .running
+            manager.agents[1].status = .blocked
+
+            let status = manager.workspaceStatus(manager.currentWorkspace!)
+
+            #expect(status == .blocked)
+        }
+    }
+
+    // MARK: - Hook Activity Guard Tests
+
+    @Suite("Hook Activity Guard")
+    struct HookActivityGuardTests {
+
+        @Test("terminal output is blocked for hook agents (claude)")
+        @MainActor
+        func terminalOutputBlockedForHookAgent() async {
+            let manager = AgentManagerTests.setupManager(agentCount: 1, agentType: "claude")
+            manager.agents[0].status = .idle
+
+            manager.updateStatus(for: manager.agents[0].id, status: .running, source: .terminal)
+
+            #expect(manager.agents[0].status == .idle)
+        }
+
+        @Test("hook source is accepted for hook agents (claude)")
+        @MainActor
+        func hookSourceAcceptedForHookAgent() async {
+            let manager = AgentManagerTests.setupManager(agentCount: 1, agentType: "claude")
+            manager.agents[0].status = .idle
+
+            manager.updateStatus(for: manager.agents[0].id, status: .running, source: .hook)
+
+            #expect(manager.agents[0].status == .running)
+        }
+
+        @Test("terminal output is accepted for non-hook agents")
+        @MainActor
+        func terminalOutputAcceptedForNonHookAgent() async {
+            let manager = AgentManagerTests.setupManager(agentCount: 1, agentType: "codex")
+            manager.agents[0].status = .idle
+
+            manager.updateStatus(for: manager.agents[0].id, status: .running, source: .terminal)
+
+            #expect(manager.agents[0].status == .running)
         }
     }
 

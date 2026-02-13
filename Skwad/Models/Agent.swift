@@ -5,12 +5,14 @@ import AppKit
 enum AgentStatus: String, Codable {
     case idle = "Idle"
     case running = "Working"
+    case blocked = "Blocked"
     case error = "Error"
 
     var color: Color {
         switch self {
         case .idle: return .green
         case .running: return .orange
+        case .blocked: return .red
         case .error: return .red
         }
     }
@@ -39,6 +41,8 @@ struct Agent: Identifiable, Codable, Hashable {
     var terminalTitle: String = ""  // Current terminal title
     var restartToken: UUID = UUID()  // Changes on restart to force terminal recreation
     var gitStats: GitLineStats? = nil
+    var sessionId: String? = nil  // Set during register-agent, used by hooks for activity detection
+    var forkSessionId: String? = nil  // Session ID to fork from (transient, used once at launch)
     var markdownFilePath: String? = nil  // Markdown file being previewed (set by MCP tool)
     var markdownFileHistory: [String] = []  // History of markdown files shown (most recent first)
 
@@ -86,11 +90,6 @@ struct Agent: Identifiable, Codable, Hashable {
     /// Whether this is a plain shell agent (no AI)
     var isShell: Bool {
         agentType == "shell"
-    }
-
-    /// Whether this agent needs activity tracking (Working/Idle status, git stats on idle, etc.)
-    var tracksActivity: Bool {
-        !isShell
     }
 
     /// Terminal title (cleaned on update in AgentManager)

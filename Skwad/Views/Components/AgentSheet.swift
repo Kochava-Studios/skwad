@@ -10,8 +10,9 @@ struct AgentPrefill: Identifiable {
     let insertAfterId: UUID?
     let createdBy: UUID?
     let isCompanion: Bool
+    let sessionId: String?
 
-    init(name: String, avatar: String?, folder: String, agentType: String, insertAfterId: UUID? = nil, createdBy: UUID? = nil, isCompanion: Bool = false) {
+    init(name: String, avatar: String?, folder: String, agentType: String, insertAfterId: UUID? = nil, createdBy: UUID? = nil, isCompanion: Bool = false, sessionId: String? = nil) {
         self.name = name
         self.avatar = avatar
         self.folder = folder
@@ -19,6 +20,7 @@ struct AgentPrefill: Identifiable {
         self.insertAfterId = insertAfterId
         self.createdBy = createdBy
         self.isCompanion = isCompanion
+        self.sessionId = sessionId
     }
 }
 
@@ -51,6 +53,9 @@ struct AgentSheet: View {
     @State private var relocateCompanions = true
     @State private var includeCompanions = false
 
+    // Fork conversation
+    @State private var keepConversation = false
+
     // Git data
     @State private var recentRepoInfos: [RepoInfo] = []
     @State private var shouldApplyPrefillWorktree = false
@@ -61,6 +66,11 @@ struct AgentSheet: View {
     private var folderChanged: Bool { isEditing && selectedFolder != editingAgent?.folder }
     /// The source agent ID: the editing agent or the fork source
     private var sourceAgentId: UUID? { editingAgent?.id ?? prefill?.insertAfterId }
+    private var canForkConversation: Bool {
+        isForking
+            && TerminalCommandBuilder.canForkConversation(agentType: selectedAgentType)
+            && prefill?.sessionId != nil
+    }
     private var hasCompanions: Bool {
         guard let id = sourceAgentId else { return false }
         return !agentManager.companions(of: id).isEmpty
@@ -182,6 +192,15 @@ struct AgentSheet: View {
                             .help("Create copies of companion agents for the forked agent")
                     }
                 }
+
+                // Fork conversation section
+                if isForking && TerminalCommandBuilder.canForkConversation(agentType: selectedAgentType) && prefill?.sessionId != nil {
+                    Section {
+                        Toggle("Keep conversation history", isOn: $keepConversation)
+                            .help("Fork the source agent's conversation into the new agent")
+                            .disabled(selectedFolder != prefill?.folder)
+                    }
+                }
             }
             .formStyle(.grouped)
         }
@@ -239,6 +258,11 @@ struct AgentSheet: View {
         .onChange(of: repoDiscovery.repos) { _, repos in
             updateRecentRepos(from: repos)
             applyPrefillWorktreeIfNeeded()
+        }
+        .onChange(of: selectedFolder) { _, newFolder in
+            if newFolder != prefill?.folder {
+                keepConversation = false
+            }
         }
     }
 
@@ -389,6 +413,7 @@ struct AgentSheet: View {
         var height: CGFloat = hasWorktreeFeatures ? 420 : 340
         let showCompanionToggle = hasCompanions && ((isEditing && folderChanged) || isForking)
         if showCompanionToggle { height += 40 }
+        if canForkConversation { height += 40 }
         return height
     }
 
@@ -561,7 +586,8 @@ struct AgentSheet: View {
             createdBy: prefill?.createdBy,
             isCompanion: prefill?.isCompanion ?? false,
             insertAfterId: prefill?.insertAfterId,
-            shellCommand: shellCommand.isEmpty ? nil : shellCommand
+            shellCommand: shellCommand.isEmpty ? nil : shellCommand,
+            forkSessionId: keepConversation ? prefill?.sessionId : nil
         )
 
         if let newAgentId, let createdBy = prefill?.createdBy, prefill?.isCompanion == true {

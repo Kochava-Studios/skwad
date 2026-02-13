@@ -21,6 +21,7 @@ final class AgentTests: XCTestCase {
     func testStatusColors() {
         XCTAssertEqual(AgentStatus.idle.color, .green)
         XCTAssertEqual(AgentStatus.running.color, .orange)
+        XCTAssertEqual(AgentStatus.blocked.color, .red)
         XCTAssertEqual(AgentStatus.error.color, .red)
     }
 
@@ -112,16 +113,6 @@ final class AgentTests: XCTestCase {
     func testIsShellFalseForClaudeAgent() {
         let agent = Agent(name: "Claude", folder: "/tmp", agentType: "claude")
         XCTAssertFalse(agent.isShell)
-    }
-
-    func testTracksActivityFalseForShell() {
-        let agent = Agent(name: "Shell", folder: "/tmp", agentType: "shell")
-        XCTAssertFalse(agent.tracksActivity)
-    }
-
-    func testTracksActivityTrueForNonShell() {
-        let agent = Agent(name: "Claude", folder: "/tmp", agentType: "claude")
-        XCTAssertTrue(agent.tracksActivity)
     }
 
     // MARK: - Pending Start

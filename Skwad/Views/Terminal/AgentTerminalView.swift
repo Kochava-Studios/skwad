@@ -72,7 +72,8 @@ struct AgentTerminalView: View {
                             avatar: agent.avatar,
                             folder: agent.folder,
                             agentType: agent.agentType,
-                            insertAfterId: agent.id
+                            insertAfterId: agent.id,
+                            sessionId: agent.sessionId
                         )
                     },
                     onNewCompanion: {

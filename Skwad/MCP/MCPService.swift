@@ -5,7 +5,7 @@ import Logging
 
 protocol MCPServiceProtocol {
     func listAgents(callerAgentId: String) async -> [AgentInfo]
-    func registerAgent(agentId: String) async -> Bool
+    func registerAgent(agentId: String, sessionId: String?) async -> Bool
     func unregisterAgent(agentId: String) async -> Bool
     func sendMessage(from: String, to: String, content: String) async -> String?
     func checkMessages(for agentId: String, markAsRead: Bool) async -> [MCPMessage]
@@ -21,6 +21,8 @@ protocol AgentDataProvider: Sendable {
     func getAgent(id: UUID) async -> Agent?
     func getAgentsInSameWorkspace(as agentId: UUID) async -> [Agent]
     func setRegistered(for agentId: UUID, registered: Bool) async
+    func setSessionId(for agentId: UUID, sessionId: String) async
+    func updateAgentStatus(for agentId: UUID, status: AgentStatus, source: ActivitySource) async
     func injectText(_ text: String, for agentId: UUID) async
     func addAgent(folder: String, name: String, avatar: String?, agentType: String, createdBy: UUID?, companion: Bool, shellCommand: String?) async -> UUID?
     func removeAgent(id: UUID) async -> Bool
@@ -87,9 +89,9 @@ actor MCPService: MCPServiceProtocol {
         }
     }
 
-    func registerAgent(agentId: String) async -> Bool {
-        logger.info("[skwad] Register agent called: \(agentId)")
-        
+    func registerAgent(agentId: String, sessionId: String? = nil) async -> Bool {
+        logger.info("[skwad] Register agent called: \(agentId), sessionId: \(sessionId ?? "none")")
+
         guard let uuid = UUID(uuidString: agentId) else {
             logger.error("[skwad] Invalid agent ID format: \(agentId)")
             return false
@@ -109,6 +111,12 @@ actor MCPService: MCPServiceProtocol {
 
         // Mark agent as registered
         await provider.setRegistered(for: uuid, registered: true)
+
+        // Store session ID if provided (for hook-based activity detection)
+        if let sessionId = sessionId {
+            await provider.setSessionId(for: uuid, sessionId: sessionId)
+            logger.info("[skwad][\(String(uuid.uuidString.prefix(8)).lowercased())] Session ID stored: \(sessionId)")
+        }
 
         // Create MCP session for this agent
         _ = await sessionManager.createSession(for: uuid)
@@ -463,6 +471,26 @@ actor MCPService: MCPServiceProtocol {
         return await provider.showMarkdownPanel(filePath: filePath, agentId: agentId)
     }
 
+    // MARK: - Agent Queries
+
+    /// Get all agents
+    func getAllAgents() async -> [Agent] {
+        guard let provider = agentDataProvider else { return [] }
+        return await provider.getAgents()
+    }
+
+    /// Find an agent by its UUID
+    func findAgentById(_ agentId: UUID) async -> Agent? {
+        guard let provider = agentDataProvider else { return nil }
+        return await provider.getAgent(id: agentId)
+    }
+
+    /// Update agent status from hook-based activity detection
+    func updateAgentStatus(for agentId: UUID, status: AgentStatus, source: ActivitySource) async {
+        guard let provider = agentDataProvider else { return }
+        await provider.updateAgentStatus(for: agentId, status: status, source: source)
+    }
+
     // MARK: - Cleanup
 
     func cleanup() async {
@@ -515,6 +543,18 @@ final class AgentManagerWrapper: AgentDataProvider, @unchecked Sendable {
     func setRegistered(for agentId: UUID, registered: Bool) async {
         await MainActor.run {
             manager?.setRegistered(for: agentId, registered: registered)
+        }
+    }
+
+    func setSessionId(for agentId: UUID, sessionId: String) async {
+        await MainActor.run {
+            manager?.setSessionId(for: agentId, sessionId: sessionId)
+        }
+    }
+
+    func updateAgentStatus(for agentId: UUID, status: AgentStatus, source: ActivitySource) async {
+        await MainActor.run {
+            manager?.updateStatus(for: agentId, status: status, source: source)
         }
     }
 

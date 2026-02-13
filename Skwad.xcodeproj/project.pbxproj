@@ -39,6 +39,7 @@
 		8D7622B32F2C67CE006B6280 /* MCPTools.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D7622AC2F2C67CE006B6280 /* MCPTools.swift */; };
 		8D7622B42F2C67CE006B6280 /* MCPSessionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D7622AB2F2C67CE006B6280 /* MCPSessionManager.swift */; };
 		8DD8074D2F2E52E900D7A935 /* AgentSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DD8074C2F2E52E900D7A935 /* AgentSheet.swift */; };
+		8DEF1A6B2F3DB4DB00247C2C /* plugin in CopyFiles */ = {isa = PBXBuildFile; fileRef = 8DEF1A682F3DB49500247C2C /* plugin */; };
 		914A53BB8DBD66EC96B19BDA /* GitPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBECFB308DA186BC15E6AE50 /* GitPanelView.swift */; };
 		A0622F92A9748B402B7D8403 /* MenuItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = B85319AD6169FDBF46AAE73E /* MenuItem.swift */; };
 		A1789C06B8425D64920E2446 /* GitCLI.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCD187651343B17CF0D9CCCF /* GitCLI.swift */; };
@@ -93,6 +94,7 @@
 		SR000004 /* TerminalCommandBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = SR100004 /* TerminalCommandBuilder.swift */; };
 		SR000006 /* TerminalSessionController.swift in Sources */ = {isa = PBXBuildFile; fileRef = SR100006 /* TerminalSessionController.swift */; };
 		SR000007 /* TerminalAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = SR100007 /* TerminalAdapter.swift */; };
+		SR000008 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = SR100008 /* NotificationService.swift */; };
 		TS000001 /* GitOutputParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100001 /* GitOutputParserTests.swift */; };
 		TS000002 /* GitOutputFixtures.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100002 /* GitOutputFixtures.swift */; };
 		TS000003 /* CommitSheetTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100003 /* CommitSheetTests.swift */; };
@@ -130,6 +132,9 @@
 		TS000036 /* AgentContextMenuTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100035 /* AgentContextMenuTests.swift */; };
 		TS000037 /* RepoDiscoveryServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100036 /* RepoDiscoveryServiceTests.swift */; };
 		TS000038 /* MarkdownToHTMLTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100037 /* MarkdownToHTMLTests.swift */; };
+		TS000039 /* MockTerminalAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100038 /* MockTerminalAdapter.swift */; };
+		TS000040 /* TerminalSessionControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100039 /* TerminalSessionControllerTests.swift */; };
+		TS000041 /* NotificationServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100040 /* NotificationServiceTests.swift */; };
 		UP000001 /* UpdaterManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = UP100001 /* UpdaterManager.swift */; };
 		UT000001 /* Clipboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = UT100001 /* Clipboard.swift */; };
 		UT000002 /* TerminalTextCleaner.swift in Sources */ = {isa = PBXBuildFile; fileRef = UT100002 /* TerminalTextCleaner.swift */; };
@@ -151,6 +156,19 @@
 			remoteInfo = Skwad;
 		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		8DEF1A6A2F3DB4D100247C2C /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 7;
+			files = (
+				8DEF1A6B2F3DB4DB00247C2C /* plugin in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		137C060CFAE6151E52210D1A /* GitRepository.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GitRepository.swift; sourceTree = "<group>"; };
@@ -176,6 +194,7 @@
 		8D7622AD2F2C67CE006B6280 /* MCPTransport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPTransport.swift; sourceTree = "<group>"; };
 		8D7622AE2F2C67CE006B6280 /* MCPTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPTypes.swift; sourceTree = "<group>"; };
 		8DD8074C2F2E52E900D7A935 /* AgentSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentSheet.swift; sourceTree = "<group>"; };
+		8DEF1A682F3DB49500247C2C /* plugin */ = {isa = PBXFileReference; lastKnownFileType = folder; path = plugin; sourceTree = "<group>"; };
 		A486F6A72822BE9094B02DA7 /* CommitSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CommitSheet.swift; sourceTree = "<group>"; };
 		ADCF18167D88BA578DBF2B2E /* GitTypes.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GitTypes.swift; sourceTree = "<group>"; };
 		AS100001 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -234,6 +253,7 @@
 		SR100004 /* TerminalCommandBuilder.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TerminalCommandBuilder.swift; sourceTree = "<group>"; };
 		SR100006 /* TerminalSessionController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TerminalSessionController.swift; sourceTree = "<group>"; };
 		SR100007 /* TerminalAdapter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TerminalAdapter.swift; sourceTree = "<group>"; };
+		SR100008 /* NotificationService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
 		TS100001 /* GitOutputParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitOutputParserTests.swift; sourceTree = "<group>"; };
 		TS100002 /* GitOutputFixtures.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitOutputFixtures.swift; sourceTree = "<group>"; };
 		TS100003 /* CommitSheetTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommitSheetTests.swift; sourceTree = "<group>"; };
@@ -270,6 +290,9 @@
 		TS100035 /* AgentContextMenuTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentContextMenuTests.swift; sourceTree = "<group>"; };
 		TS100036 /* RepoDiscoveryServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepoDiscoveryServiceTests.swift; sourceTree = "<group>"; };
 		TS100037 /* MarkdownToHTMLTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownToHTMLTests.swift; sourceTree = "<group>"; };
+		TS100038 /* MockTerminalAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockTerminalAdapter.swift; sourceTree = "<group>"; };
+		TS100039 /* TerminalSessionControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalSessionControllerTests.swift; sourceTree = "<group>"; };
+		TS100040 /* NotificationServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationServiceTests.swift; sourceTree = "<group>"; };
 		TS100100 /* SkwadTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SkwadTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		UP100001 /* UpdaterManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdaterManager.swift; sourceTree = "<group>"; };
 		UT100001 /* Clipboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Clipboard.swift; sourceTree = "<group>"; };
@@ -476,6 +499,7 @@
 				TS500000 /* SkwadTests */,
 				SF200000 /* Frameworks */,
 				F8000101 /* Products */,
+				8DEF1A682F3DB49500247C2C /* plugin */,
 			);
 			sourceTree = "<group>";
 		};
@@ -542,6 +566,7 @@
 				SR100007 /* TerminalAdapter.swift */,
 				SR100004 /* TerminalCommandBuilder.swift */,
 				SR100006 /* TerminalSessionController.swift */,
+				SR100008 /* NotificationService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -668,14 +693,6 @@
 			path = Workspace;
 			sourceTree = "<group>";
 		};
-		TS500014 /* Markdown */ = {
-			isa = PBXGroup;
-			children = (
-				TS100037 /* MarkdownToHTMLTests.swift */,
-			);
-			path = Markdown;
-			sourceTree = "<group>";
-		};
 		TS500011 /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
@@ -696,9 +713,28 @@
 		TS500013 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				TS500015 /* Mocks */,
 				TS100036 /* RepoDiscoveryServiceTests.swift */,
+				TS100039 /* TerminalSessionControllerTests.swift */,
+				TS100040 /* NotificationServiceTests.swift */,
 			);
 			path = Services;
+			sourceTree = "<group>";
+		};
+		TS500015 /* Mocks */ = {
+			isa = PBXGroup;
+			children = (
+				TS100038 /* MockTerminalAdapter.swift */,
+			);
+			path = Mocks;
+			sourceTree = "<group>";
+		};
+		TS500014 /* Markdown */ = {
+			isa = PBXGroup;
+			children = (
+				TS100037 /* MarkdownToHTMLTests.swift */,
+			);
+			path = Markdown;
 			sourceTree = "<group>";
 		};
 		UP200000 /* Updater */ = {
@@ -752,6 +788,7 @@
 				F80000FC /* Sources */,
 				F80000FD /* Frameworks */,
 				F80000FE /* Resources */,
+				8DEF1A6A2F3DB4D100247C2C /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -860,6 +897,7 @@
 				SR000004 /* TerminalCommandBuilder.swift in Sources */,
 				SR000006 /* TerminalSessionController.swift in Sources */,
 				SR000007 /* TerminalAdapter.swift in Sources */,
+				SR000008 /* NotificationService.swift in Sources */,
 				F8001001 /* SkwadApp.swift in Sources */,
 				F8001002 /* ContentView.swift in Sources */,
 				F8001003 /* Agent.swift in Sources */,
@@ -974,6 +1012,9 @@
 				TS000036 /* AgentContextMenuTests.swift in Sources */,
 				TS000037 /* RepoDiscoveryServiceTests.swift in Sources */,
 				TS000038 /* MarkdownToHTMLTests.swift in Sources */,
+				TS000039 /* MockTerminalAdapter.swift in Sources */,
+				TS000040 /* TerminalSessionControllerTests.swift in Sources */,
+				TS000041 /* NotificationServiceTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1131,7 +1172,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 50;
+				CURRENT_PROJECT_VERSION = 51;
 				DEVELOPMENT_TEAM = S3Y2KVL7H7;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1163,7 +1204,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 50;
+				CURRENT_PROJECT_VERSION = 51;
 				DEVELOPMENT_TEAM = S3Y2KVL7H7;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;

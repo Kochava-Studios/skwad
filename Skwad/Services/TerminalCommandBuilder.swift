@@ -16,7 +16,7 @@ struct TerminalCommandBuilder {
   ///   - agentId: The agent's UUID for inline registration (optional)
   ///   - shellCommand: Optional command to run for shell agent type
   /// - Returns: The complete agent command with all arguments
-  static func buildAgentCommand(for agentType: String, settings: AppSettings, agentId: UUID? = nil, shellCommand: String? = nil) -> String {
+  static func buildAgentCommand(for agentType: String, settings: AppSettings, agentId: UUID? = nil, shellCommand: String? = nil, forkSessionId: String? = nil) -> String {
     // Shell type: return custom command or empty
     if agentType == "shell" {
       return shellCommand ?? ""
@@ -29,6 +29,11 @@ struct TerminalCommandBuilder {
 
     var fullCommand = cmd
 
+    // Add fork session arguments (--resume <id> --fork-session)
+    if let sessionId = forkSessionId, canForkConversation(agentType: agentType) {
+      fullCommand += " --resume \(sessionId) --fork-session"
+    }
+
     // Add user-provided options first (e.g., --settings)
     if !userOpts.isEmpty {
       fullCommand += " \(userOpts)"
@@ -40,7 +45,7 @@ struct TerminalCommandBuilder {
 
       // Add inline registration for supported agents
       if let agentId = agentId {
-        fullCommand += getInlineRegistrationArguments(for: agentType, agentId: agentId)
+        fullCommand += getInlineRegistrationArguments(for: agentType, agentId: agentId, isFork: forkSessionId != nil)
       }
     }
 
@@ -60,6 +65,37 @@ struct TerminalCommandBuilder {
   }
 
   // MARK: - Inline Registration
+
+  /// Check if an agent type supports forking a conversation (--resume + --fork-session)
+  static func canForkConversation(agentType: String) -> Bool {
+    switch agentType {
+    case "claude":
+      return true
+    default:
+      return false
+    }
+  }
+
+  /// Check if an agent type supports resuming a conversation (--resume / --continue)
+  static func canResumeConversation(agentType: String) -> Bool {
+    switch agentType {
+    case "claude":
+      return true
+    default:
+      return false
+    }
+  }
+
+  /// Check if an agent type uses hook-based activity detection (via plugin)
+  /// When true, terminal-level activity tracking is disabled
+  static func usesActivityHooks(agentType: String) -> Bool {
+    switch agentType {
+    case "claude":
+      return true
+    default:
+      return false
+    }
+  }
 
   /// Check if an agent type supports system prompt injection
   static func supportsSystemPrompt(agentType: String) -> Bool {
@@ -84,12 +120,12 @@ struct TerminalCommandBuilder {
 
   /// Get inline registration arguments for supported agents
   /// See `doc/agent-cli-arguments.md` for CLI argument reference
-  private static func getInlineRegistrationArguments(for agentType: String, agentId: UUID) -> String {
+  private static func getInlineRegistrationArguments(for agentType: String, agentId: UUID, isFork: Bool = false) -> String {
     switch agentType {
     case "claude":
-      // Claude supports system prompt and user prompt
+      // Claude: registration is handled by hooks, just inject system prompt
       let systemPrompt = registrationSystemPrompt(agentId: agentId)
-      return #" --append-system-prompt "\#(systemPrompt)" "Register with the skwad""#
+      return #" --append-system-prompt "\#(systemPrompt)" "List other agents names and project (no ID) in a table based on context.""#
 
     case "codex":
       // Codex: user prompt as last argument (no flag)
@@ -121,7 +157,12 @@ struct TerminalCommandBuilder {
     switch agentType {
     case "claude":
       let mcpConfig = #"--mcp-config '{"mcpServers":{"skwad":{"type":"http","url":"\#(mcpURL)"}}}'"#
-      return " \(mcpConfig) --allowed-tools 'mcp__skwad__*'"
+      var args = " \(mcpConfig) --allowed-tools 'mcp__skwad__*'"
+      // Add plugin directory for hook-based activity detection
+      if let pluginPath = resolvePluginPath() {
+        args += " --plugin-dir \"\(pluginPath)\""
+      }
+      return args
       
     case "gemini":
       return " --allowed-mcp-server-names skwad"
@@ -153,16 +194,38 @@ struct TerminalCommandBuilder {
   ///   - folder: The working directory for the agent
   ///   - agentCommand: The full agent command to execute
   /// - Returns: The complete shell command string
-  static func buildInitializationCommand(folder: String, agentCommand: String) -> String {
+  static func buildInitializationCommand(folder: String, agentCommand: String, agentId: UUID? = nil) -> String {
     // Prefix with space to prevent shell history
     // Note: zsh ignores by default, bash requires HISTCONTROL=ignorespace
     if agentCommand.isEmpty {
       // Shell mode: just cd and clear, no agent command
       return " cd '\(folder)' && clear"
     }
-    return " cd '\(folder)' && clear && \(agentCommand)"
+    // Inject SKWAD_AGENT_ID env var so hooks can identify the agent
+    let envPrefix = agentId.map { "SKWAD_AGENT_ID=\($0.uuidString) " } ?? ""
+    return " cd '\(folder)' && clear && \(envPrefix)\(agentCommand)"
   }
   
+  /// Resolves the plugin directory path.
+  /// In release builds, the plugin is bundled inside the app.
+  /// In dev builds (Xcode), fall back to the source tree.
+  private static func resolvePluginPath() -> String? {
+    // Try app bundle first (release / archived builds)
+    if let bundled = Bundle.main.url(forResource: "plugin", withExtension: nil)?.path,
+       FileManager.default.fileExists(atPath: bundled) {
+      return bundled
+    }
+    // Dev fallback: derive source root from this file's compile-time path
+    let sourceFile = #filePath
+    let sourceDir = (sourceFile as NSString).deletingLastPathComponent  // .../Skwad/Services
+    let projectRoot = ((sourceDir as NSString).deletingLastPathComponent as NSString).deletingLastPathComponent
+    let devPath = (projectRoot as NSString).appendingPathComponent("plugin")
+    if FileManager.default.fileExists(atPath: devPath) {
+      return devPath
+    }
+    return nil
+  }
+
   /// Gets the default shell executable path
   static func getDefaultShell() -> String {
     return ProcessInfo.processInfo.environment["SHELL"] ?? "/bin/zsh"

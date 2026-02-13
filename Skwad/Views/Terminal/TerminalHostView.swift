@@ -5,7 +5,7 @@ import Carbon.HIToolbox
 // Custom terminal view that detects activity via dataReceived and user input
 class ActivityDetectingTerminalView: LocalProcessTerminalView {
     var onActivity: (() -> Void)?
-    var onUserInput: (() -> Void)?
+    var onUserInput: ((UInt16) -> Void)?
 
     // Called when data is received from the process (output)
     override func dataReceived(slice: ArraySlice<UInt8>) {
@@ -13,10 +13,28 @@ class ActivityDetectingTerminalView: LocalProcessTerminalView {
         onActivity?()
     }
 
-    // Called when user sends data (input) - e.g., typing
-    override func send(source: Terminal, data: ArraySlice<UInt8>) {
-        super.send(source: source, data: data)
-        onUserInput?()
+    // SwiftTerm's keyDown is not open for override, so we use a local event monitor
+    // to capture keyCodes for blocked state handling (Return/Escape detection)
+    private var keyMonitor: Any?
+
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        if window != nil && keyMonitor == nil {
+            keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
+                if let self = self, event.window === self.window, self.window?.firstResponder === self {
+                    self.onUserInput?(event.keyCode)
+                }
+                return event
+            }
+        }
+    }
+
+    override func viewDidMoveToSuperview() {
+        super.viewDidMoveToSuperview()
+        if superview == nil, let monitor = keyMonitor {
+            NSEvent.removeMonitor(monitor)
+            keyMonitor = nil
+        }
     }
 }
 

@@ -48,10 +48,16 @@ Skwad/
 │   └── GitTypes.swift           # FileStatus, DiffLine, etc.
 ├── MCP/
 │   ├── MCPService.swift         # Actor managing messages and agent data
-│   ├── MCPServer.swift          # Hummingbird HTTP server
+│   ├── MCPServer.swift          # Hummingbird HTTP server + hook event handler
 │   ├── MCPSessionManager.swift  # MCP session tracking
 │   ├── MCPToolHandler.swift     # Tool execution
 │   └── MCPTypes.swift           # Message, AgentInfo structs
+├── Services/
+│   ├── NotificationService.swift       # macOS desktop notifications
+│   ├── RepoDiscoveryService.swift      # Background repo discovery
+│   ├── TerminalAdapter.swift           # Protocol + Ghostty/SwiftTerm adapters
+│   ├── TerminalCommandBuilder.swift    # Agent command construction
+│   └── TerminalSessionController.swift # Terminal session lifecycle + status state machine
 ├── GhosttyTerminal/             # Ghostty integration (libghostty wrappers)
 └── SkwadApp.swift               # App entry point
 ```
@@ -74,9 +80,16 @@ Skwad/
   - `ActivityDetectingTerminalView` - subclass for activity detection
 
 ### Activity Detection
-- Detects terminal output to determine Working vs Idle status
-- Uses debouncing (2s timeout) before marking as Idle
-- Status colors: orange=Working, green=Idle, red=Error
+- `TerminalSessionController` owns the status state machine per agent
+- `ActivityTracking` bitfield controls which sources trigger status changes:
+  - `.all` (default): terminal output + user input drive running/idle
+  - `.userInput`: hook-managed agents — only user input is tracked locally, hooks handle running/idle
+  - `.none`: shell agents — no status tracking
+- When hooks are active (`sessionId` set + agent supports hooks), terminal output is ignored as a status source
+- Status colors: orange=Working, green=Idle, red=Blocked, red=Error
+- **Blocked status**: set via hook when agent needs user attention (e.g. permission prompt). Unblocked by Return (→ running) or Escape (→ idle) keypress only
+- **Input protection**: user keypresses activate a 10s guard that blocks automatic text injection (`injectText`), preventing message delivery while user is typing. Messages stay in MCP queue and are delivered on next idle or when protection expires
+- `onUserInput` callback passes `UInt16` keyCode (macOS keyCode from Ghostty, mapped from raw bytes for SwiftTerm)
 - When idle, checks for unread MCP messages
 
 ### MCP Communication
@@ -178,13 +191,11 @@ This updates `MARKETING_VERSION` in all build configurations in the Xcode projec
 
 - Terminal colors set by claude/shell may override app colors (Ghostty respects config)
 - Single window only (no multi-window support)
-- SwiftTerm doesn't support MCP messaging (terminal not registered)
 - MCP messages are in-memory only (lost on app restart)
 
 ## Future Ideas (see plans/feature-roadmap.md)
 
 - Split pane view for multiple agents
 - Agent templates/presets
-- Desktop notifications
 - GitHub PR integration
 - Voice input

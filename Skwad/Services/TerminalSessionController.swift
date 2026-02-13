@@ -1,6 +1,30 @@
 import Foundation
 import OSLog
 
+/// Bitfield controlling which terminal activity sources trigger status changes.
+///
+/// - `.userInput`: user typing in the terminal (bit 0)
+/// - `.terminalOutput`: agent writing to stdout (bit 1)
+///
+/// Presets:
+/// - shell agents → `.none` (no status tracking at all)
+/// - hook-detected agents (e.g. Claude+MCP) → `.userInput` (hooks handle agent output)
+/// - all other agents → `.all` (full terminal-based detection)
+struct ActivityTracking: OptionSet {
+    let rawValue: Int
+    static let userInput      = ActivityTracking(rawValue: 1 << 0)
+    static let terminalOutput = ActivityTracking(rawValue: 1 << 1)
+    static let none: ActivityTracking = []
+    static let all: ActivityTracking  = [.userInput, .terminalOutput]
+}
+
+/// Identifies where a status update originated
+enum ActivitySource {
+    case terminal   // terminal output detection
+    case user       // user typing in terminal
+    case hook       // plugin hook (UserPromptSubmit / Stop)
+}
+
 /// Central controller for managing a terminal session's lifecycle and state.
 ///
 /// This controller owns all business logic for a terminal session:
@@ -16,11 +40,11 @@ import OSLog
 class TerminalSessionController: ObservableObject {
 
     /// Current session state
-    /// Agents that don't track activity are forced to .idle
+    /// Agents with no activity tracking (shell) are forced to .idle
     var status: AgentStatus {
-        get { tracksActivity ? _status : .idle }
+        get { activityTracking.isEmpty ? .idle : _status }
         set {
-            let effective = tracksActivity ? newValue : .idle
+            let effective = activityTracking.isEmpty ? .idle : newValue
             guard _status != effective else { return }
             let oldValue = _status
             _status = effective
@@ -41,13 +65,18 @@ class TerminalSessionController: ObservableObject {
     /// Optional command for shell agent type
     let shellCommand: String?
 
-    /// Whether this agent tracks activity (Working/Idle status transitions)
-    let tracksActivity: Bool
+    /// Session ID to fork from (used once at launch, then ignored)
+    let forkSessionId: String?
+
+    /// Which terminal activity sources trigger status changes.
+    /// Starts as `.all` for non-shell agents; downgraded to `.userInput`
+    /// once hook-based detection is confirmed (sessionId set).
+    private(set) var activityTracking: ActivityTracking
 
     // MARK: - Dependencies
 
     private let settings = AppSettings.shared
-    private let onStatusChange: (AgentStatus) -> Void
+    private let onStatusChange: (_ status: AgentStatus, _ source: ActivitySource) -> Void
     private let onTitleChange: ((String) -> Void)?
 
     /// Called when a deferred-start agent's terminal is ready and needs its command queued
@@ -62,12 +91,14 @@ class TerminalSessionController: ObservableObject {
     private var monitorsMCP: Bool
 
     private let idleTimer = ManagedTimer()
+    private let inputProtectedTimer = ManagedTimer()
     private let idleTimeout: TimeInterval
     private var lastNotifiedMessageId: UUID?
     private var isDisposed = false
     private var hasBecomeIdle = false
     private var didStart = false
     private var lastActivityTime: CFAbsoluteTime = 0
+    private var lastActivitySource: ActivitySource = .terminal
 
     // Registration prompt scheduling
     private let registrationTimer = ManagedTimer()
@@ -93,16 +124,18 @@ class TerminalSessionController: ObservableObject {
         folder: String,
         agentType: String,
         shellCommand: String? = nil,
-        tracksActivity: Bool = true,
+        forkSessionId: String? = nil,
+        activityTracking: ActivityTracking = .all,
         idleTimeout: TimeInterval = TimingConstants.idleTimeout,
-        onStatusChange: @escaping (AgentStatus) -> Void,
+        onStatusChange: @escaping (_ status: AgentStatus, _ source: ActivitySource) -> Void,
         onTitleChange: ((String) -> Void)? = nil
     ) {
         self.agentId = agentId
         self.folder = folder
         self.agentType = agentType
         self.shellCommand = shellCommand
-        self.tracksActivity = tracksActivity
+        self.forkSessionId = forkSessionId
+        self.activityTracking = activityTracking
         self.monitorsMCP = AppSettings.shared.mcpServerEnabled
         self.idleTimeout = idleTimeout
         self.onStatusChange = onStatusChange
@@ -121,15 +154,15 @@ class TerminalSessionController: ObservableObject {
     func attach(to adapter: TerminalAdapter) {
         self.adapter = adapter
 
-        // Wire adapter events to controller methods
-        // Only wire activity callbacks when tracking is enabled — when nil,
-        // the terminal engines skip dispatching entirely (zero overhead)
-        if tracksActivity {
+        // Wire both callbacks for non-shell agents. Filtering by
+        // activityTracking happens in activityDetected() so the bitfield
+        // can be downgraded at runtime (e.g. when hooks take over).
+        if !activityTracking.isEmpty {
             adapter.onActivity = { [weak self] in
                 self?.activityDetected(fromUserInput: false)
             }
-            adapter.onUserInput = { [weak self] in
-                self?.activityDetected(fromUserInput: true)
+            adapter.onUserInput = { [weak self] keyCode in
+                self?.activityDetected(fromUserInput: true, keyCode: keyCode)
             }
         }
         adapter.onReady = { [weak self] in
@@ -167,7 +200,7 @@ class TerminalSessionController: ObservableObject {
         if defersCommand { return "" }
 
         let command = buildCommand(withRegistration: true)
-        Self.logger.info("[skwad][\(String(self.agentId.uuidString.prefix(8)).lowercased())] Command: \(command)")
+        Self.logger.info("[skwad][\(String(self.agentId.uuidString.prefix(8)).lowercased(), privacy: .public)] Command: \(command, privacy: .public)")
         return command
     }
 
@@ -183,11 +216,13 @@ class TerminalSessionController: ObservableObject {
             for: agentType,
             settings: settings,
             agentId: agentIdForRegistration,
-            shellCommand: shellCommand
+            shellCommand: shellCommand,
+            forkSessionId: forkSessionId
         )
         return TerminalCommandBuilder.buildInitializationCommand(
             folder: folder,
-            agentCommand: agentCommand
+            agentCommand: agentCommand,
+            agentId: agentId
         )
     }
 
@@ -238,7 +273,10 @@ class TerminalSessionController: ObservableObject {
     }
 
     /// Inject text into the terminal followed by return (for MCP messages, registration, etc.)
+    /// Skipped when input is protected (user is typing) — messages stay in MCP queue
+    /// and will be picked up on next idle.
     func injectText(_ text: String) {
+        guard !inputProtectedTimer.isActive else { return }
         sendCommand(text)
     }
 
@@ -247,6 +285,12 @@ class TerminalSessionController: ObservableObject {
         adapter?.focus()
     }
     
+    /// Downgrade activity tracking when hook-based detection takes over.
+    /// Terminal output callbacks remain wired but are filtered in activityDetected().
+    func setActivityTracking(_ tracking: ActivityTracking) {
+        activityTracking = tracking
+    }
+
     /// Notify terminal to resize/relayout
     /// Called when the available terminal space changes (e.g., git panel toggle)
     func notifyResize() {
@@ -258,17 +302,46 @@ class TerminalSessionController: ObservableObject {
     /// Signals that activity has been detected in the terminal.
     /// Stamps the time and ensures exactly one idle timer is running.
     /// - Parameter fromUserInput: If true, uses longer timeout for user typing
-    private func activityDetected(fromUserInput: Bool) {
+    /// - Parameter keyCode: macOS keyCode (only meaningful when fromUserInput is true)
+    private func activityDetected(fromUserInput: Bool, keyCode: UInt16 = 0) {
         guard !isDisposed else { return }
+
+        // Check if this source is enabled in the current tracking bitfield
+        let source: ActivityTracking = fromUserInput ? .userInput : .terminalOutput
+        
+        // in any case idle is not happening anymore
+        if idleTimer.isActive {
+            idleTimer.invalidate()
+        }
+        
+        // now only process if relevant
+        guard activityTracking.contains(source) else { return }
 
         // Stamp activity time (always — cheap, no allocation)
         lastActivityTime = CFAbsoluteTimeGetCurrent()
+        lastActivitySource = fromUserInput ? .user : .terminal
 
-        // Set status to running (cheap: guarded by didSet)
+        if fromUserInput {
+            // Protect input: block automatic injections while user is typing
+            inputProtectedTimer.schedule(after: TimingConstants.userInputIdleTimeout) { [weak self] in
+                self?.inputProtectionDidExpire()
+            }
+
+            // Unblock only on Return (answered prompt → running) or Escape (dismissed → idle)
+            if _status == .blocked {
+                if keyCode == 36 {       // Return
+                    status = .running
+                } else if keyCode == 53 { // Escape
+                    status = .idle
+                }
+            }
+
+            // For hook-managed agents, user input doesn't drive the status state machine
+            if activityTracking == .userInput { return }
+        }
+
+        // Full terminal-based detection: set running + schedule idle timer
         status = .running
-
-        // Schedule idle timer only if none is running — the timer itself
-        // handles rescheduling when it finds recent activity
         if !idleTimer.isActive {
             let timeout = fromUserInput ? TimingConstants.userInputIdleTimeout : idleTimeout
             idleTimer.schedule(after: timeout) { [weak self] in
@@ -323,6 +396,7 @@ class TerminalSessionController: ObservableObject {
     func dispose() {
         isDisposed = true
         idleTimer.invalidate()
+        inputProtectedTimer.invalidate()
         registrationTimer.invalidate()
 
         // Terminate the shell process
@@ -382,6 +456,13 @@ class TerminalSessionController: ObservableObject {
         }
     }
 
+    private func inputProtectionDidExpire() {
+        guard !isDisposed else { return }
+        if monitorsMCP {
+            checkForUnreadMessages()
+        }
+    }
+
     private func evaluateRegistrationReadiness() {
         guard !isDisposed, !didInjectRegistration else { return }
         guard let text = registrationText, let readyAt = registrationReadyAt else { return }
@@ -403,7 +484,8 @@ class TerminalSessionController: ObservableObject {
     }
     
     private func statusDidChange(from oldValue: AgentStatus, to newValue: AgentStatus) {
-        onStatusChange(newValue)
+        onStatusChange(newValue, lastActivitySource)
+        lastActivitySource = .terminal
     }
     
     private func checkForUnreadMessages() {

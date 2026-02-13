@@ -61,6 +61,18 @@ actor MockAgentDataProvider: AgentDataProvider {
         }
     }
 
+    func setSessionId(for agentId: UUID, sessionId: String) async {
+        if let index = _agents.firstIndex(where: { $0.id == agentId }) {
+            _agents[index].sessionId = sessionId
+        }
+    }
+
+    func updateAgentStatus(for agentId: UUID, status: AgentStatus, source: ActivitySource) async {
+        if let index = _agents.firstIndex(where: { $0.id == agentId }) {
+            _agents[index].status = status
+        }
+    }
+
     func injectText(_ text: String, for agentId: UUID) async {
         _injectedTexts.append((text: text, agentId: agentId))
     }

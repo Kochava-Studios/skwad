@@ -194,11 +194,14 @@ final class AgentManager {
         saveWorkspaces()
     }
 
-    /// Check if any agent in a workspace is working
-    func isWorkspaceActive(_ workspace: Workspace) -> Bool {
-        workspace.agentIds.contains { agentId in
-            agents.first { $0.id == agentId }?.status == .running
+    /// Returns the "worst" status across all agents in a workspace (blocked > running > idle)
+    func workspaceStatus(_ workspace: Workspace) -> AgentStatus? {
+        let statuses = workspace.agentIds.compactMap { agentId in
+            agents.first { $0.id == agentId }?.status
         }
+        if statuses.contains(.blocked) { return .blocked }
+        if statuses.contains(.running) { return .running }
+        return nil
     }
 
     private func saveWorkspaces() {
@@ -258,14 +261,28 @@ final class AgentManager {
 
     /// Create a controller for an agent
     func createController(for agent: Agent) -> TerminalSessionController {
+        // Shell: no tracking. Hook agents (claude): .userInput only. Others: .all.
+        let tracking: ActivityTracking
+        if agent.isShell {
+            tracking = .none
+        } else if TerminalCommandBuilder.usesActivityHooks(agentType: agent.agentType) {
+            tracking = .userInput
+            // Set placeholder so terminal output is blocked before registration
+            if let index = agents.firstIndex(where: { $0.id == agent.id }) {
+                agents[index].status = .running
+            }
+        } else {
+            tracking = .all
+        }
         let controller = TerminalSessionController(
             agentId: agent.id,
             folder: agent.folder,
             agentType: agent.agentType,
             shellCommand: agent.shellCommand,
-            tracksActivity: agent.tracksActivity,
-            onStatusChange: { [weak self] status in
-                self?.updateStatus(for: agent.id, status: status)
+            forkSessionId: agent.forkSessionId,
+            activityTracking: tracking,
+            onStatusChange: { [weak self] status, source in
+                self?.updateStatus(for: agent.id, status: status, source: source)
             },
             onTitleChange: { [weak self] title in
                 self?.updateTitle(for: agent.id, title: title)
@@ -398,7 +415,6 @@ final class AgentManager {
         controllers[agentId]?.injectText(text)
     }
 
-
     /// Notify terminal to resize (e.g., when git panel toggles)
     func notifyTerminalResize(for agentId: UUID) {
         controllers[agentId]?.notifyResize()
@@ -422,6 +438,12 @@ final class AgentManager {
         agents.first { $0.id == agentId }?.isRegistered ?? false
     }
 
+    func setSessionId(for agentId: UUID, sessionId: String) {
+        if let index = agents.firstIndex(where: { $0.id == agentId }) {
+            agents[index].sessionId = sessionId
+        }
+    }
+
     // MARK: - Agent CRUD
 
     @discardableResult
@@ -433,9 +455,11 @@ final class AgentManager {
         createdBy: UUID? = nil,
         isCompanion: Bool = false,
         insertAfterId: UUID? = nil,
-        shellCommand: String? = nil
+        shellCommand: String? = nil,
+        forkSessionId: String? = nil
     ) -> UUID? {
         var agent = Agent(folder: folder, avatar: avatar, agentType: agentType, createdBy: createdBy, isCompanion: isCompanion, shellCommand: shellCommand)
+        agent.forkSessionId = forkSessionId
         if let name = name {
             agent.name = name
         }
@@ -630,6 +654,7 @@ final class AgentManager {
         agents[index].restartToken = UUID()
         agents[index].status = .idle
         agents[index].isRegistered = false
+        agents[index].sessionId = nil
         agents[index].terminalTitle = ""
     }
 
@@ -692,14 +717,20 @@ final class AgentManager {
         settings.saveAgents(agents)
     }
 
-    func updateStatus(for agentId: UUID, status: AgentStatus) {
-        Task { @MainActor in
-            if let index = agents.firstIndex(where: { $0.id == agentId }) {
-                guard agents[index].status != status else { return }
-                agents[index].status = status
-                if status == .idle && !agents[index].isShell {
-                    refreshGitStats(for: agentId)
-                }
+    func updateStatus(for agentId: UUID, status: AgentStatus, source: ActivitySource = .terminal) {
+        if let index = agents.firstIndex(where: { $0.id == agentId }) {
+            // When hook-based detection is active, block terminal output updates
+            // (controller already filters via .userInput tracking, this is a safety net)
+            if source == .terminal && TerminalCommandBuilder.usesActivityHooks(agentType: agents[index].agentType) {
+                return
+            }
+            guard agents[index].status != status else { return }
+            agents[index].status = status
+            if status == .blocked {
+                controllers[agentId]?.status = .blocked
+            }
+            if status == .idle && !agents[index].isShell {
+                refreshGitStats(for: agentId)
             }
         }
     }
@@ -852,38 +883,6 @@ final class AgentManager {
     }
 
     // MARK: - Agent Navigation
-
-    // /// Navigate to next pane (multi-pane mode) or next agent (single-pane mode)
-    // func selectNextPaneOrAgent() {
-    //     if layoutMode == .single {
-    //         selectNextAgent()
-    //     } else {
-    //         selectNextPane()
-    //     }
-    // }
-
-    // /// Navigate to previous pane (multi-pane mode) or previous agent (single-pane mode)
-    // func selectPreviousPaneOrAgent() {
-    //     if layoutMode == .single {
-    //         selectPreviousAgent()
-    //     } else {
-    //         selectPreviousPane()
-    //     }
-    // }
-
-    // /// Focus next pane in multi-pane mode
-    // func selectNextPane() {
-    //     guard layoutMode != .single else { return }
-    //     let paneCount = activeAgentIds.count
-    //     focusedPaneIndex = (focusedPaneIndex + 1) % paneCount
-    // }
-
-    // /// Focus previous pane in multi-pane mode
-    // func selectPreviousPane() {
-    //     guard layoutMode != .single else { return }
-    //     let paneCount = activeAgentIds.count
-    //     focusedPaneIndex = (focusedPaneIndex - 1 + paneCount) % paneCount
-    // }
 
     func selectNextAgent() {
         // Cycle through sidebar items (non-companion agents)
