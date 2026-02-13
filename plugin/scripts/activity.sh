@@ -19,6 +19,9 @@ fi
 SKWAD_URL="${SKWAD_URL:-http://127.0.0.1:8766}"
 
 # Fire and forget — don't block the agent
-curl -s -o /dev/null -X POST "${SKWAD_URL}/api/v1/agent/status?agent_id=${SKWAD_AGENT_ID}&status=${status}" 2>/dev/null &
+curl -s -o /dev/null -X POST \
+  -H "Content-Type: application/json" \
+  -d "{\"agent_id\":\"${SKWAD_AGENT_ID}\",\"status\":\"${status}\"}" \
+  "${SKWAD_URL}/api/v1/agent/status" 2>/dev/null &
 
 exit 0

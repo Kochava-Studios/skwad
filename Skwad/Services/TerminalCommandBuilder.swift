@@ -202,7 +202,7 @@ struct TerminalCommandBuilder {
       return " cd '\(folder)' && clear"
     }
     // Inject SKWAD_AGENT_ID env var so hooks can identify the agent
-    let envPrefix = agentId != nil ? "SKWAD_AGENT_ID=\(agentId!.uuidString) " : ""
+    let envPrefix = agentId.map { "SKWAD_AGENT_ID=\($0.uuidString) " } ?? ""
     return " cd '\(folder)' && clear && \(envPrefix)\(agentCommand)"
   }
   

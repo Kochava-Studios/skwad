@@ -238,22 +238,27 @@ actor MCPServer: MCPTransportProtocol {
     }
 
     private func handleActivityStatus(_ request: Request, context: BasicRequestContext) async -> Response {
-        let agentIdString = request.uri.queryParameters.get("agent_id")
-        let statusString = request.uri.queryParameters.get("status")
+        do {
+            let bodyBuffer = try await request.body.collect(upTo: 64 * 1024)
+            let bodyData = Data(buffer: bodyBuffer)
 
-        guard let agentIdString = agentIdString,
-              let agentId = UUID(uuidString: agentIdString) else {
-            return plainResponse(status: .badRequest, body: "Missing or invalid agent_id parameter")
+            guard let json = try? JSONSerialization.jsonObject(with: bodyData) as? [String: Any],
+                  let agentIdString = json["agent_id"] as? String,
+                  let agentId = UUID(uuidString: agentIdString) else {
+                return plainResponse(status: .badRequest, body: "Missing or invalid agent_id")
+            }
+            guard let statusString = json["status"] as? String,
+                  let agentStatus = (statusString == "running" ? AgentStatus.running : statusString == "idle" ? AgentStatus.idle : nil) else {
+                return plainResponse(status: .badRequest, body: "Invalid status (expected: running or idle)")
+            }
+
+            await mcpService.updateAgentStatus(for: agentId, status: agentStatus, source: .hook)
+            logger.info("[skwad][\(String(agentId.uuidString.prefix(8)).lowercased())] Hook status: \(statusString)")
+
+            return plainResponse(status: .ok, body: "OK")
+        } catch {
+            return plainResponse(status: .badRequest, body: "Failed to read body")
         }
-        guard let statusString = statusString,
-              let agentStatus = (statusString == "running" ? AgentStatus.running : statusString == "idle" ? AgentStatus.idle : nil) else {
-            return plainResponse(status: .badRequest, body: "Invalid status parameter (expected: running or idle)")
-        }
-
-        await mcpService.updateAgentStatus(for: agentId, status: agentStatus, source: .hook)
-        logger.info("[skwad][\(String(agentId.uuidString.prefix(8)).lowercased())] Hook status: \(statusString)")
-
-        return plainResponse(status: .ok, body: "OK")
     }
 
     // MARK: - Hook Event Handler
@@ -277,6 +282,8 @@ actor MCPServer: MCPTransportProtocol {
             logger.info("\(agentPrefix) Hook event: \(hookType) (notification_type=\(notificationType ?? "none"))")
 
             // Notification hook with permission_prompt → blocked status + desktop notification
+            // notifyBlocked is called BEFORE updateAgentStatus so that the dedup check
+            // (which skips if agent is already .blocked) sees the pre-update status.
             if (hookType.lowercased() == "permission_request" || (hookType.lowercased() == "notification" && notificationType?.lowercased() == "permission_prompt")) {
                 let message = payload?["message"] as? String
                 let agent = await mcpService.findAgentById(agentId)
