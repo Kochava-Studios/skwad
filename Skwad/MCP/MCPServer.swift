@@ -26,6 +26,11 @@ actor MCPServer: MCPTransportProtocol {
             Response(status: .ok, body: .init(byteBuffer: .init(string: "OK")))
         }
 
+        // Debug status endpoint
+        router.get("/status") { [self] request, context in
+            await handleStatus(request, context: context)
+        }
+
         // MCP endpoint - POST for JSON-RPC requests
         router.post("/mcp") { [self] request, context in
             await handleMCPRequest(request, context: context)
@@ -34,6 +39,11 @@ actor MCPServer: MCPTransportProtocol {
         // MCP endpoint - GET for SSE (Server-Sent Events)
         router.get("/mcp") { [self] request, context in
             await handleSSERequest(request, context: context)
+        }
+
+        // Hook-based agent registration endpoint
+        router.post("/api/v1/agent/register") { [self] request, context in
+            await handleHookRegister(request, context: context)
         }
 
         // Hook-based activity status endpoint
@@ -161,30 +171,87 @@ actor MCPServer: MCPTransportProtocol {
         )
     }
 
+    // MARK: - Debug Status
+
+    private func handleStatus(_ request: Request, context: BasicRequestContext) async -> Response {
+        let agents = await mcpService.getAllAgents()
+        let entries = agents.map { agent -> [String: Any] in
+            var entry: [String: Any] = [
+                "agent_id": agent.id.uuidString,
+                "name": agent.name,
+                "folder": agent.folder,
+                "status": agent.status.rawValue,
+                "registered": agent.isRegistered,
+                "agent_type": agent.agentType,
+            ]
+            if let sessionId = agent.sessionId {
+                entry["session_id"] = sessionId
+            }
+            return entry
+        }
+        guard let data = try? JSONSerialization.data(withJSONObject: entries, options: [.prettyPrinted, .sortedKeys]) else {
+            return plainResponse(status: .internalServerError, body: "Failed to serialize")
+        }
+        var headers = HTTPFields()
+        headers[.contentType] = "application/json"
+        return Response(status: .ok, headers: headers, body: .init(byteBuffer: .init(data: data)))
+    }
+
     // MARK: - Activity Status Handler
 
+    private func handleHookRegister(_ request: Request, context: BasicRequestContext) async -> Response {
+        do {
+            let bodyBuffer = try await request.body.collect(upTo: 64 * 1024)
+            let bodyData = Data(buffer: bodyBuffer)
+
+            guard let json = try? JSONSerialization.jsonObject(with: bodyData) as? [String: Any],
+                  let agentIdString = json["agent_id"] as? String,
+                  let agentId = UUID(uuidString: agentIdString) else {
+                return plainResponse(status: .badRequest, body: "Missing or invalid agent_id")
+            }
+
+            let sessionId = json["session_id"] as? String
+            let success = await mcpService.registerAgent(agentId: agentIdString, sessionId: sessionId)
+            if success {
+                logger.info("[skwad][\(String(agentId.uuidString.prefix(8)).lowercased())] Hook registration successful")
+
+                // Return skwad members as JSON
+                let members = await mcpService.listAgents(callerAgentId: agentIdString)
+                let response = RegisterAgentResponse(
+                    success: true,
+                    message: "Registered",
+                    unreadMessageCount: 0,
+                    skwadMembers: members
+                )
+                if let data = try? JSONEncoder().encode(response) {
+                    var headers = HTTPFields()
+                    headers[.contentType] = "application/json"
+                    return Response(status: .ok, headers: headers, body: .init(byteBuffer: .init(data: data)))
+                }
+                return plainResponse(status: .ok, body: "OK")
+            } else {
+                return plainResponse(status: .notFound, body: "Agent not found")
+            }
+        } catch {
+            return plainResponse(status: .badRequest, body: "Failed to read body")
+        }
+    }
+
     private func handleActivityStatus(_ request: Request, context: BasicRequestContext) async -> Response {
-        // Extract query parameters: session_id and status
-        let sessionId = request.uri.queryParameters.get("session_id")
+        let agentIdString = request.uri.queryParameters.get("agent_id")
         let statusString = request.uri.queryParameters.get("status")
 
-        guard let sessionId = sessionId, !sessionId.isEmpty else {
-            return plainResponse(status: .badRequest, body: "Missing session_id parameter")
+        guard let agentIdString = agentIdString,
+              let agentId = UUID(uuidString: agentIdString) else {
+            return plainResponse(status: .badRequest, body: "Missing or invalid agent_id parameter")
         }
         guard let statusString = statusString,
               let agentStatus = (statusString == "running" ? AgentStatus.running : statusString == "idle" ? AgentStatus.idle : nil) else {
             return plainResponse(status: .badRequest, body: "Invalid status parameter (expected: running or idle)")
         }
 
-        // Look up agent by session ID
-        guard let agent = await mcpService.findAgentBySessionId(sessionId) else {
-            logger.warning("[skwad] Activity status: no agent found for session_id=\(sessionId)")
-            return plainResponse(status: .notFound, body: "No agent found for session_id")
-        }
-
-        // Update agent status via hook path
-        await mcpService.updateAgentStatus(for: agent.id, status: agentStatus, source: .hook)
-        logger.info("[skwad][\(String(agent.id.uuidString.prefix(8)).lowercased())] Hook status: \(statusString)")
+        await mcpService.updateAgentStatus(for: agentId, status: agentStatus, source: .hook)
+        logger.info("[skwad][\(String(agentId.uuidString.prefix(8)).lowercased())] Hook status: \(statusString)")
 
         return plainResponse(status: .ok, body: "OK")
     }
@@ -197,30 +264,28 @@ actor MCPServer: MCPTransportProtocol {
             let bodyData = Data(buffer: bodyBuffer)
 
             guard let json = try? JSONSerialization.jsonObject(with: bodyData) as? [String: Any],
-                  let sessionId = json["session_id"] as? String,
+                  let agentIdString = json["agent_id"] as? String,
+                  let agentId = UUID(uuidString: agentIdString),
                   let hookType = json["hook_type"] as? String else {
                 return plainResponse(status: .badRequest, body: "Invalid hook event payload")
-            }
-
-            // Look up agent by session ID
-            guard let agent = await mcpService.findAgentBySessionId(sessionId) else {
-                logger.warning("[skwad][unknown] Hook event: \(hookType) (no agent for session_id=\(sessionId))")
-                return plainResponse(status: .notFound, body: "No agent found for session_id")
             }
 
             let payload = json["payload"] as? [String: Any]
             let notificationType = payload?["notification_type"] as? String
 
-            let agentPrefix = "[skwad][\(String(agent.id.uuidString.prefix(8)).lowercased())]"
+            let agentPrefix = "[skwad][\(String(agentId.uuidString.prefix(8)).lowercased())]"
             logger.info("\(agentPrefix) Hook event: \(hookType) (notification_type=\(notificationType ?? "none"))")
 
             // Notification hook with permission_prompt → blocked status + desktop notification
             if (hookType.lowercased() == "permission_request" || (hookType.lowercased() == "notification" && notificationType?.lowercased() == "permission_prompt")) {
                 let message = payload?["message"] as? String
-                await MainActor.run {
-                    NotificationService.shared.notifyBlocked(agent: agent, message: message)
+                let agent = await mcpService.findAgentById(agentId)
+                if let agent = agent {
+                    await MainActor.run {
+                        NotificationService.shared.notifyBlocked(agent: agent, message: message)
+                    }
                 }
-                await mcpService.updateAgentStatus(for: agent.id, status: .blocked, source: .hook)
+                await mcpService.updateAgentStatus(for: agentId, status: .blocked, source: .hook)
             }
 
             return plainResponse(status: .ok, body: "OK")

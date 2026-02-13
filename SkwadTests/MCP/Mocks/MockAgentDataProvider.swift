@@ -67,10 +67,6 @@ actor MockAgentDataProvider: AgentDataProvider {
         }
     }
 
-    func findAgentBySessionId(_ sessionId: String) async -> Agent? {
-        _agents.first { $0.sessionId == sessionId }
-    }
-
     func updateAgentStatus(for agentId: UUID, status: AgentStatus, source: ActivitySource) async {
         if let index = _agents.firstIndex(where: { $0.id == agentId }) {
             _agents[index].status = status

@@ -22,7 +22,6 @@ protocol AgentDataProvider: Sendable {
     func getAgentsInSameWorkspace(as agentId: UUID) async -> [Agent]
     func setRegistered(for agentId: UUID, registered: Bool) async
     func setSessionId(for agentId: UUID, sessionId: String) async
-    func findAgentBySessionId(_ sessionId: String) async -> Agent?
     func updateAgentStatus(for agentId: UUID, status: AgentStatus, source: ActivitySource) async
     func injectText(_ text: String, for agentId: UUID) async
     func addAgent(folder: String, name: String, avatar: String?, agentType: String, createdBy: UUID?, companion: Bool, shellCommand: String?) async -> UUID?
@@ -472,12 +471,18 @@ actor MCPService: MCPServiceProtocol {
         return await provider.showMarkdownPanel(filePath: filePath, agentId: agentId)
     }
 
-    // MARK: - Hook-based Activity Detection
+    // MARK: - Agent Queries
 
-    /// Find an agent by its hook session ID
-    func findAgentBySessionId(_ sessionId: String) async -> Agent? {
+    /// Get all agents
+    func getAllAgents() async -> [Agent] {
+        guard let provider = agentDataProvider else { return [] }
+        return await provider.getAgents()
+    }
+
+    /// Find an agent by its UUID
+    func findAgentById(_ agentId: UUID) async -> Agent? {
         guard let provider = agentDataProvider else { return nil }
-        return await provider.findAgentBySessionId(sessionId)
+        return await provider.getAgent(id: agentId)
     }
 
     /// Update agent status from hook-based activity detection
@@ -544,12 +549,6 @@ final class AgentManagerWrapper: AgentDataProvider, @unchecked Sendable {
     func setSessionId(for agentId: UUID, sessionId: String) async {
         await MainActor.run {
             manager?.setSessionId(for: agentId, sessionId: sessionId)
-        }
-    }
-
-    func findAgentBySessionId(_ sessionId: String) async -> Agent? {
-        await MainActor.run {
-            manager?.findAgentBySessionId(sessionId)
         }
     }
 

@@ -261,9 +261,19 @@ final class AgentManager {
 
     /// Create a controller for an agent
     func createController(for agent: Agent) -> TerminalSessionController {
-        // All non-shell agents start with full tracking (.all).
-        // Hook-detected agents get downgraded to .userInput once sessionId is set.
-        let tracking: ActivityTracking = agent.isShell ? .none : .all
+        // Shell: no tracking. Hook agents (claude): .userInput only. Others: .all.
+        let tracking: ActivityTracking
+        if agent.isShell {
+            tracking = .none
+        } else if TerminalCommandBuilder.usesActivityHooks(agentType: agent.agentType) {
+            tracking = .userInput
+            // Set placeholder so terminal output is blocked before registration
+            if let index = agents.firstIndex(where: { $0.id == agent.id }) {
+                agents[index].status = .running
+            }
+        } else {
+            tracking = .all
+        }
         let controller = TerminalSessionController(
             agentId: agent.id,
             folder: agent.folder,
@@ -431,15 +441,7 @@ final class AgentManager {
     func setSessionId(for agentId: UUID, sessionId: String) {
         if let index = agents.firstIndex(where: { $0.id == agentId }) {
             agents[index].sessionId = sessionId
-            // Only downgrade if this agent type has hook-based activity detection
-            if TerminalCommandBuilder.usesActivityHooks(agentType: agents[index].agentType) {
-                controllers[agentId]?.setActivityTracking(.userInput)
-            }
         }
-    }
-
-    func findAgentBySessionId(_ sessionId: String) -> Agent? {
-        agents.first { $0.sessionId == sessionId }
     }
 
     // MARK: - Agent CRUD
@@ -717,11 +719,9 @@ final class AgentManager {
 
     func updateStatus(for agentId: UUID, status: AgentStatus, source: ActivitySource = .terminal) {
         if let index = agents.firstIndex(where: { $0.id == agentId }) {
-            // When hook-based detection is active (sessionId + agent supports hooks),
-            // only allow hook updates and user input — block terminal output
-            let hookActive = agents[index].sessionId != nil
-                && TerminalCommandBuilder.usesActivityHooks(agentType: agents[index].agentType)
-            if hookActive && source == .terminal {
+            // When hook-based detection is active, block terminal output updates
+            // (controller already filters via .userInput tracking, this is a safety net)
+            if source == .terminal && TerminalCommandBuilder.usesActivityHooks(agentType: agents[index].agentType) {
                 return
             }
             guard agents[index].status != status else { return }

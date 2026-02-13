@@ -221,7 +221,8 @@ class TerminalSessionController: ObservableObject {
         )
         return TerminalCommandBuilder.buildInitializationCommand(
             folder: folder,
-            agentCommand: agentCommand
+            agentCommand: agentCommand,
+            agentId: agentId
         )
     }
 

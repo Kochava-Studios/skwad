@@ -45,7 +45,7 @@ struct TerminalCommandBuilder {
 
       // Add inline registration for supported agents
       if let agentId = agentId {
-        fullCommand += getInlineRegistrationArguments(for: agentType, agentId: agentId)
+        fullCommand += getInlineRegistrationArguments(for: agentType, agentId: agentId, isFork: forkSessionId != nil)
       }
     }
 
@@ -120,12 +120,12 @@ struct TerminalCommandBuilder {
 
   /// Get inline registration arguments for supported agents
   /// See `doc/agent-cli-arguments.md` for CLI argument reference
-  private static func getInlineRegistrationArguments(for agentType: String, agentId: UUID) -> String {
+  private static func getInlineRegistrationArguments(for agentType: String, agentId: UUID, isFork: Bool = false) -> String {
     switch agentType {
     case "claude":
-      // Claude supports system prompt and user prompt
+      // Claude: registration is handled by hooks, just inject system prompt
       let systemPrompt = registrationSystemPrompt(agentId: agentId)
-      return #" --append-system-prompt "\#(systemPrompt)" "Register with the skwad""#
+      return #" --append-system-prompt "\#(systemPrompt)" "List other agents names and project based on context.""#
 
     case "codex":
       // Codex: user prompt as last argument (no flag)
@@ -194,14 +194,16 @@ struct TerminalCommandBuilder {
   ///   - folder: The working directory for the agent
   ///   - agentCommand: The full agent command to execute
   /// - Returns: The complete shell command string
-  static func buildInitializationCommand(folder: String, agentCommand: String) -> String {
+  static func buildInitializationCommand(folder: String, agentCommand: String, agentId: UUID? = nil) -> String {
     // Prefix with space to prevent shell history
     // Note: zsh ignores by default, bash requires HISTCONTROL=ignorespace
     if agentCommand.isEmpty {
       // Shell mode: just cd and clear, no agent command
       return " cd '\(folder)' && clear"
     }
-    return " cd '\(folder)' && clear && \(agentCommand)"
+    // Inject SKWAD_AGENT_ID env var so hooks can identify the agent
+    let envPrefix = agentId != nil ? "SKWAD_AGENT_ID=\(agentId!.uuidString) " : ""
+    return " cd '\(folder)' && clear && \(envPrefix)\(agentCommand)"
   }
   
   /// Resolves the plugin directory path.
