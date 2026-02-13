@@ -70,7 +70,6 @@ struct AgentSheet: View {
         isForking
             && TerminalCommandBuilder.canForkConversation(agentType: selectedAgentType)
             && prefill?.sessionId != nil
-            && selectedFolder == prefill?.folder
     }
     private var hasCompanions: Bool {
         guard let id = sourceAgentId else { return false }
@@ -192,9 +191,14 @@ struct AgentSheet: View {
                         Toggle("Include companions", isOn: $includeCompanions)
                             .help("Create copies of companion agents for the forked agent")
                     }
-                    if canForkConversation {
+                }
+
+                // Fork conversation section
+                if isForking && TerminalCommandBuilder.canForkConversation(agentType: selectedAgentType) && prefill?.sessionId != nil {
+                    Section {
                         Toggle("Keep conversation history", isOn: $keepConversation)
                             .help("Fork the source agent's conversation into the new agent")
+                            .disabled(selectedFolder != prefill?.folder)
                     }
                 }
             }
@@ -254,6 +258,11 @@ struct AgentSheet: View {
         .onChange(of: repoDiscovery.repos) { _, repos in
             updateRecentRepos(from: repos)
             applyPrefillWorktreeIfNeeded()
+        }
+        .onChange(of: selectedFolder) { _, newFolder in
+            if newFolder != prefill?.folder {
+                keepConversation = false
+            }
         }
     }
 
