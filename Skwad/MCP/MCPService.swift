@@ -27,6 +27,7 @@ protocol AgentDataProvider: Sendable {
     func addAgent(folder: String, name: String, avatar: String?, agentType: String, createdBy: UUID?, companion: Bool, shellCommand: String?) async -> UUID?
     func removeAgent(id: UUID) async -> Bool
     func showMarkdownPanel(filePath: String, agentId: UUID) async -> Bool
+    func updateMetadata(for agentId: UUID, metadata: [String: String]) async
 }
 
 // MARK: - MCP Service
@@ -491,6 +492,12 @@ actor MCPService: MCPServiceProtocol {
         await provider.updateAgentStatus(for: agentId, status: status, source: source)
     }
 
+    /// Update agent metadata from hook events
+    func updateMetadata(for agentId: UUID, metadata: [String: String]) async {
+        guard let provider = agentDataProvider else { return }
+        await provider.updateMetadata(for: agentId, metadata: metadata)
+    }
+
     // MARK: - Cleanup
 
     func cleanup() async {
@@ -596,6 +603,12 @@ final class AgentManagerWrapper: AgentDataProvider, @unchecked Sendable {
             guard let manager = manager else { return false }
             manager.showMarkdownPanel(filePath: filePath, forAgent: agentId)
             return true
+        }
+    }
+
+    func updateMetadata(for agentId: UUID, metadata: [String: String]) async {
+        await MainActor.run {
+            manager?.updateMetadata(for: agentId, metadata: metadata)
         }
     }
 }

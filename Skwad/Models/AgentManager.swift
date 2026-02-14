@@ -444,6 +444,12 @@ final class AgentManager {
         }
     }
 
+    func updateMetadata(for agentId: UUID, metadata: [String: String]) {
+        if let index = agents.firstIndex(where: { $0.id == agentId }) {
+            agents[index].metadata.merge(metadata) { _, new in new }
+        }
+    }
+
     // MARK: - Agent CRUD
 
     @discardableResult

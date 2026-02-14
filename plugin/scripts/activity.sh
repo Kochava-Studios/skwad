@@ -19,9 +19,10 @@ fi
 SKWAD_URL="${SKWAD_URL:-http://127.0.0.1:8766}"
 
 # Fire and forget — don't block the agent
+# Forward raw hook payload for server-side metadata extraction
 curl -s -o /dev/null -X POST \
   -H "Content-Type: application/json" \
-  -d "{\"agent_id\":\"${SKWAD_AGENT_ID}\",\"status\":\"${status}\"}" \
+  -d "{\"agent_id\":\"${SKWAD_AGENT_ID}\",\"status\":\"${status}\",\"payload\":${input:-\{\}}}" \
   "${SKWAD_URL}/api/v1/agent/status" 2>/dev/null &
 
 exit 0

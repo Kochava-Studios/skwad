@@ -187,6 +187,9 @@ actor MCPServer: MCPTransportProtocol {
             if let sessionId = agent.sessionId {
                 entry["session_id"] = sessionId
             }
+            if !agent.metadata.isEmpty {
+                entry["metadata"] = agent.metadata
+            }
             return entry
         }
         guard let data = try? JSONSerialization.data(withJSONObject: entries, options: [.prettyPrinted, .sortedKeys]) else {
@@ -211,6 +214,13 @@ actor MCPServer: MCPTransportProtocol {
             }
 
             let sessionId = json["session_id"] as? String
+
+            // Extract metadata from raw hook payload
+            let metadata = extractMetadata(from: json["payload"] as? [String: Any])
+            if !metadata.isEmpty {
+                await mcpService.updateMetadata(for: agentId, metadata: metadata)
+            }
+
             let success = await mcpService.registerAgent(agentId: agentIdString, sessionId: sessionId)
             if success {
                 logger.info("[skwad][\(String(agentId.uuidString.prefix(8)).lowercased())] Hook registration successful")
@@ -250,6 +260,12 @@ actor MCPServer: MCPTransportProtocol {
             guard let statusString = json["status"] as? String,
                   let agentStatus = (statusString == "running" ? AgentStatus.running : statusString == "idle" ? AgentStatus.idle : nil) else {
                 return plainResponse(status: .badRequest, body: "Invalid status (expected: running or idle)")
+            }
+
+            // Extract metadata from raw hook payload
+            let metadata = extractMetadata(from: json["payload"] as? [String: Any])
+            if !metadata.isEmpty {
+                await mcpService.updateMetadata(for: agentId, metadata: metadata)
             }
 
             await mcpService.updateAgentStatus(for: agentId, status: agentStatus, source: .hook)
@@ -299,6 +315,22 @@ actor MCPServer: MCPTransportProtocol {
         } catch {
             return plainResponse(status: .badRequest, body: "Failed to read body")
         }
+    }
+
+    // MARK: - Metadata Extraction
+
+    /// Extract known metadata fields from a raw hook payload
+    /// Only includes fields that are present and non-empty strings
+    private func extractMetadata(from payload: [String: Any]?) -> [String: String] {
+        guard let payload = payload else { return [:] }
+        let knownKeys = ["transcript_path", "cwd", "model", "session_id"]
+        var metadata: [String: String] = [:]
+        for key in knownKeys {
+            if let value = payload[key] as? String, !value.isEmpty {
+                metadata[key] = value
+            }
+        }
+        return metadata
     }
 
     private func plainResponse(status: HTTPResponse.Status, body: String) -> Response {

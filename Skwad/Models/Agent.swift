@@ -45,6 +45,7 @@ struct Agent: Identifiable, Codable, Hashable {
     var forkSessionId: String? = nil  // Session ID to fork from (transient, used once at launch)
     var markdownFilePath: String? = nil  // Markdown file being previewed (set by MCP tool)
     var markdownFileHistory: [String] = []  // History of markdown files shown (most recent first)
+    var metadata: [String: String] = [:]  // Hook-populated metadata (transcript_path, cwd, model, etc.)
 
     // Only persist these fields
     enum CodingKeys: String, CodingKey {

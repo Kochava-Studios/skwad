@@ -27,10 +27,10 @@ health=$(curl -s -o /dev/null -w "%{http_code}" "$SKWAD_URL/health" 2>/dev/null)
 
 if [ "$health" = "200" ]; then
 
-  # Register agent and get skwad composition
+  # Register agent — forward raw hook payload for server-side metadata extraction
   register_response=$(curl -s -X POST \
     -H "Content-Type: application/json" \
-    -d "{\"agent_id\":\"${SKWAD_AGENT_ID}\",\"session_id\":\"${session_id}\"}" \
+    -d "{\"agent_id\":\"${SKWAD_AGENT_ID}\",\"session_id\":\"${session_id}\",\"payload\":${input:-\{\}}}" \
     "${SKWAD_URL}/api/v1/agent/register" 2>/dev/null)
 
   skwad_log "SessionStart" "register_response=$register_response"
