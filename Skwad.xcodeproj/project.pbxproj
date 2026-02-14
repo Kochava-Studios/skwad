@@ -128,7 +128,7 @@
 		TS000028 /* WorkspaceSheetUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100027 /* WorkspaceSheetUITests.swift */; };
 		TS000029 /* WorkspaceAvatarViewUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100028 /* WorkspaceAvatarViewUITests.swift */; };
 		TS000030 /* TerminalTextCleanerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100029 /* TerminalTextCleanerTests.swift */; };
-		TS000031 /* AgentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100030 /* AgentTests.swift */; };
+		TS000031 /* AgentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100043 /* AgentTests.swift */; };
 		TS000032 /* ClipboardTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100031 /* ClipboardTests.swift */; };
 		TS000033 /* AgentSheetUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100032 /* AgentSheetUITests.swift */; };
 		TS000034 /* GitPanelViewHelpersTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100033 /* GitPanelViewHelpersTests.swift */; };
@@ -292,7 +292,7 @@
 		TS100027 /* WorkspaceSheetUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkspaceSheetUITests.swift; sourceTree = "<group>"; };
 		TS100028 /* WorkspaceAvatarViewUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkspaceAvatarViewUITests.swift; sourceTree = "<group>"; };
 		TS100029 /* TerminalTextCleanerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalTextCleanerTests.swift; sourceTree = "<group>"; };
-		TS100030 /* AgentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentTests.swift; sourceTree = "<group>"; };
+		TS100043 /* AgentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentTests.swift; sourceTree = "<group>"; };
 		TS100031 /* ClipboardTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardTests.swift; sourceTree = "<group>"; };
 		TS100032 /* AgentSheetUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentSheetUITests.swift; sourceTree = "<group>"; };
 		TS100033 /* GitPanelViewHelpersTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitPanelViewHelpersTests.swift; sourceTree = "<group>"; };
@@ -664,7 +664,7 @@
 				TS100006 /* AgentManagerNavigationTests.swift */,
 				TS100011 /* GitWorktreeManagerTests.swift */,
 				TS100021 /* AgentManagerTests.swift */,
-				TS100030 /* AgentTests.swift */,
+				TS100043 /* AgentTests.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -1196,7 +1196,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 55;
+				CURRENT_PROJECT_VERSION = 56;
 				DEVELOPMENT_TEAM = S3Y2KVL7H7;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1228,7 +1228,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 55;
+				CURRENT_PROJECT_VERSION = 56;
 				DEVELOPMENT_TEAM = S3Y2KVL7H7;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
