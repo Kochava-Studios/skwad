@@ -6,8 +6,8 @@ struct AvatarView: View {
     var font: Font = .largeTitle
 
     var body: some View {
-        if let avatar = avatar, avatar.hasPrefix("data:image"),
-           let image = avatarImage(from: avatar) {
+        if let avatar = avatar, AvatarUtils.isDataURI(avatar),
+           let image = AvatarUtils.parseImage(avatar) {
             Image(nsImage: image)
                 .resizable()
                 .aspectRatio(contentMode: .fill)
@@ -18,13 +18,6 @@ struct AvatarView: View {
                 .font(font)
                 .frame(width: size, height: size)
         }
-    }
-
-    private func avatarImage(from avatar: String) -> NSImage? {
-        guard let commaIndex = avatar.firstIndex(of: ",") else { return nil }
-        let base64String = String(avatar[avatar.index(after: commaIndex)...])
-        guard let data = Data(base64Encoded: base64String) else { return nil }
-        return NSImage(data: data)
     }
 }
 

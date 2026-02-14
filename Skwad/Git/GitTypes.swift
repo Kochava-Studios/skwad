@@ -93,6 +93,15 @@ struct DiffLine: Identifiable, Hashable {
         case deletion
         case header
         case hunkHeader
+
+        var prefix: String {
+            switch self {
+            case .addition: return "+"
+            case .deletion: return "-"
+            case .hunkHeader, .header: return ""
+            case .context: return " "
+            }
+        }
     }
 
     let kind: Kind

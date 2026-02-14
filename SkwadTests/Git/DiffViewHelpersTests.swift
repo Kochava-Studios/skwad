@@ -2,135 +2,29 @@ import XCTest
 import SwiftUI
 @testable import Skwad
 
-/// Tests for the helper functions and computed properties used in DiffView
-/// These test the pure logic extracted from the view code
+/// Tests for DiffLine/DiffHunk/FileDiff types and DiffLine.Kind.prefix
 final class DiffViewHelpersTests: XCTestCase {
-
-    // MARK: - Test Helpers
-
-    /// Helper to compute background color for a diff line kind
-    /// Mirrors the logic in DiffLineView
-    static func backgroundColor(for kind: DiffLine.Kind) -> (color: String, opacity: Double) {
-        switch kind {
-        case .addition:
-            return ("green", 0.2)
-        case .deletion:
-            return ("red", 0.2)
-        case .hunkHeader:
-            return ("blue", 0.15)
-        case .context, .header:
-            return ("clear", 0)
-        }
-    }
-
-    /// Helper to compute text color for a diff line kind
-    /// Mirrors the logic in DiffLineView
-    static func textColor(for kind: DiffLine.Kind) -> String {
-        switch kind {
-        case .addition:
-            return "green"
-        case .deletion:
-            return "red"
-        case .hunkHeader:
-            return "blue"
-        case .context, .header:
-            return "primary"
-        }
-    }
-
-    /// Helper to compute prefix for a diff line kind
-    /// Mirrors the logic in DiffLineView
-    static func prefix(for kind: DiffLine.Kind) -> String {
-        switch kind {
-        case .addition: return "+"
-        case .deletion: return "-"
-        case .hunkHeader, .header: return ""
-        case .context: return " "
-        }
-    }
-
-    // MARK: - Background Color Tests
-
-    func testAdditionHasGreenBackground() {
-        let (color, opacity) = DiffViewHelpersTests.backgroundColor(for: .addition)
-        XCTAssertEqual(color, "green")
-        XCTAssertEqual(opacity, 0.2)
-    }
-
-    func testDeletionHasRedBackground() {
-        let (color, opacity) = DiffViewHelpersTests.backgroundColor(for: .deletion)
-        XCTAssertEqual(color, "red")
-        XCTAssertEqual(opacity, 0.2)
-    }
-
-    func testHunkHeaderHasBlueBackground() {
-        let (color, opacity) = DiffViewHelpersTests.backgroundColor(for: .hunkHeader)
-        XCTAssertEqual(color, "blue")
-        XCTAssertEqual(opacity, 0.15)
-    }
-
-    func testContextHasClearBackground() {
-        let (color, _) = DiffViewHelpersTests.backgroundColor(for: .context)
-        XCTAssertEqual(color, "clear")
-    }
-
-    func testHeaderHasClearBackground() {
-        let (color, _) = DiffViewHelpersTests.backgroundColor(for: .header)
-        XCTAssertEqual(color, "clear")
-    }
-
-    // MARK: - Text Color Tests
-
-    func testAdditionHasGreenText() {
-        let color = DiffViewHelpersTests.textColor(for: .addition)
-        XCTAssertEqual(color, "green")
-    }
-
-    func testDeletionHasRedText() {
-        let color = DiffViewHelpersTests.textColor(for: .deletion)
-        XCTAssertEqual(color, "red")
-    }
-
-    func testHunkHeaderHasBlueText() {
-        let color = DiffViewHelpersTests.textColor(for: .hunkHeader)
-        XCTAssertEqual(color, "blue")
-    }
-
-    func testContextHasPrimaryText() {
-        let color = DiffViewHelpersTests.textColor(for: .context)
-        XCTAssertEqual(color, "primary")
-    }
-
-    func testHeaderHasPrimaryText() {
-        let color = DiffViewHelpersTests.textColor(for: .header)
-        XCTAssertEqual(color, "primary")
-    }
 
     // MARK: - Prefix Mapping Tests
 
     func testAdditionHasPlusPrefix() {
-        let prefix = DiffViewHelpersTests.prefix(for: .addition)
-        XCTAssertEqual(prefix, "+")
+        XCTAssertEqual(DiffLine.Kind.addition.prefix, "+")
     }
 
     func testDeletionHasMinusPrefix() {
-        let prefix = DiffViewHelpersTests.prefix(for: .deletion)
-        XCTAssertEqual(prefix, "-")
+        XCTAssertEqual(DiffLine.Kind.deletion.prefix, "-")
     }
 
     func testContextHasSpacePrefix() {
-        let prefix = DiffViewHelpersTests.prefix(for: .context)
-        XCTAssertEqual(prefix, " ")
+        XCTAssertEqual(DiffLine.Kind.context.prefix, " ")
     }
 
     func testHunkHeaderHasEmptyPrefix() {
-        let prefix = DiffViewHelpersTests.prefix(for: .hunkHeader)
-        XCTAssertEqual(prefix, "")
+        XCTAssertEqual(DiffLine.Kind.hunkHeader.prefix, "")
     }
 
     func testHeaderHasEmptyPrefix() {
-        let prefix = DiffViewHelpersTests.prefix(for: .header)
-        XCTAssertEqual(prefix, "")
+        XCTAssertEqual(DiffLine.Kind.header.prefix, "")
     }
 
     // MARK: - DiffLine Tests

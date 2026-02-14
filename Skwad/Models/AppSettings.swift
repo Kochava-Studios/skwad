@@ -55,6 +55,15 @@ enum AppearanceMode: String, CaseIterable {
         case .dark: return "Dark"
         }
     }
+
+    var footerDescription: String {
+        switch self {
+        case .auto: return "Derives color scheme from terminal background color."
+        case .system: return "Follows your macOS system appearance setting."
+        case .light: return "Always use light appearance."
+        case .dark: return "Always use dark appearance."
+        }
+    }
 }
 
 class AppSettings: ObservableObject {

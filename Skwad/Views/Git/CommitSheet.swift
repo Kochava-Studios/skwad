@@ -13,8 +13,12 @@ struct CommitSheet: View {
         GitRepository(path: folder)
     }
 
+    static func canCommit(message: String, isCommitting: Bool) -> Bool {
+        !message.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && !isCommitting
+    }
+
     private var canCommit: Bool {
-        !commitMessage.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && !isCommitting
+        Self.canCommit(message: commitMessage, isCommitting: isCommitting)
     }
 
     var body: some View {

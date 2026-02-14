@@ -9,8 +9,8 @@ struct MCPCommandView: View {
     @State private var selectedAgent: String = "claude"
     @State private var copied = false
     
-    private var mcpCommand: String {
-        switch selectedAgent {
+    static func mcpCommand(for agent: String, serverURL: String) -> String {
+        switch agent {
         case "claude":
             return "Skwad MCP Server is auto-started with your agents. Click copy if you want to install it globally."
         case "codex":
@@ -20,14 +20,14 @@ struct MCPCommandView: View {
         case "gemini":
             return "gemini mcp add --transport http skwad \(serverURL) --scope user"
         case "copilot":
-            return "Skward MCP server is auto-started with your agents. No manual setup needed."
+            return "Skwad MCP server is auto-started with your agents. No manual setup needed."
         default:
             return ""
         }
     }
 
-    private var mcpCommandCopy: String {
-        switch selectedAgent {
+    static func mcpCommandCopy(for agent: String, serverURL: String) -> String {
+        switch agent {
         case "claude":
             return "claude mcp add --transport http --scope user skwad \(serverURL)"
         case "opencode":
@@ -35,8 +35,16 @@ struct MCPCommandView: View {
         case "copilot":
             return ""
         default:
-            return mcpCommand
+            return mcpCommand(for: agent, serverURL: serverURL)
         }
+    }
+
+    private var mcpCommand: String {
+        Self.mcpCommand(for: selectedAgent, serverURL: serverURL)
+    }
+
+    private var mcpCommandCopy: String {
+        Self.mcpCommandCopy(for: selectedAgent, serverURL: serverURL)
     }
     
     var body: some View {

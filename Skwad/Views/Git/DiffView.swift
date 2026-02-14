@@ -81,15 +81,6 @@ struct DiffLineView: View {
         }
     }
 
-    private var prefix: String {
-        switch line.kind {
-        case .addition: return "+"
-        case .deletion: return "-"
-        case .hunkHeader, .header: return ""
-        case .context: return " "
-        }
-    }
-
     var body: some View {
         HStack(spacing: 0) {
             // Line numbers
@@ -106,7 +97,7 @@ struct DiffLineView: View {
             .padding(.trailing, 8)
 
             // Content
-            Text(prefix + line.content)
+            Text(line.kind.prefix + line.content)
                 .font(.system(size: 12, design: .monospaced))
                 .foregroundColor(textColor)
                 .frame(maxWidth: .infinity, alignment: .leading)

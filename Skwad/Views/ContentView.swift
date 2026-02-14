@@ -452,28 +452,26 @@ struct ContentView: View {
   }
 
   /// Compute rect for a pane index given layout mode and split ratio
-  private func computePaneRect(_ pane: Int, in size: CGSize) -> CGRect {
-    let ratioPrimary = agentManager.splitRatio
-    let ratioSecondary = agentManager.splitRatioSecondary
-    switch agentManager.layoutMode {
+  static func computePaneRect(pane: Int, layoutMode: LayoutMode, splitRatio: CGFloat, splitRatioSecondary: CGFloat, in size: CGSize) -> CGRect {
+    switch layoutMode {
     case .single:
       return CGRect(origin: .zero, size: size)
     case .splitVertical:  // left | right
-      let w0 = size.width * ratioPrimary
+      let w0 = size.width * splitRatio
       let w1 = size.width - w0
       return pane == 0
         ? CGRect(x: 0, y: 0, width: w0, height: size.height)
         : CGRect(x: w0, y: 0, width: w1, height: size.height)
     case .splitHorizontal:  // top / bottom
-      let h0 = size.height * ratioPrimary
+      let h0 = size.height * splitRatio
       let h1 = size.height - h0
       return pane == 0
         ? CGRect(x: 0, y: 0, width: size.width, height: h0)
         : CGRect(x: 0, y: h0, width: size.width, height: h1)
     case .threePane:  // left half full-height | right top / right bottom
-      let w0 = size.width * ratioPrimary
+      let w0 = size.width * splitRatio
       let w1 = size.width - w0
-      let h0 = size.height * ratioSecondary
+      let h0 = size.height * splitRatioSecondary
       let h1 = size.height - h0
       switch pane {
       case 0: return CGRect(x: 0, y: 0, width: w0, height: size.height)  // left (full height)
@@ -482,9 +480,9 @@ struct ContentView: View {
       default: return CGRect(origin: .zero, size: size)
       }
     case .gridFourPane:  // 4-pane grid (primary = vertical, secondary = horizontal)
-      let w0 = size.width * ratioPrimary
+      let w0 = size.width * splitRatio
       let w1 = size.width - w0
-      let h0 = size.height * ratioSecondary
+      let h0 = size.height * splitRatioSecondary
       let h1 = size.height - h0
       switch pane {
       case 0: return CGRect(x: 0, y: 0, width: w0, height: h0)        // top-left
@@ -494,6 +492,16 @@ struct ContentView: View {
       default: return CGRect(origin: .zero, size: size)
       }
     }
+  }
+
+  private func computePaneRect(_ pane: Int, in size: CGSize) -> CGRect {
+    Self.computePaneRect(
+      pane: pane,
+      layoutMode: agentManager.layoutMode,
+      splitRatio: agentManager.splitRatio,
+      splitRatioSecondary: agentManager.splitRatioSecondary,
+      in: size
+    )
   }
 
 

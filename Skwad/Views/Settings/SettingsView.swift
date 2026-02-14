@@ -88,18 +88,7 @@ struct GeneralSettingsView: View {
   @State private var automaticallyChecksForUpdates: Bool = true
 
   private var appearanceFooter: String {
-    switch AppearanceMode(rawValue: settings.appearanceMode) {
-    case .auto:
-      return "Derives color scheme from terminal background color."
-    case .system:
-      return "Follows your macOS system appearance setting."
-    case .light:
-      return "Always use light appearance."
-    case .dark:
-      return "Always use dark appearance."
-    case .none:
-      return ""
-    }
+    AppearanceMode(rawValue: settings.appearanceMode)?.footerDescription ?? ""
   }
   
   var body: some View {
