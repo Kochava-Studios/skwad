@@ -84,7 +84,7 @@ class ConversationHistoryService {
 
     // MARK: - JSONL Parsing (runs on background thread)
 
-    private nonisolated static func parseSessions(in directory: String) -> [SessionSummary] {
+    nonisolated static func parseSessions(in directory: String) -> [SessionSummary] {
         let fm = FileManager.default
         guard let contents = try? fm.contentsOfDirectory(atPath: directory) else { return [] }
 
@@ -100,23 +100,27 @@ class ConversationHistoryService {
         jsonlFiles.sort { $0.date > $1.date }
 
         // Parse files until we have 20 valid sessions
+        // The most recent file (first in list) is always included even without a title
         let maxSessions = 20
         var summaries: [SessionSummary] = []
-        for file in jsonlFiles {
+        for (index, file) in jsonlFiles.enumerated() {
             let sessionId = String(file.name.dropLast(6)) // remove .jsonl
             let path = (directory as NSString).appendingPathComponent(file.name)
 
-            guard let summary = parseJSONLFile(path: path, sessionId: sessionId, timestamp: file.date) else {
+            if let summary = parseJSONLFile(path: path, sessionId: sessionId, timestamp: file.date) {
+                summaries.append(summary)
+            } else if index == 0 {
+                summaries.append(SessionSummary(id: sessionId, title: "", timestamp: file.date, messageCount: 0))
+            } else {
                 continue
             }
-            summaries.append(summary)
             if summaries.count >= maxSessions { break }
         }
 
         return summaries
     }
 
-    private nonisolated static func parseJSONLFile(path: String, sessionId: String, timestamp: Date) -> SessionSummary? {
+    nonisolated static func parseJSONLFile(path: String, sessionId: String, timestamp: Date) -> SessionSummary? {
         guard let data = FileManager.default.contents(atPath: path),
               let content = String(data: data, encoding: .utf8) else {
             return nil

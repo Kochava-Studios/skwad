@@ -16,10 +16,13 @@ final class ConversationHistoryServiceTests: XCTestCase {
         super.tearDown()
     }
 
-    private func writeJSONL(_ filename: String, lines: [String]) {
+    private func writeJSONL(_ filename: String, lines: [String], modDate: Date? = nil) {
         let path = (tempDir as NSString).appendingPathComponent(filename)
         let content = lines.joined(separator: "\n")
         try! content.write(toFile: path, atomically: true, encoding: .utf8)
+        if let modDate = modDate {
+            try! FileManager.default.setAttributes([.modificationDate: modDate], ofItemAtPath: path)
+        }
     }
 
     private func userMessage(_ content: String, isMeta: Bool = false) -> String {
@@ -167,20 +170,117 @@ final class ConversationHistoryServiceTests: XCTestCase {
     // MARK: - Filtering
 
     func testSkipsFilesWithNoValidUserMessages() {
-        writeJSONL("session1.jsonl", lines: [
+        // Write an older file with no valid messages
+        writeJSONL("session-old.jsonl", lines: [
             userMessage("You are part of a team of agents"),
             userMessage("<command-name>/clear</command-name>"),
-        ])
+        ], modDate: Date().addingTimeInterval(-100))
+
+        // Write a newer file with a valid message (so old one is not "most recent")
+        writeJSONL("session-new.jsonl", lines: [
+            userMessage("Real message"),
+            assistantMessage()
+        ], modDate: Date())
 
         let sessions = parseSessions()
-        XCTAssertTrue(sessions.isEmpty)
+        XCTAssertEqual(sessions.count, 1)
+        XCTAssertEqual(sessions[0].title, "Real message")
     }
 
     func testSkipsEmptyFiles() {
-        writeJSONL("session1.jsonl", lines: [""])
+        // Write an older empty file
+        writeJSONL("session-old.jsonl", lines: [""], modDate: Date().addingTimeInterval(-100))
+
+        // Write a newer file with content
+        writeJSONL("session-new.jsonl", lines: [
+            userMessage("Hello"),
+            assistantMessage()
+        ], modDate: Date())
 
         let sessions = parseSessions()
-        XCTAssertTrue(sessions.isEmpty)
+        XCTAssertEqual(sessions.count, 1)
+        XCTAssertEqual(sessions[0].title, "Hello")
+    }
+
+    // MARK: - Most Recent Titleless Session
+
+    func testMostRecentFileWithNoTitleIsIncluded() {
+        // Most recent file has only registration messages — no valid title
+        writeJSONL("session-current.jsonl", lines: [
+            userMessage("You are part of a team of agents"),
+        ], modDate: Date())
+
+        // Older file has a valid title
+        writeJSONL("session-old.jsonl", lines: [
+            userMessage("Fix the bug"),
+            assistantMessage()
+        ], modDate: Date().addingTimeInterval(-100))
+
+        let sessions = parseSessions()
+        XCTAssertEqual(sessions.count, 2)
+        // Most recent first
+        XCTAssertEqual(sessions[0].id, "session-current")
+        XCTAssertEqual(sessions[0].title, "")
+        // Older one second
+        XCTAssertEqual(sessions[1].id, "session-old")
+        XCTAssertEqual(sessions[1].title, "Fix the bug")
+    }
+
+    func testMostRecentEmptyFileIsIncluded() {
+        writeJSONL("session-current.jsonl", lines: [""], modDate: Date())
+
+        writeJSONL("session-old.jsonl", lines: [
+            userMessage("Hello"),
+            assistantMessage()
+        ], modDate: Date().addingTimeInterval(-100))
+
+        let sessions = parseSessions()
+        XCTAssertEqual(sessions.count, 2)
+        XCTAssertEqual(sessions[0].id, "session-current")
+        XCTAssertEqual(sessions[0].title, "")
+    }
+
+    func testMostRecentWithTitleStillWorks() {
+        // Both have valid titles — normal behavior
+        writeJSONL("session-new.jsonl", lines: [
+            userMessage("New task"),
+            assistantMessage()
+        ], modDate: Date())
+
+        writeJSONL("session-old.jsonl", lines: [
+            userMessage("Old task"),
+            assistantMessage()
+        ], modDate: Date().addingTimeInterval(-100))
+
+        let sessions = parseSessions()
+        XCTAssertEqual(sessions.count, 2)
+        XCTAssertEqual(sessions[0].title, "New task")
+        XCTAssertEqual(sessions[1].title, "Old task")
+    }
+
+    func testOnlyMostRecentTitlelessFileIsKept() {
+        // Most recent has no title — should be included
+        writeJSONL("session-newest.jsonl", lines: [
+            userMessage("You are part of a team of agents"),
+        ], modDate: Date())
+
+        // Second has no title — should be skipped (not the most recent)
+        writeJSONL("session-middle.jsonl", lines: [
+            userMessage("<command-name>/clear</command-name>"),
+        ], modDate: Date().addingTimeInterval(-50))
+
+        // Oldest has a title — included
+        writeJSONL("session-oldest.jsonl", lines: [
+            userMessage("Valid message"),
+            assistantMessage()
+        ], modDate: Date().addingTimeInterval(-100))
+
+        let sessions = parseSessions()
+        XCTAssertEqual(sessions.count, 2)
+        XCTAssertEqual(sessions[0].id, "session-newest")
+        XCTAssertEqual(sessions[0].title, "")
+        XCTAssertEqual(sessions[1].id, "session-oldest")
+        XCTAssertEqual(sessions[1].title, "Valid message")
     }
 
     // MARK: - Session Limit
@@ -253,83 +353,7 @@ final class ConversationHistoryServiceTests: XCTestCase {
 
     // MARK: - Helpers
 
-    /// Call the static parsing method directly via reflection or by creating a directory structure
     private func parseSessions() -> [ConversationHistoryService.SessionSummary] {
-        // We need to use the nonisolated static method
-        // Since parseSessions is private, we test through the public refresh API
-        // by setting up the temp dir to look like a Claude projects dir
-        // For unit tests, we can test parseJSONLFile indirectly
-
-        // Actually, since the methods are private, let's use the service with our temp dir
-        // We'll need to go through refresh() which constructs its own path
-        // Instead, let's just test the logic manually here
-
-        let fm = FileManager.default
-        guard let contents = try? fm.contentsOfDirectory(atPath: tempDir) else { return [] }
-
-        var jsonlFiles: [(name: String, date: Date)] = []
-        for file in contents where file.hasSuffix(".jsonl") {
-            let path = (tempDir as NSString).appendingPathComponent(file)
-            if let attrs = try? fm.attributesOfItem(atPath: path),
-               let modDate = attrs[.modificationDate] as? Date {
-                jsonlFiles.append((name: file, date: modDate))
-            }
-        }
-        jsonlFiles.sort { $0.date > $1.date }
-
-        let maxSessions = 20
-        var summaries: [ConversationHistoryService.SessionSummary] = []
-        for file in jsonlFiles {
-            let sessionId = String(file.name.dropLast(6))
-            let path = (tempDir as NSString).appendingPathComponent(file.name)
-
-            guard let data = fm.contents(atPath: path),
-                  let content = String(data: data, encoding: .utf8) else { continue }
-
-            let lines = content.components(separatedBy: "\n")
-            var title: String?
-            var messageCount = 0
-
-            for line in lines {
-                let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
-                guard !trimmed.isEmpty,
-                      let lineData = trimmed.data(using: .utf8),
-                      let json = try? JSONSerialization.jsonObject(with: lineData) as? [String: Any],
-                      let type = json["type"] as? String else { continue }
-
-                if type == "user" || type == "assistant" { messageCount += 1 }
-
-                if title == nil && type == "user" {
-                    if json["isMeta"] as? Bool == true { continue }
-                    guard let message = json["message"] as? [String: Any],
-                          let messageContent = message["content"] as? String else { continue }
-
-                    let lc = messageContent.lowercased()
-                    if lc.contains("you are part of a team of agents") { continue }
-                    if lc.contains("register with the skwad") { continue }
-                    if lc.contains("list other agents names and project") { continue }
-                    if messageContent.contains("<command-name>") { continue }
-                    if messageContent.contains("<local-command-") { continue }
-
-                    let cleaned = messageContent.trimmingCharacters(in: .whitespacesAndNewlines)
-                    if cleaned.isEmpty { continue }
-
-                    let firstLine = cleaned.components(separatedBy: "\n").first ?? cleaned
-                    if firstLine.count > 80 {
-                        title = String(firstLine.prefix(77)) + "..."
-                    } else {
-                        title = firstLine
-                    }
-                }
-            }
-
-            guard let title = title, messageCount > 0 else { continue }
-            summaries.append(ConversationHistoryService.SessionSummary(
-                id: sessionId, title: title, timestamp: file.date, messageCount: messageCount
-            ))
-            if summaries.count >= maxSessions { break }
-        }
-
-        return summaries
+        return ConversationHistoryService.parseSessions(in: tempDir)
     }
 }

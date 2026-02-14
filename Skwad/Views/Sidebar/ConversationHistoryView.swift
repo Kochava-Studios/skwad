@@ -140,9 +140,12 @@ struct SessionRowView: View {
     var body: some View {
         HStack(spacing: 8) {
             VStack(alignment: .leading, spacing: 2) {
-                Text(session.title)
+                Text(session.title.isEmpty
+                     ? (isCurrent ? "Current conversation" : "Untitled conversation")
+                     : session.title)
                     .font(.system(size: 13))
-                    .foregroundColor(Theme.primaryText)
+                    .foregroundColor(session.title.isEmpty ? Theme.secondaryText : Theme.primaryText)
+                    .italic(session.title.isEmpty)
                     .lineLimit(1)
 
                 Text(relativeDate(session.timestamp))
