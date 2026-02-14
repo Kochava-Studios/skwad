@@ -159,6 +159,7 @@ struct SessionRowView: View {
                 Circle()
                     .fill(Theme.secondaryText.opacity(0.4))
                     .frame(width: 8, height: 8)
+                    .frame(width: 24, height: 24)
             } else if isHovered {
                 Button(action: onResume) {
                     Image(systemName: "play.fill")
