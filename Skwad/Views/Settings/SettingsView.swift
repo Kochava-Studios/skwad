@@ -90,7 +90,7 @@ struct GeneralSettingsView: View {
   private var appearanceFooter: String {
     switch AppearanceMode(rawValue: settings.appearanceMode) {
     case .auto:
-      return "Derives light/dark mode from terminal background color."
+      return "Derives color scheme from terminal background color."
     case .system:
       return "Follows your macOS system appearance setting."
     case .light:
@@ -130,7 +130,7 @@ struct GeneralSettingsView: View {
       }
 
       Section {
-        Toggle("Desktop notifications when blocked", isOn: $settings.desktopNotificationsEnabled)
+        Toggle("Desktop notifications", isOn: $settings.desktopNotificationsEnabled)
       } header: {
         Text("Notifications")
       } footer: {
@@ -149,6 +149,7 @@ struct GeneralSettingsView: View {
 
     }
     .formStyle(.grouped)
+    .scrollDisabled(true)
     .padding()
     .onAppear {
       automaticallyChecksForUpdates = updater.automaticallyChecksForUpdates
@@ -298,6 +299,7 @@ struct CodingSettingsView: View {
       }
     }
     .formStyle(.grouped)
+    .scrollDisabled(true)
     .padding()
   }
 
@@ -382,6 +384,7 @@ struct TerminalSettingsView: View {
       }
     }
     .formStyle(.grouped)
+    .scrollDisabled(true)
     .padding()
   }
   
@@ -492,7 +495,7 @@ struct MCPSettingsView: View {
   var body: some View {
     Form {
       Section {
-        Text("The MCP server enables agent-to-agent communication. Agents can send messages to each other, broadcast to all agents, and check their inbox. When an agent becomes idle, it is automatically notified of any pending messages.")
+        Text("The MCP server enables agents to exchange messages and interact with Skwad.")
           .foregroundColor(.secondary)
           .fixedSize(horizontal: false, vertical: true)
       } header: {
@@ -532,6 +535,7 @@ struct MCPSettingsView: View {
       }
     }
     .formStyle(.grouped)
+    .scrollDisabled(true)
     .padding()
   }
 }
@@ -597,6 +601,7 @@ struct VoiceSettingsView: View {
       }
     }
     .formStyle(.grouped)
+    .scrollDisabled(true)
     .padding()
     .onChange(of: isRecordingKey) { _, recording in
       // Stop push-to-talk monitor while recording a new key

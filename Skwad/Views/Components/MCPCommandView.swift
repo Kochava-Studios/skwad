@@ -43,7 +43,7 @@ struct MCPCommandView: View {
         HStack(spacing: 12) {
             // Agent picker - icon only using Menu for better control
             Menu {
-                ForEach(availableAgents.filter { $0.id != "custom1" && $0.id != "custom2" }, id: \.id) { agent in
+                ForEach(availableAgents.filter { $0.id != "custom1" && $0.id != "custom2" && $0.id != "shell" }, id: \.id) { agent in
                     Button {
                         selectedAgent = agent.id
                     } label: {
