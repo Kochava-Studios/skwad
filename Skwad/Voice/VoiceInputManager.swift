@@ -66,28 +66,19 @@ final class VoiceInputManager {
         CVDisplayLinkStop(displayLink)
     }
 
-    // Ease-out function for smoother interpolation
-    private func easeOut(_ t: Float) -> Float {
-        return 1 - (1 - t) * (1 - t)
-    }
-
     private func interpolateWaveform() {
         guard isListening else { return }
 
         let now = CACurrentMediaTime()
         let elapsed = now - lastSampleTime
         let rawProgress = Float(min(1.0, elapsed / sampleInterval))
-        let progress = easeOut(rawProgress)  // Apply easing for smoother motion
+        let progress = VoiceAudioUtils.easeOut(rawProgress)
 
-        // Interpolate between previous and current samples
-        var interpolated = [Float](repeating: 0, count: sampleCount)
-        for i in 0..<sampleCount {
-            let prev = i < previousSamples.count ? previousSamples[i] : 0
-            let curr = i < currentSamples.count ? currentSamples[i] : 0
-            interpolated[i] = prev + (curr - prev) * progress
-        }
-
-        waveformSamples = interpolated
+        waveformSamples = VoiceAudioUtils.interpolate(
+            previous: previousSamples,
+            current: currentSamples,
+            progress: progress
+        )
     }
 
     // MARK: - Authorization
@@ -251,36 +242,12 @@ final class VoiceInputManager {
     // MARK: - Audio Level & Waveform
 
     private func processAudioSamples(_ samples: [Float]) {
-        let frameLength = samples.count
-        guard frameLength > 0 else { return }
+        guard !samples.isEmpty else { return }
 
-        // Calculate RMS for overall level
-        var sumSquares: Float = 0
-        for sample in samples {
-            sumSquares += sample * sample
-        }
-        let rms = sqrtf(sumSquares / Float(frameLength))
-        let level = min(1.0, max(0.0, rms * 5))
-        self.audioLevel = self.audioLevel * 0.7 + level * 0.3
+        let level = VoiceAudioUtils.calculateLevel(from: samples)
+        self.audioLevel = VoiceAudioUtils.smoothLevel(current: self.audioLevel, new: level)
 
-        // Downsample buffer to get waveform samples
-        var newSamples = [Float](repeating: 0, count: sampleCount)
-        let samplesPerBin = frameLength / sampleCount
-
-        if samplesPerBin > 0 {
-            for i in 0..<sampleCount {
-                let start = i * samplesPerBin
-                let end = min(start + samplesPerBin, frameLength)
-
-                // Get peak amplitude for this segment
-                var peak: Float = 0
-                for j in start..<end {
-                    peak = max(peak, abs(samples[j]))
-                }
-                // Scale for visibility (typical speech peaks around 0.1-0.3)
-                newSamples[i] = min(1.0, peak * 4)
-            }
-        }
+        let newSamples = VoiceAudioUtils.downsample(samples, to: sampleCount)
 
         // Update interpolation state - shift current to previous, set new current
         previousSamples = currentSamples
