@@ -165,7 +165,23 @@ Skwad/
 
 ## Testing
 
-Currently no automated tests. Manual testing checklist:
+### Writing Tests — Critical Rules
+
+**NEVER duplicate production logic in test helpers.** Tests must call production code directly. If production logic is private, extract it to a `static` method or a utility enum so tests can access it via `@testable import`.
+
+- **DO**: `XCTAssertEqual(VoiceAudioUtils.easeOut(0.5), 0.75)`
+- **DON'T**: Copy the easeOut formula into a `private func` in the test file and test that copy instead
+
+Why: Mirror helpers give false confidence — tests pass even if production code breaks. This anti-pattern was cleaned up across the entire test suite; do not reintroduce it.
+
+When a function is too deeply embedded in a view or `@MainActor` class to test directly:
+1. Extract the pure logic to a utility enum (e.g., `AvatarUtils`, `VoiceAudioUtils`, `PathUtils`)
+2. Have the view/class call the utility
+3. Test the utility directly
+
+Delete tests that only verify hardcoded constants, trivial math (`max/min`), string interpolation, or enum raw values — they add zero value.
+
+### Manual testing checklist:
 1. Build and run (Cmd+R)
 2. Create agent from repo picker, verify terminal launches
 3. Create agent with new worktree
