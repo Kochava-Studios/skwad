@@ -268,7 +268,8 @@ final class AgentManager {
         } else if TerminalCommandBuilder.usesActivityHooks(agentType: agent.agentType) {
             tracking = .userInput
             // Set placeholder so terminal output is blocked before registration
-            if let index = agents.firstIndex(where: { $0.id == agent.id }) {
+            // Skip for resumed sessions — agent stays idle until user sends input
+            if agent.resumeSessionId == nil, let index = agents.firstIndex(where: { $0.id == agent.id }) {
                 agents[index].status = .running
             }
         } else {
@@ -279,7 +280,8 @@ final class AgentManager {
             folder: agent.folder,
             agentType: agent.agentType,
             shellCommand: agent.shellCommand,
-            forkSessionId: agent.forkSessionId,
+            resumeSessionId: agent.resumeSessionId,
+            forkSession: agent.forkSession,
             activityTracking: tracking,
             onStatusChange: { [weak self] status, source in
                 self?.updateStatus(for: agent.id, status: status, source: source)
@@ -462,10 +464,12 @@ final class AgentManager {
         isCompanion: Bool = false,
         insertAfterId: UUID? = nil,
         shellCommand: String? = nil,
-        forkSessionId: String? = nil
+        resumeSessionId: String? = nil,
+        forkSession: Bool = false
     ) -> UUID? {
         var agent = Agent(folder: folder, avatar: avatar, agentType: agentType, createdBy: createdBy, isCompanion: isCompanion, shellCommand: shellCommand)
-        agent.forkSessionId = forkSessionId
+        agent.resumeSessionId = resumeSessionId
+        agent.forkSession = forkSession
         if let name = name {
             agent.name = name
         }
@@ -647,6 +651,17 @@ final class AgentManager {
                 insertAfterId: newAgentId,
                 shellCommand: companion.shellCommand
             )
+        }
+    }
+
+    func resumeSession(_ agent: Agent, sessionId: String) {
+        guard let index = agents.firstIndex(where: { $0.id == agent.id }) else { return }
+        agents[index].resumeSessionId = sessionId
+        agents[index].forkSession = false
+        restartAgent(agents[index])
+        // Set sessionId after restart (which clears it) so the conversation list filters correctly
+        if let index = agents.firstIndex(where: { $0.id == agent.id }) {
+            agents[index].sessionId = sessionId
         }
     }
 

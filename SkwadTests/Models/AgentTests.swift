@@ -126,4 +126,34 @@ final class AgentTests: XCTestCase {
         let agent = Agent(folder: "/tmp", agentType: "shell")
         XCTAssertFalse(agent.isPendingStart)
     }
+
+    // MARK: - Metadata
+
+    func testMetadataStartsEmpty() {
+        let agent = Agent(name: "Test", folder: "/tmp/test")
+        XCTAssertTrue(agent.metadata.isEmpty)
+    }
+
+    func testMetadataNotPersisted() throws {
+        var original = Agent(name: "Test", folder: "/tmp/test")
+        original.metadata = ["cwd": "/tmp", "model": "opus"]
+
+        let data = try JSONEncoder().encode(original)
+        let decoded = try JSONDecoder().decode(Agent.self, from: data)
+
+        // metadata is not in CodingKeys, so it should be empty after decode
+        XCTAssertTrue(decoded.metadata.isEmpty)
+    }
+
+    // MARK: - Resume/Fork Session
+
+    func testResumeSessionIdStartsNil() {
+        let agent = Agent(name: "Test", folder: "/tmp/test")
+        XCTAssertNil(agent.resumeSessionId)
+    }
+
+    func testForkSessionDefaultsFalse() {
+        let agent = Agent(name: "Test", folder: "/tmp/test")
+        XCTAssertFalse(agent.forkSession)
+    }
 }

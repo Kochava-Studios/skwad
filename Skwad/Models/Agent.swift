@@ -42,7 +42,8 @@ struct Agent: Identifiable, Codable, Hashable {
     var restartToken: UUID = UUID()  // Changes on restart to force terminal recreation
     var gitStats: GitLineStats? = nil
     var sessionId: String? = nil  // Set during register-agent, used by hooks for activity detection
-    var forkSessionId: String? = nil  // Session ID to fork from (transient, used once at launch)
+    var resumeSessionId: String? = nil  // Session ID to resume/fork (transient, used once at launch)
+    var forkSession: Bool = false  // If true, fork instead of resume (transient)
     var markdownFilePath: String? = nil  // Markdown file being previewed (set by MCP tool)
     var markdownFileHistory: [String] = []  // History of markdown files shown (most recent first)
     var metadata: [String: String] = [:]  // Hook-populated metadata (transcript_path, cwd, model, etc.)

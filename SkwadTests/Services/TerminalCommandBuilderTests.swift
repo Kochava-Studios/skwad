@@ -108,7 +108,7 @@ final class TerminalCommandBuilderTests: XCTestCase {
             ("--mcp-config", command.range(of: "--mcp-config")?.lowerBound),
             ("--allowed-tools", command.range(of: "--allowed-tools")?.lowerBound),
             ("--append-system-prompt", command.range(of: "--append-system-prompt")?.lowerBound),
-            ("Register with the skwad", command.range(of: "Register with the skwad")?.lowerBound)
+            ("List other agents", command.range(of: "List other agents")?.lowerBound)
         ]
 
         // Verify all parts exist
@@ -241,7 +241,7 @@ final class TerminalCommandBuilderTests: XCTestCase {
 
         XCTAssertTrue(command.contains("--append-system-prompt"))
         XCTAssertTrue(command.contains(agentId.uuidString))
-        XCTAssertTrue(command.contains("Register with the skwad"))
+        XCTAssertTrue(command.contains("List other agents"))
 
         settings.mcpServerEnabled = originalMCP
     }
@@ -545,5 +545,120 @@ final class TerminalCommandBuilderTests: XCTestCase {
 
         settings.mcpServerEnabled = originalMCP
         settings.agentOptions_claude = originalOptions
+    }
+
+    // MARK: - Resume Session
+
+    @MainActor
+    func testResumeSessionAddsResumeFlag() {
+        let settings = AppSettings.shared
+        let originalMCP = settings.mcpServerEnabled
+        settings.mcpServerEnabled = false
+
+        let sessionId = "abc-123-def"
+        let command = TerminalCommandBuilder.buildAgentCommand(
+            for: "claude",
+            settings: settings,
+            resumeSessionId: sessionId
+        )
+
+        XCTAssertTrue(command.contains("--resume abc-123-def"))
+        XCTAssertFalse(command.contains("--fork-session"))
+
+        settings.mcpServerEnabled = originalMCP
+    }
+
+    @MainActor
+    func testForkSessionAddsResumeAndForkFlags() {
+        let settings = AppSettings.shared
+        let originalMCP = settings.mcpServerEnabled
+        settings.mcpServerEnabled = false
+
+        let sessionId = "abc-123-def"
+        let command = TerminalCommandBuilder.buildAgentCommand(
+            for: "claude",
+            settings: settings,
+            resumeSessionId: sessionId,
+            forkSession: true
+        )
+
+        XCTAssertTrue(command.contains("--resume abc-123-def"))
+        XCTAssertTrue(command.contains("--fork-session"))
+
+        settings.mcpServerEnabled = originalMCP
+    }
+
+    @MainActor
+    func testResumeIgnoredForNonResumableAgent() {
+        let settings = AppSettings.shared
+        let originalMCP = settings.mcpServerEnabled
+        settings.mcpServerEnabled = false
+
+        let command = TerminalCommandBuilder.buildAgentCommand(
+            for: "codex",
+            settings: settings,
+            resumeSessionId: "abc-123"
+        )
+
+        XCTAssertFalse(command.contains("--resume"))
+
+        settings.mcpServerEnabled = originalMCP
+    }
+
+    @MainActor
+    func testResumeSkipsUserPrompt() {
+        let settings = AppSettings.shared
+        let originalMCP = settings.mcpServerEnabled
+        settings.mcpServerEnabled = true
+
+        let command = TerminalCommandBuilder.buildAgentCommand(
+            for: "claude",
+            settings: settings,
+            agentId: UUID(),
+            resumeSessionId: "abc-123"
+        )
+
+        // Should have system prompt but NOT user prompt
+        XCTAssertTrue(command.contains("--append-system-prompt"))
+        XCTAssertFalse(command.contains("List other agents"))
+
+        settings.mcpServerEnabled = originalMCP
+    }
+
+    @MainActor
+    func testForkAlsoSkipsUserPrompt() {
+        let settings = AppSettings.shared
+        let originalMCP = settings.mcpServerEnabled
+        settings.mcpServerEnabled = true
+
+        let command = TerminalCommandBuilder.buildAgentCommand(
+            for: "claude",
+            settings: settings,
+            agentId: UUID(),
+            resumeSessionId: "abc-123",
+            forkSession: true
+        )
+
+        XCTAssertTrue(command.contains("--append-system-prompt"))
+        XCTAssertFalse(command.contains("List other agents"))
+
+        settings.mcpServerEnabled = originalMCP
+    }
+
+    @MainActor
+    func testNoResumeIncludesUserPrompt() {
+        let settings = AppSettings.shared
+        let originalMCP = settings.mcpServerEnabled
+        settings.mcpServerEnabled = true
+
+        let command = TerminalCommandBuilder.buildAgentCommand(
+            for: "claude",
+            settings: settings,
+            agentId: UUID()
+        )
+
+        XCTAssertTrue(command.contains("List other agents"))
+
+        settings.mcpServerEnabled = originalMCP
     }
 }

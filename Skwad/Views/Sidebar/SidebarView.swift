@@ -188,6 +188,11 @@ struct SidebarView: View {
                 }
             }
 
+            // Conversation history for selected agent
+            if let agent = agentManager.selectedAgent, TerminalCommandBuilder.canResumeConversation(agentType: agent.agentType) {
+                ConversationHistoryView(agent: agent)
+            }
+
             // New agent button
             Button(action: { showingNewAgentSheet = true }) {
                 Text("New Agent")

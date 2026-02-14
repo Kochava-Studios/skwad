@@ -4,7 +4,7 @@
 # Clean up: rm -rf /tmp/skwad-hooks
 
 skwad_log() {
-  [ "$SKWAD_DEBUG" != "1" ] && return
+  # [ "$SKWAD_DEBUG" != "1" ] && return
   local hook_name="$1"
   shift
   local log_dir="/tmp/skwad-hooks"

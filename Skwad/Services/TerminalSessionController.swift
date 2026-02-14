@@ -65,8 +65,11 @@ class TerminalSessionController: ObservableObject {
     /// Optional command for shell agent type
     let shellCommand: String?
 
-    /// Session ID to fork from (used once at launch, then ignored)
-    let forkSessionId: String?
+    /// Session ID to resume or fork (used once at launch, then ignored)
+    let resumeSessionId: String?
+
+    /// If true, fork the session instead of resuming in place
+    let forkSession: Bool
 
     /// Which terminal activity sources trigger status changes.
     /// Starts as `.all` for non-shell agents; downgraded to `.userInput`
@@ -124,7 +127,8 @@ class TerminalSessionController: ObservableObject {
         folder: String,
         agentType: String,
         shellCommand: String? = nil,
-        forkSessionId: String? = nil,
+        resumeSessionId: String? = nil,
+        forkSession: Bool = false,
         activityTracking: ActivityTracking = .all,
         idleTimeout: TimeInterval = TimingConstants.idleTimeout,
         onStatusChange: @escaping (_ status: AgentStatus, _ source: ActivitySource) -> Void,
@@ -134,7 +138,8 @@ class TerminalSessionController: ObservableObject {
         self.folder = folder
         self.agentType = agentType
         self.shellCommand = shellCommand
-        self.forkSessionId = forkSessionId
+        self.resumeSessionId = resumeSessionId
+        self.forkSession = forkSession
         self.activityTracking = activityTracking
         self.monitorsMCP = AppSettings.shared.mcpServerEnabled
         self.idleTimeout = idleTimeout
@@ -217,7 +222,8 @@ class TerminalSessionController: ObservableObject {
             settings: settings,
             agentId: agentIdForRegistration,
             shellCommand: shellCommand,
-            forkSessionId: forkSessionId
+            resumeSessionId: resumeSessionId,
+            forkSession: forkSession
         )
         return TerminalCommandBuilder.buildInitializationCommand(
             folder: folder,

@@ -492,6 +492,12 @@ actor MCPService: MCPServiceProtocol {
         await provider.updateAgentStatus(for: agentId, status: status, source: source)
     }
 
+    /// Update session ID for an agent
+    func setSessionId(for agentId: UUID, sessionId: String) async {
+        guard let provider = agentDataProvider else { return }
+        await provider.setSessionId(for: agentId, sessionId: sessionId)
+    }
+
     /// Update agent metadata from hook events
     func updateMetadata(for agentId: UUID, metadata: [String: String]) async {
         guard let provider = agentDataProvider else { return }

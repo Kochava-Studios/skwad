@@ -11,11 +11,13 @@ actor MCPServer: MCPTransportProtocol {
     private var serverTask: Task<Void, Error>?
     private let mcpService: MCPService
     private let toolHandler: MCPToolHandler
+    private let claudeHookHandler: ClaudeHookHandler
 
     init(port: Int = 8766, mcpService: MCPService = .shared) {
         self.port = port
         self.mcpService = mcpService
         self.toolHandler = MCPToolHandler(mcpService: mcpService)
+        self.claudeHookHandler = ClaudeHookHandler(mcpService: mcpService, logger: Logger(label: "com.skwad.mcp.server"))
     }
 
     func start() async throws {
@@ -200,48 +202,39 @@ actor MCPServer: MCPTransportProtocol {
         return Response(status: .ok, headers: headers, body: .init(byteBuffer: .init(data: data)))
     }
 
-    // MARK: - Activity Status Handler
+    // MARK: - Hook Handlers (dispatch by agent type)
 
     private func handleHookRegister(_ request: Request, context: BasicRequestContext) async -> Response {
         do {
-            let bodyBuffer = try await request.body.collect(upTo: 64 * 1024)
-            let bodyData = Data(buffer: bodyBuffer)
+            let (json, agentId, agentIdString) = try await parseHookRequest(request)
 
-            guard let json = try? JSONSerialization.jsonObject(with: bodyData) as? [String: Any],
-                  let agentIdString = json["agent_id"] as? String,
-                  let agentId = UUID(uuidString: agentIdString) else {
-                return plainResponse(status: .badRequest, body: "Missing or invalid agent_id")
-            }
-
-            let sessionId = json["session_id"] as? String
-
-            // Extract metadata from raw hook payload
-            let metadata = extractMetadata(from: json["payload"] as? [String: Any])
-            if !metadata.isEmpty {
-                await mcpService.updateMetadata(for: agentId, metadata: metadata)
-            }
-
-            let success = await mcpService.registerAgent(agentId: agentIdString, sessionId: sessionId)
-            if success {
-                logger.info("[skwad][\(String(agentId.uuidString.prefix(8)).lowercased())] Hook registration successful")
-
-                // Return skwad members as JSON
-                let members = await mcpService.listAgents(callerAgentId: agentIdString)
-                let response = RegisterAgentResponse(
-                    success: true,
-                    message: "Registered",
-                    unreadMessageCount: 0,
-                    skwadMembers: members
-                )
-                if let data = try? JSONEncoder().encode(response) {
-                    var headers = HTTPFields()
-                    headers[.contentType] = "application/json"
-                    return Response(status: .ok, headers: headers, body: .init(byteBuffer: .init(data: data)))
+            let agentType = json["agent"] as? String ?? "claude"
+            switch agentType {
+            case "claude":
+                let success = await claudeHookHandler.handleRegister(agentId: agentId, agentIdString: agentIdString, json: json)
+                if success {
+                    logger.info("[skwad][\(String(agentId.uuidString.prefix(8)).lowercased())] Hook registration successful")
+                    let members = await mcpService.listAgents(callerAgentId: agentIdString)
+                    let response = RegisterAgentResponse(
+                        success: true,
+                        message: "Registered",
+                        unreadMessageCount: 0,
+                        skwadMembers: members
+                    )
+                    if let data = try? JSONEncoder().encode(response) {
+                        var headers = HTTPFields()
+                        headers[.contentType] = "application/json"
+                        return Response(status: .ok, headers: headers, body: .init(byteBuffer: .init(data: data)))
+                    }
+                    return plainResponse(status: .ok, body: "OK")
+                } else {
+                    return plainResponse(status: .notFound, body: "Agent not found")
                 }
-                return plainResponse(status: .ok, body: "OK")
-            } else {
-                return plainResponse(status: .notFound, body: "Agent not found")
+            default:
+                return plainResponse(status: .badRequest, body: "Unknown agent type: \(agentType)")
             }
+        } catch let error as HookParseError {
+            return plainResponse(status: .badRequest, body: error.message)
         } catch {
             return plainResponse(status: .badRequest, body: "Failed to read body")
         }
@@ -249,88 +242,63 @@ actor MCPServer: MCPTransportProtocol {
 
     private func handleActivityStatus(_ request: Request, context: BasicRequestContext) async -> Response {
         do {
-            let bodyBuffer = try await request.body.collect(upTo: 64 * 1024)
-            let bodyData = Data(buffer: bodyBuffer)
+            let (json, agentId, _) = try await parseHookRequest(request)
 
-            guard let json = try? JSONSerialization.jsonObject(with: bodyData) as? [String: Any],
-                  let agentIdString = json["agent_id"] as? String,
-                  let agentId = UUID(uuidString: agentIdString) else {
-                return plainResponse(status: .badRequest, body: "Missing or invalid agent_id")
+            let agentType = json["agent"] as? String ?? "claude"
+            switch agentType {
+            case "claude":
+                guard let agentStatus = await claudeHookHandler.handleActivityStatus(agentId: agentId, json: json) else {
+                    return plainResponse(status: .badRequest, body: "Invalid status (expected: running or idle)")
+                }
+                logger.info("[skwad][\(String(agentId.uuidString.prefix(8)).lowercased())] Hook status: \(agentStatus.rawValue)")
+                return plainResponse(status: .ok, body: "OK")
+            default:
+                return plainResponse(status: .badRequest, body: "Unknown agent type: \(agentType)")
             }
-            guard let statusString = json["status"] as? String,
-                  let agentStatus = (statusString == "running" ? AgentStatus.running : statusString == "idle" ? AgentStatus.idle : nil) else {
-                return plainResponse(status: .badRequest, body: "Invalid status (expected: running or idle)")
-            }
-
-            // Extract metadata from raw hook payload
-            let metadata = extractMetadata(from: json["payload"] as? [String: Any])
-            if !metadata.isEmpty {
-                await mcpService.updateMetadata(for: agentId, metadata: metadata)
-            }
-
-            await mcpService.updateAgentStatus(for: agentId, status: agentStatus, source: .hook)
-            logger.info("[skwad][\(String(agentId.uuidString.prefix(8)).lowercased())] Hook status: \(statusString)")
-
-            return plainResponse(status: .ok, body: "OK")
+        } catch let error as HookParseError {
+            return plainResponse(status: .badRequest, body: error.message)
         } catch {
             return plainResponse(status: .badRequest, body: "Failed to read body")
         }
     }
-
-    // MARK: - Hook Event Handler
 
     private func handleHookEvent(_ request: Request, context: BasicRequestContext) async -> Response {
         do {
-            let bodyBuffer = try await request.body.collect(upTo: 64 * 1024)
-            let bodyData = Data(buffer: bodyBuffer)
+            let (json, agentId, _) = try await parseHookRequest(request)
 
-            guard let json = try? JSONSerialization.jsonObject(with: bodyData) as? [String: Any],
-                  let agentIdString = json["agent_id"] as? String,
-                  let agentId = UUID(uuidString: agentIdString),
-                  let hookType = json["hook_type"] as? String else {
-                return plainResponse(status: .badRequest, body: "Invalid hook event payload")
+            let agentType = json["agent"] as? String ?? "claude"
+            switch agentType {
+            case "claude":
+                await claudeHookHandler.handleHookEvent(agentId: agentId, json: json)
+                return plainResponse(status: .ok, body: "OK")
+            default:
+                return plainResponse(status: .badRequest, body: "Unknown agent type: \(agentType)")
             }
-
-            let payload = json["payload"] as? [String: Any]
-            let notificationType = payload?["notification_type"] as? String
-
-            let agentPrefix = "[skwad][\(String(agentId.uuidString.prefix(8)).lowercased())]"
-            logger.info("\(agentPrefix) Hook event: \(hookType) (notification_type=\(notificationType ?? "none"))")
-
-            // Notification hook with permission_prompt → blocked status + desktop notification
-            // notifyBlocked is called BEFORE updateAgentStatus so that the dedup check
-            // (which skips if agent is already .blocked) sees the pre-update status.
-            if (hookType.lowercased() == "permission_request" || (hookType.lowercased() == "notification" && notificationType?.lowercased() == "permission_prompt")) {
-                let message = payload?["message"] as? String
-                let agent = await mcpService.findAgentById(agentId)
-                if let agent = agent {
-                    await MainActor.run {
-                        NotificationService.shared.notifyBlocked(agent: agent, message: message)
-                    }
-                }
-                await mcpService.updateAgentStatus(for: agentId, status: .blocked, source: .hook)
-            }
-
-            return plainResponse(status: .ok, body: "OK")
+        } catch let error as HookParseError {
+            return plainResponse(status: .badRequest, body: error.message)
         } catch {
             return plainResponse(status: .badRequest, body: "Failed to read body")
         }
     }
 
-    // MARK: - Metadata Extraction
+    // MARK: - Hook Request Parsing
 
-    /// Extract known metadata fields from a raw hook payload
-    /// Only includes fields that are present and non-empty strings
-    private func extractMetadata(from payload: [String: Any]?) -> [String: String] {
-        guard let payload = payload else { return [:] }
-        let knownKeys = ["transcript_path", "cwd", "model", "session_id"]
-        var metadata: [String: String] = [:]
-        for key in knownKeys {
-            if let value = payload[key] as? String, !value.isEmpty {
-                metadata[key] = value
-            }
+    private struct HookParseError: Error {
+        let message: String
+    }
+
+    /// Parse common fields from a hook HTTP request: JSON body, agent_id → UUID
+    private func parseHookRequest(_ request: Request) async throws -> ([String: Any], UUID, String) {
+        let bodyBuffer = try await request.body.collect(upTo: 64 * 1024)
+        let bodyData = Data(buffer: bodyBuffer)
+
+        guard let json = try? JSONSerialization.jsonObject(with: bodyData) as? [String: Any],
+              let agentIdString = json["agent_id"] as? String,
+              let agentId = UUID(uuidString: agentIdString) else {
+            throw HookParseError(message: "Missing or invalid agent_id")
         }
-        return metadata
+
+        return (json, agentId, agentIdString)
     }
 
     private func plainResponse(status: HTTPResponse.Status, body: String) -> Response {

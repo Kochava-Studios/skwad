@@ -587,7 +587,8 @@ struct AgentSheet: View {
             isCompanion: prefill?.isCompanion ?? false,
             insertAfterId: prefill?.insertAfterId,
             shellCommand: shellCommand.isEmpty ? nil : shellCommand,
-            forkSessionId: keepConversation ? prefill?.sessionId : nil
+            resumeSessionId: keepConversation ? prefill?.sessionId : nil,
+            forkSession: keepConversation
         )
 
         if let newAgentId, let createdBy = prefill?.createdBy, prefill?.isCompanion == true {

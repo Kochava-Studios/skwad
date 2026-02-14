@@ -109,6 +109,20 @@ actor MockAgentDataProvider: AgentDataProvider {
         _registeredAgentIds.insert(agentId)
     }
 
+    /// Helper to set forkSession flag for testing
+    func setForkSession(for agentId: UUID, fork: Bool) {
+        if let index = _agents.firstIndex(where: { $0.id == agentId }) {
+            _agents[index].forkSession = fork
+        }
+    }
+
+    /// Helper to set resumeSessionId for testing
+    func setResumeSessionId(for agentId: UUID, sessionId: String?) {
+        if let index = _agents.firstIndex(where: { $0.id == agentId }) {
+            _agents[index].resumeSessionId = sessionId
+        }
+    }
+
     /// Create a test setup with agents in a workspace
     static func createTestSetup(agentCount: Int, workspaceName: String = "Test") -> (MockAgentDataProvider, Workspace) {
         var agents: [Agent] = []
@@ -125,6 +139,19 @@ actor MockAgentDataProvider: AgentDataProvider {
 
         let provider = MockAgentDataProvider(agents: agents, workspaces: [workspace])
         return (provider, workspace)
+    }
+
+    private var _updatedMetadata: [(agentId: UUID, metadata: [String: String])] = []
+
+    var updatedMetadata: [(agentId: UUID, metadata: [String: String])] {
+        get { _updatedMetadata }
+    }
+
+    func updateMetadata(for agentId: UUID, metadata: [String: String]) async {
+        _updatedMetadata.append((agentId: agentId, metadata: metadata))
+        if let index = _agents.firstIndex(where: { $0.id == agentId }) {
+            _agents[index].metadata.merge(metadata) { _, new in new }
+        }
     }
 
     /// Create test setup with registered agents

@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 - Claude: detect when agent is prompting user. Shows new "Blocked" status (red dot on agent and workspace)
 - Claude: add keep conversation option when forking an agent
 - Claude: plugin with slash commands (/list-agents, /send, /check, /broadcast, /worktree, etc.)
+- Claude: conversation history with resume capability
 - Desktop notifications when an agent needs attention (with click-to-navigate)
 
 ### Changed

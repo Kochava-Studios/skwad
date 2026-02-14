@@ -16,7 +16,7 @@ struct TerminalCommandBuilder {
   ///   - agentId: The agent's UUID for inline registration (optional)
   ///   - shellCommand: Optional command to run for shell agent type
   /// - Returns: The complete agent command with all arguments
-  static func buildAgentCommand(for agentType: String, settings: AppSettings, agentId: UUID? = nil, shellCommand: String? = nil, forkSessionId: String? = nil) -> String {
+  static func buildAgentCommand(for agentType: String, settings: AppSettings, agentId: UUID? = nil, shellCommand: String? = nil, resumeSessionId: String? = nil, forkSession: Bool = false) -> String {
     // Shell type: return custom command or empty
     if agentType == "shell" {
       return shellCommand ?? ""
@@ -29,9 +29,12 @@ struct TerminalCommandBuilder {
 
     var fullCommand = cmd
 
-    // Add fork session arguments (--resume <id> --fork-session)
-    if let sessionId = forkSessionId, canForkConversation(agentType: agentType) {
-      fullCommand += " --resume \(sessionId) --fork-session"
+    // Add resume/fork session arguments
+    if let sessionId = resumeSessionId, canResumeConversation(agentType: agentType) {
+      fullCommand += " --resume \(sessionId)"
+      if forkSession && canForkConversation(agentType: agentType) {
+        fullCommand += " --fork-session"
+      }
     }
 
     // Add user-provided options first (e.g., --settings)
@@ -45,7 +48,7 @@ struct TerminalCommandBuilder {
 
       // Add inline registration for supported agents
       if let agentId = agentId {
-        fullCommand += getInlineRegistrationArguments(for: agentType, agentId: agentId, isFork: forkSessionId != nil)
+        fullCommand += getInlineRegistrationArguments(for: agentType, agentId: agentId, isResume: resumeSessionId != nil)
       }
     }
 
@@ -120,11 +123,15 @@ struct TerminalCommandBuilder {
 
   /// Get inline registration arguments for supported agents
   /// See `doc/agent-cli-arguments.md` for CLI argument reference
-  private static func getInlineRegistrationArguments(for agentType: String, agentId: UUID, isFork: Bool = false) -> String {
+  private static func getInlineRegistrationArguments(for agentType: String, agentId: UUID, isResume: Bool = false) -> String {
     switch agentType {
     case "claude":
       // Claude: registration is handled by hooks, just inject system prompt
       let systemPrompt = registrationSystemPrompt(agentId: agentId)
+      // Skip user prompt on resume/fork — the agent already has conversation context
+      if isResume {
+        return #" --append-system-prompt "\#(systemPrompt)""#
+      }
       return #" --append-system-prompt "\#(systemPrompt)" "List other agents names and project (no ID) in a table based on context.""#
 
     case "codex":
@@ -159,7 +166,7 @@ struct TerminalCommandBuilder {
       let mcpConfig = #"--mcp-config '{"mcpServers":{"skwad":{"type":"http","url":"\#(mcpURL)"}}}'"#
       var args = " \(mcpConfig) --allowed-tools 'mcp__skwad__*'"
       // Add plugin directory for hook-based activity detection
-      if let pluginPath = resolvePluginPath() {
+      if let pluginPath = resolvePluginPath(for: agentType) {
         args += " --plugin-dir \"\(pluginPath)\""
       }
       return args
@@ -206,12 +213,13 @@ struct TerminalCommandBuilder {
     return " cd '\(folder)' && clear && \(envPrefix)\(agentCommand)"
   }
   
-  /// Resolves the plugin directory path.
+  /// Resolves the plugin directory path for a given agent type.
   /// In release builds, the plugin is bundled inside the app.
   /// In dev builds (Xcode), fall back to the source tree.
-  private static func resolvePluginPath() -> String? {
+  private static func resolvePluginPath(for agentType: String) -> String? {
+    let subpath = "plugin/\(agentType)"
     // Try app bundle first (release / archived builds)
-    if let bundled = Bundle.main.url(forResource: "plugin", withExtension: nil)?.path,
+    if let bundled = Bundle.main.url(forResource: subpath, withExtension: nil)?.path,
        FileManager.default.fileExists(atPath: bundled) {
       return bundled
     }
@@ -219,7 +227,7 @@ struct TerminalCommandBuilder {
     let sourceFile = #filePath
     let sourceDir = (sourceFile as NSString).deletingLastPathComponent  // .../Skwad/Services
     let projectRoot = ((sourceDir as NSString).deletingLastPathComponent as NSString).deletingLastPathComponent
-    let devPath = (projectRoot as NSString).appendingPathComponent("plugin")
+    let devPath = (projectRoot as NSString).appendingPathComponent(subpath)
     if FileManager.default.fileExists(atPath: devPath) {
       return devPath
     }
