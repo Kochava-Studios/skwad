@@ -25,22 +25,19 @@ struct ConversationHistoryView: View {
                     .font(.system(size: 10, weight: .semibold))
                     .foregroundColor(Theme.secondaryText)
                     .rotationEffect(.degrees(isExpanded ? 90 : 0))
-                    .animation(.easeInOut(duration: 0.2), value: isExpanded)
             }
             .frame(height: 32)
             .padding(.horizontal, 16)
             .contentShape(Rectangle())
             .onTapGesture {
-                withAnimation(.easeInOut(duration: 0.2)) {
-                    isExpanded.toggle()
-                }
+                isExpanded.toggle()
             }
 
             if isExpanded {
                 conversationList
-                    .transition(.opacity)
             }
         }
+        .animation(.easeInOut(duration: 0.1), value: isExpanded)
         .task(id: agent.id) {
             await historyService.refresh(for: agent.folder, agentType: agent.agentType)
         }
