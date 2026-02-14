@@ -945,4 +945,117 @@ struct AgentManagerTests {
             #expect(manager.agents[0].markdownFilePath == "/tmp/test.md")
         }
     }
+
+    // MARK: - Restart Tests
+
+    @Suite("Restart")
+    struct RestartTests {
+
+        @Test("restartAgent clears runtime state")
+        @MainActor
+        func restartAgentClearsRuntimeState() async {
+            let manager = AgentManagerTests.setupManager(agentCount: 1)
+            let agentId = manager.agents[0].id
+
+            // Set various runtime state
+            manager.agents[0].status = .running
+            manager.agents[0].isRegistered = true
+            manager.agents[0].sessionId = "old-session"
+            manager.agents[0].resumeSessionId = "resume-session"
+            manager.agents[0].forkSession = true
+            manager.agents[0].terminalTitle = "Some title"
+
+            manager.restartAgent(manager.agents[0])
+
+            let agent = manager.agents.first(where: { $0.id == agentId })!
+            #expect(agent.status == .idle)
+            #expect(agent.isRegistered == false)
+            #expect(agent.sessionId == nil)
+            #expect(agent.resumeSessionId == nil)
+            #expect(agent.forkSession == false)
+            #expect(agent.terminalTitle == "")
+        }
+
+        @Test("restartAgent generates new restart token")
+        @MainActor
+        func restartAgentGeneratesNewToken() async {
+            let manager = AgentManagerTests.setupManager(agentCount: 1)
+            let originalToken = manager.agents[0].restartToken
+
+            manager.restartAgent(manager.agents[0])
+
+            #expect(manager.agents[0].restartToken != originalToken)
+        }
+
+        @Test("restartAgent preserves agent identity")
+        @MainActor
+        func restartAgentPreservesIdentity() async {
+            let manager = AgentManagerTests.setupManager(agentCount: 1)
+            let originalId = manager.agents[0].id
+            let originalName = manager.agents[0].name
+            let originalFolder = manager.agents[0].folder
+
+            manager.restartAgent(manager.agents[0])
+
+            #expect(manager.agents[0].id == originalId)
+            #expect(manager.agents[0].name == originalName)
+            #expect(manager.agents[0].folder == originalFolder)
+        }
+    }
+
+    // MARK: - Resume Session Tests
+
+    @Suite("Resume Session")
+    struct ResumeSessionTests {
+
+        @Test("resumeSession sets resumeSessionId and sessionId")
+        @MainActor
+        func resumeSessionSetsIds() async {
+            let manager = AgentManagerTests.setupManager(agentCount: 1)
+            let agent = manager.agents[0]
+
+            manager.resumeSession(agent, sessionId: "target-session")
+
+            #expect(manager.agents[0].resumeSessionId == "target-session")
+            #expect(manager.agents[0].sessionId == "target-session")
+            #expect(manager.agents[0].forkSession == false)
+        }
+
+        @Test("resumeSession clears previous registration")
+        @MainActor
+        func resumeSessionClearsRegistration() async {
+            let manager = AgentManagerTests.setupManager(agentCount: 1)
+            manager.agents[0].isRegistered = true
+            manager.agents[0].status = .running
+
+            manager.resumeSession(manager.agents[0], sessionId: "new-session")
+
+            #expect(manager.agents[0].isRegistered == false)
+            #expect(manager.agents[0].status == .idle)
+        }
+
+        @Test("resumeSession generates new restart token")
+        @MainActor
+        func resumeSessionGeneratesNewToken() async {
+            let manager = AgentManagerTests.setupManager(agentCount: 1)
+            let originalToken = manager.agents[0].restartToken
+
+            manager.resumeSession(manager.agents[0], sessionId: "session")
+
+            #expect(manager.agents[0].restartToken != originalToken)
+        }
+
+        @Test("resumeSession preserves agent identity")
+        @MainActor
+        func resumeSessionPreservesIdentity() async {
+            let manager = AgentManagerTests.setupManager(agentCount: 1)
+            let originalId = manager.agents[0].id
+            let originalName = manager.agents[0].name
+
+            manager.resumeSession(manager.agents[0], sessionId: "session")
+
+            #expect(manager.agents[0].id == originalId)
+            #expect(manager.agents[0].name == originalName)
+        }
+    }
 }

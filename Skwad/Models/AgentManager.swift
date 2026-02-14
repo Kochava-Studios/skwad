@@ -658,24 +658,26 @@ final class AgentManager {
         guard let index = agents.firstIndex(where: { $0.id == agent.id }) else { return }
         agents[index].resumeSessionId = sessionId
         agents[index].forkSession = false
-        restartAgent(agents[index])
-        // Set sessionId after restart (which clears it) so the conversation list filters correctly
-        if let index = agents.firstIndex(where: { $0.id == agent.id }) {
-            agents[index].sessionId = sessionId
-        }
+        agents[index].sessionId = sessionId
+        startAgent(agents[index])
     }
 
     func restartAgent(_ agent: Agent) {
-        // Keep same ID but regenerate restart token to force terminal recreation
+        guard let index = agents.firstIndex(where: { $0.id == agent.id }) else { return }
+        agents[index].sessionId = nil
+        agents[index].resumeSessionId = nil
+        agents[index].forkSession = false
+        startAgent(agents[index])
+    }
+
+    /// Tear down existing terminal and trigger recreation via restartToken
+    private func startAgent(_ agent: Agent) {
         guard let index = agents.firstIndex(where: { $0.id == agent.id }) else { return }
         removeController(for: agent.id)
         unregisterTerminal(for: agent.id)
-
-        // Update agent with new restart token (keeps same ID for MCP registration)
         agents[index].restartToken = UUID()
         agents[index].status = .idle
         agents[index].isRegistered = false
-        agents[index].sessionId = nil
         agents[index].terminalTitle = ""
     }
 
