@@ -23,8 +23,13 @@ struct ContentView: View {
   @Binding var toggleSidebar: Bool
   @Binding var forkPrefill: AgentPrefill?
 
-  private let minSidebarWidth: CGFloat = 200
-  private let maxSidebarWidth: CGFloat = 400
+  static let minSidebarWidth: CGFloat = 80
+  static let maxSidebarWidth: CGFloat = 400
+  static let compactBreakpoint: CGFloat = 160
+
+  static func isSidebarCompact(width: CGFloat) -> Bool {
+    width < compactBreakpoint
+  }
 
   private var activeAgent: Agent? {
     guard let id = agentManager.activeAgentId else { return nil }
@@ -45,7 +50,7 @@ struct ContentView: View {
       }
 
       if !agentManager.currentWorkspaceAgents.isEmpty && sidebarVisible {
-        SidebarView(sidebarVisible: $sidebarVisible, forkPrefill: $forkPrefill)
+        SidebarView(sidebarVisible: $sidebarVisible, forkPrefill: $forkPrefill, isCompact: Self.isSidebarCompact(width: sidebarWidth))
           .frame(width: sidebarWidth)
           .transition(.move(edge: .leading).combined(with: .opacity))
 
@@ -65,7 +70,7 @@ struct ContentView: View {
             DragGesture()
               .onChanged { value in
                 let newWidth = sidebarWidth + value.translation.width
-                sidebarWidth = min(max(newWidth, minSidebarWidth), maxSidebarWidth)
+                sidebarWidth = min(max(newWidth, Self.minSidebarWidth), Self.maxSidebarWidth)
               }
           )
       }

@@ -5,6 +5,7 @@ struct SidebarView: View {
     @ObservedObject private var settings = AppSettings.shared
     @Binding var sidebarVisible: Bool
     @Binding var forkPrefill: AgentPrefill?
+    var isCompact: Bool = false
     @State private var showingNewAgentSheet = false
     @State private var agentToEdit: Agent?
     @State private var showBroadcastSheet = false
@@ -20,10 +21,12 @@ struct SidebarView: View {
           
           VStack {
               HStack {
-                Text(agentManager.currentWorkspace?.name.uppercased() ?? "AGENTS")
-                  .font(.callout)
-                  .fontWeight(.semibold)
-                  .foregroundColor(Theme.secondaryText)
+                if !isCompact {
+                  Text(agentManager.currentWorkspace?.name.uppercased() ?? "AGENTS")
+                    .font(.callout)
+                    .fontWeight(.semibold)
+                    .foregroundColor(Theme.secondaryText)
+                }
 
                 Spacer()
 
@@ -41,7 +44,7 @@ struct SidebarView: View {
               }
             }
             .frame(height: 32)
-            .padding(.leading, 32)
+            .padding(.leading, isCompact ? 12 : 32)
             .padding(.trailing, 12)
 
             // Agent list
@@ -79,7 +82,8 @@ struct SidebarView: View {
                             AgentRowView(
                                 agent: agent,
                                 isSelected: agentManager.isAgentActive(agent.id),
-                                companions: agentManager.companions(of: agent.id)
+                                companions: agentManager.companions(of: agent.id),
+                                isCompact: isCompact
                             )
                             .onTapGesture {
                                 let cmdHeld = NSEvent.modifierFlags.contains(.command)
@@ -189,24 +193,32 @@ struct SidebarView: View {
             }
 
             // Conversation history for selected agent
-            if let agent = agentManager.selectedAgent, TerminalCommandBuilder.canResumeConversation(agentType: agent.agentType) {
+            if !isCompact, let agent = agentManager.selectedAgent, TerminalCommandBuilder.canResumeConversation(agentType: agent.agentType) {
                 ConversationHistoryView(agent: agent)
             }
 
             // New agent button
             Button(action: { showingNewAgentSheet = true }) {
-                Text("New Agent")
-                    .font(.title3)
-                    .fontWeight(.semibold)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 8)
+                if isCompact {
+                    Image(systemName: "person.crop.rectangle.badge.plus")
+                        .font(.title3)
+                        .fontWeight(.semibold)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 8)
+                } else {
+                    Text("New Agent")
+                        .font(.title3)
+                        .fontWeight(.semibold)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 8)
+                }
             }
             .buttonStyle(.borderedProminent)
             .focusable(false)
-            .padding(.horizontal, 16)
+            .padding(.horizontal, isCompact ? 8 : 16)
             .padding(.bottom, 16)
         }
-        .frame(minWidth: 200)
+        .frame(minWidth: 64)
         .ignoresSafeArea()
         .background(settings.sidebarBackgroundColor)
         .sheet(isPresented: $showingNewAgentSheet) {
@@ -340,8 +352,71 @@ struct AgentRowView: View {
     let agent: Agent
     let isSelected: Bool
     var companions: [Agent] = []
+    var isCompact: Bool = false
 
     var body: some View {
+        if isCompact {
+            compactBody
+        } else {
+            normalBody
+        }
+    }
+
+    var compactBody: some View {
+        VStack(spacing: 4) {
+            // Avatar with status dot overlay
+            ZStack(alignment: .bottomTrailing) {
+                AvatarView(avatar: agent.avatar, size: 40, font: .largeTitle)
+
+                if !agent.isShell {
+                    Circle()
+                        .fill(agent.status.color)
+                        .frame(width: 10, height: 10)
+                        .overlay(
+                            Circle()
+                                .strokeBorder(Color.black.opacity(0.3), lineWidth: 1)
+                        )
+                        .offset(x: 2, y: 2)
+                }
+            }
+            .frame(width: 40, height: 40)
+
+            // Compact companion avatars (no names)
+            if !companions.isEmpty {
+                HStack(spacing: 3) {
+                    ForEach(companions) { companion in
+                        ZStack(alignment: .bottomTrailing) {
+                            AvatarView(avatar: companion.avatar, size: 18, font: .caption2)
+
+                            if !companion.isShell {
+                                Circle()
+                                    .fill(companion.status.color)
+                                    .frame(width: 6, height: 6)
+                                    .overlay(
+                                        Circle()
+                                            .strokeBorder(Color.black.opacity(0.3), lineWidth: 0.5)
+                                    )
+                                    .offset(x: 1, y: 1)
+                            }
+                        }
+                        .frame(width: 18, height: 18)
+                    }
+                }
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 8)
+        .background(isSelected ? Theme.selectionBackground : Color.clear)
+        .overlay(
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(isSelected ? Theme.selectionBorder : Color.clear, lineWidth: 1)
+        )
+        .cornerRadius(8)
+        .contentShape(Rectangle())
+        .help(agent.name)
+    }
+
+    var normalBody: some View {
         VStack(spacing: 0) {
             HStack(spacing: 12) {
                 AvatarView(avatar: agent.avatar, size: 40, font: .largeTitle)
@@ -422,11 +497,25 @@ private func previewAgent(_ name: String, _ avatar: String, _ folder: String, st
     .frame(width: 250)
 }
 
+#Preview("AgentRow Compact") {
+    VStack(spacing: 4) {
+        AgentRowView(agent: previewAgent("skwad", "🐱", "/Users/nbonamy/src/skwad"), isSelected: false, isCompact: true)
+        AgentRowView(agent: previewAgent("witsy", "🤖", "/Users/nbonamy/src/witsy", status: .running, title: "Editing App.swift"), isSelected: true, isCompact: true)
+        AgentRowView(agent: previewAgent("broken", "🦊", "/Users/nbonamy/src/broken", status: .error), isSelected: false, isCompact: true)
+    }
+    .padding(8)
+    .frame(width: 80)
+}
+
 @MainActor private func previewAgentManager() -> AgentManager {
     let m = AgentManager()
     let a1 = previewAgent("skwad", "🐱", "/Users/nbonamy/src/skwad", status: .running, title: "Editing ContentView.swift")
     let a2 = previewAgent("witsy", "🤖", "/Users/nbonamy/src/witsy")
-    m.agents = [a1, a2]
+    let a3 = previewAgent("broken", "🦊", "/Users/nbonamy/src/broken", status: .error)
+    m.agents = [a1, a2, a3]
+    let workspace = Workspace(name: "Preview", colorHex: WorkspaceColor.blue.rawValue, agentIds: [a1.id, a2.id, a3.id])
+    m.workspaces = [workspace]
+    m.currentWorkspaceId = workspace.id
     m.activeAgentIds = [a1.id]
     return m
 }
@@ -435,4 +524,10 @@ private func previewAgent(_ name: String, _ avatar: String, _ folder: String, st
     SidebarView(sidebarVisible: .constant(true), forkPrefill: .constant(nil))
         .environment(previewAgentManager())
         .frame(width: 250, height: 500)
+}
+
+#Preview("Sidebar Compact") {
+    SidebarView(sidebarVisible: .constant(true), forkPrefill: .constant(nil), isCompact: true)
+        .environment(previewAgentManager())
+        .frame(width: 80, height: 500)
 }
