@@ -108,15 +108,64 @@ final class ConversationHistoryServiceTests: XCTestCase {
         XCTAssertEqual(sessions[0].title, "Real message")
     }
 
-    func testSkipsCommandMessages() {
+    func testFormatsCommandMessageAsTitle() {
         writeJSONL("session1.jsonl", lines: [
-            userMessage("<command-name>/clear</command-name>"),
-            userMessage("Real message"),
+            userMessage("<command-message>review</command-message>\\n<command-name>/review</command-name>\\n<command-args>focus on error handling</command-args>"),
             assistantMessage()
         ])
 
         let sessions = parseSessions()
-        XCTAssertEqual(sessions[0].title, "Real message")
+        XCTAssertEqual(sessions[0].title, "/review focus on error handling")
+    }
+
+    func testFormatsCommandMessageWithoutArgs() {
+        writeJSONL("session1.jsonl", lines: [
+            userMessage("<command-message>merge</command-message>\\n<command-name>/merge</command-name>\\n<command-args></command-args>"),
+            assistantMessage()
+        ])
+
+        let sessions = parseSessions()
+        XCTAssertEqual(sessions[0].title, "/merge")
+    }
+
+    func testFormatsCommandMessageWithNoArgsTag() {
+        writeJSONL("session1.jsonl", lines: [
+            userMessage("<command-message>review</command-message>\\n<command-name>/review</command-name>"),
+            assistantMessage()
+        ])
+
+        let sessions = parseSessions()
+        XCTAssertEqual(sessions[0].title, "/review")
+    }
+
+    func testFormatsCommandMessageIndentedPattern() {
+        writeJSONL("session1.jsonl", lines: [
+            userMessage("<command-name>/clear</command-name>\\n            <command-message>clear</command-message>\\n            <command-args></command-args>"),
+            assistantMessage()
+        ])
+
+        let sessions = parseSessions()
+        XCTAssertEqual(sessions[0].title, "/clear")
+    }
+
+    func testFormatsCommandMessageMultilineArgs() {
+        writeJSONL("session1.jsonl", lines: [
+            userMessage("<command-message>design</command-message>\\n<command-name>/design</command-name>\\n<command-args>deprecate models screen\\nif workspace has restrictions show it</command-args>"),
+            assistantMessage()
+        ])
+
+        let sessions = parseSessions()
+        XCTAssertEqual(sessions[0].title, "/design deprecate models screen")
+    }
+
+    func testFormatsCommandMessageNamespacedCommand() {
+        writeJSONL("session1.jsonl", lines: [
+            userMessage("<command-message>skwad:broadcast</command-message>\\n<command-name>/skwad:broadcast</command-name>\\n<command-args>hello all!</command-args>"),
+            assistantMessage()
+        ])
+
+        let sessions = parseSessions()
+        XCTAssertEqual(sessions[0].title, "/skwad:broadcast hello all!")
     }
 
     func testSkipsLocalCommandMessages() {
@@ -170,10 +219,10 @@ final class ConversationHistoryServiceTests: XCTestCase {
     // MARK: - Filtering
 
     func testSkipsFilesWithNoValidUserMessages() {
-        // Write an older file with no valid messages
+        // Write an older file with no valid messages (only registration + local-command)
         writeJSONL("session-old.jsonl", lines: [
             userMessage("You are part of a team of agents"),
-            userMessage("<command-name>/clear</command-name>"),
+            userMessage("<local-command-stdout></local-command-stdout>"),
         ], modDate: Date().addingTimeInterval(-100))
 
         // Write a newer file with a valid message (so old one is not "most recent")
@@ -266,7 +315,7 @@ final class ConversationHistoryServiceTests: XCTestCase {
 
         // Second has no title — should be skipped (not the most recent)
         writeJSONL("session-middle.jsonl", lines: [
-            userMessage("<command-name>/clear</command-name>"),
+            userMessage("<local-command-stdout></local-command-stdout>"),
         ], modDate: Date().addingTimeInterval(-50))
 
         // Oldest has a title — included

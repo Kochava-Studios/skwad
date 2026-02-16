@@ -120,6 +120,31 @@ class ConversationHistoryService {
         return summaries
     }
 
+    /// Format a command message like "<command-name>/review</command-name>...<command-args>text</command-args>"
+    /// into "/review text"
+    nonisolated static func formatCommandMessage(_ content: String) -> String {
+        // Extract command name (e.g. "/review")
+        guard let nameStart = content.range(of: "<command-name>"),
+              let nameEnd = content.range(of: "</command-name>") else {
+            return ""
+        }
+        let commandName = String(content[nameStart.upperBound..<nameEnd.lowerBound])
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+
+        // Extract args if present
+        var args = ""
+        if let argsStart = content.range(of: "<command-args>"),
+           let argsEnd = content.range(of: "</command-args>") {
+            args = String(content[argsStart.upperBound..<argsEnd.lowerBound])
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+
+        if args.isEmpty {
+            return commandName
+        }
+        return "\(commandName) \(args)"
+    }
+
     nonisolated static func parseJSONLFile(path: String, sessionId: String, timestamp: Date) -> SessionSummary? {
         guard let data = FileManager.default.contents(atPath: path),
               let content = String(data: data, encoding: .utf8) else {
@@ -162,13 +187,20 @@ class ConversationHistoryService {
                 if lc.contains("register with the skwad") { continue }
                 if lc.contains("list other agents names and project") { continue }
 
-                // Skip command/meta messages
-                if messageContent.contains("<command-name>") { continue }
+                // Skip local command messages (system noise)
                 if messageContent.contains("<local-command-") { continue }
 
-                // Skip empty or whitespace-only
-                let cleaned = messageContent.trimmingCharacters(in: .whitespacesAndNewlines)
-                if cleaned.isEmpty { continue }
+                // Format command messages as "/command args"
+                let cleaned: String
+                if messageContent.contains("<command-name>") {
+                    cleaned = formatCommandMessage(messageContent)
+                    if cleaned.isEmpty { continue }
+                } else {
+                    // Skip empty or whitespace-only
+                    let trimmed = messageContent.trimmingCharacters(in: .whitespacesAndNewlines)
+                    if trimmed.isEmpty { continue }
+                    cleaned = trimmed
+                }
 
                 // Use first line, truncated to 80 chars
                 let firstLine = cleaned.components(separatedBy: "\n").first ?? cleaned
