@@ -10,11 +10,10 @@
 		01716FCA29A8F9522A2F8A9A /* GitFileWatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 241FF0F3B6265925356C1479 /* GitFileWatcher.swift */; };
 		0327FDF2A2ECDCE0DF53BE02 /* DiffView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA63472ED8A96242C89019C1 /* DiffView.swift */; };
 		05DDBA7B3DCF7C65CF6A9FFF /* GitWorktreeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D95A7EFF9B22BB564BAFA4 /* GitWorktreeManager.swift */; };
+		1A6D2316079752BE51601C58 /* AgentRowViewUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C962292DFCACBC3F72A41CF5 /* AgentRowViewUITests.swift */; };
 		3FFD4CA0073309E4B34E6B66 /* CommitSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A486F6A72822BE9094B02DA7 /* CommitSheet.swift */; };
 		48E4A7F10E3C047EF657C139 /* OpenWithAppPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAB09CF01B6F4CD118B448A6 /* OpenWithAppPicker.swift */; };
 		491170A3B86B4F821B4A1417 /* NewWorktreeSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B074ACAD44D9FA064E28A16 /* NewWorktreeSheet.swift */; };
-		CH000001 /* ConversationHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CH100001 /* ConversationHistoryView.swift */; };
-		CH000002 /* ClaudeHookHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = CH100002 /* ClaudeHookHandler.swift */; };
 		49BE1929AE038865BFCD543D /* GitTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADCF18167D88BA578DBF2B2E /* GitTypes.swift */; };
 		8D2673C92F31592C0043E3A6 /* VoiceInputManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D2673C72F31592C0043E3A6 /* VoiceInputManager.swift */; };
 		8D2673CA2F31592C0043E3A6 /* VoiceInputOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D2673C82F31592C0043E3A6 /* VoiceInputOverlay.swift */; };
@@ -46,6 +45,8 @@
 		A0622F92A9748B402B7D8403 /* MenuItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = B85319AD6169FDBF46AAE73E /* MenuItem.swift */; };
 		A1789C06B8425D64920E2446 /* GitCLI.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCD187651343B17CF0D9CCCF /* GitCLI.swift */; };
 		AS000001 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AS100001 /* Assets.xcassets */; };
+		CH000001 /* ConversationHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CH100001 /* ConversationHistoryView.swift */; };
+		CH000002 /* ClaudeHookHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = CH100002 /* ClaudeHookHandler.swift */; };
 		EC4663850678FAF77C0F1381 /* GitRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 137C060CFAE6151E52210D1A /* GitRepository.swift */; };
 		F4AB26B99E3CC3D579D72293 /* OpenWithProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = E032A72A15B3456546418CF7 /* OpenWithProvider.swift */; };
 		F8001001 /* SkwadApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8000001 /* SkwadApp.swift */; };
@@ -108,7 +109,6 @@
 		TS000008 /* MCPMessageStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100007 /* MCPMessageStoreTests.swift */; };
 		TS000009 /* MCPSessionManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100008 /* MCPSessionManagerTests.swift */; };
 		TS000010 /* MCPServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100009 /* MCPServiceTests.swift */; };
-		TS000030 /* ClaudeHookHandlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100030 /* ClaudeHookHandlerTests.swift */; };
 		TS000011 /* MockAgentDataProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100010 /* MockAgentDataProvider.swift */; };
 		TS000012 /* GitWorktreeManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100011 /* GitWorktreeManagerTests.swift */; };
 		TS000014 /* DiffViewHelpersTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100013 /* DiffViewHelpersTests.swift */; };
@@ -183,8 +183,6 @@
 		241FF0F3B6265925356C1479 /* GitFileWatcher.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GitFileWatcher.swift; sourceTree = "<group>"; };
 		52D95A7EFF9B22BB564BAFA4 /* GitWorktreeManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GitWorktreeManager.swift; sourceTree = "<group>"; };
 		5B074ACAD44D9FA064E28A16 /* NewWorktreeSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NewWorktreeSheet.swift; sourceTree = "<group>"; };
-		CH100001 /* ConversationHistoryView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ConversationHistoryView.swift; sourceTree = "<group>"; };
-		CH100002 /* ClaudeHookHandler.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ClaudeHookHandler.swift; sourceTree = "<group>"; };
 		8D2673C62F31592C0043E3A6 /* PushToTalkMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushToTalkMonitor.swift; sourceTree = "<group>"; };
 		8D2673C72F31592C0043E3A6 /* VoiceInputManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceInputManager.swift; sourceTree = "<group>"; };
 		8D2673C82F31592C0043E3A6 /* VoiceInputOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceInputOverlay.swift; sourceTree = "<group>"; };
@@ -209,7 +207,10 @@
 		ADCF18167D88BA578DBF2B2E /* GitTypes.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GitTypes.swift; sourceTree = "<group>"; };
 		AS100001 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B85319AD6169FDBF46AAE73E /* MenuItem.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MenuItem.swift; sourceTree = "<group>"; };
+		C962292DFCACBC3F72A41CF5 /* AgentRowViewUITests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AgentRowViewUITests.swift; sourceTree = "<group>"; };
 		CAB09CF01B6F4CD118B448A6 /* OpenWithAppPicker.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OpenWithAppPicker.swift; sourceTree = "<group>"; };
+		CH100001 /* ConversationHistoryView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ConversationHistoryView.swift; sourceTree = "<group>"; };
+		CH100002 /* ClaudeHookHandler.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ClaudeHookHandler.swift; sourceTree = "<group>"; };
 		E032A72A15B3456546418CF7 /* OpenWithProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OpenWithProvider.swift; sourceTree = "<group>"; };
 		EA63472ED8A96242C89019C1 /* DiffView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DiffView.swift; sourceTree = "<group>"; };
 		F8000001 /* SkwadApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SkwadApp.swift; sourceTree = "<group>"; };
@@ -274,7 +275,6 @@
 		TS100007 /* MCPMessageStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPMessageStoreTests.swift; sourceTree = "<group>"; };
 		TS100008 /* MCPSessionManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPSessionManagerTests.swift; sourceTree = "<group>"; };
 		TS100009 /* MCPServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPServiceTests.swift; sourceTree = "<group>"; };
-		TS100030 /* ClaudeHookHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeHookHandlerTests.swift; sourceTree = "<group>"; };
 		TS100010 /* MockAgentDataProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockAgentDataProvider.swift; sourceTree = "<group>"; };
 		TS100011 /* GitWorktreeManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitWorktreeManagerTests.swift; sourceTree = "<group>"; };
 		TS100013 /* DiffViewHelpersTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiffViewHelpersTests.swift; sourceTree = "<group>"; };
@@ -294,7 +294,7 @@
 		TS100027 /* WorkspaceSheetUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkspaceSheetUITests.swift; sourceTree = "<group>"; };
 		TS100028 /* WorkspaceAvatarViewUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkspaceAvatarViewUITests.swift; sourceTree = "<group>"; };
 		TS100029 /* TerminalTextCleanerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalTextCleanerTests.swift; sourceTree = "<group>"; };
-		TS100043 /* AgentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentTests.swift; sourceTree = "<group>"; };
+		TS100030 /* ClaudeHookHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeHookHandlerTests.swift; sourceTree = "<group>"; };
 		TS100031 /* ClipboardTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardTests.swift; sourceTree = "<group>"; };
 		TS100032 /* AgentSheetUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentSheetUITests.swift; sourceTree = "<group>"; };
 		TS100033 /* GitPanelViewHelpersTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitPanelViewHelpersTests.swift; sourceTree = "<group>"; };
@@ -307,6 +307,7 @@
 		TS100040 /* NotificationServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationServiceTests.swift; sourceTree = "<group>"; };
 		TS100041 /* TerminalCommandBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalCommandBuilderTests.swift; sourceTree = "<group>"; };
 		TS100042 /* ConversationHistoryServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationHistoryServiceTests.swift; sourceTree = "<group>"; };
+		TS100043 /* AgentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentTests.swift; sourceTree = "<group>"; };
 		TS100100 /* SkwadTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SkwadTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		UP100001 /* UpdaterManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdaterManager.swift; sourceTree = "<group>"; };
 		UT100001 /* Clipboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Clipboard.swift; sourceTree = "<group>"; };
@@ -700,6 +701,7 @@
 			isa = PBXGroup;
 			children = (
 				TS100015 /* SidebarViewHelpersTests.swift */,
+				C962292DFCACBC3F72A41CF5 /* AgentRowViewUITests.swift */,
 			);
 			path = Sidebar;
 			sourceTree = "<group>";
@@ -743,20 +745,20 @@
 			path = Services;
 			sourceTree = "<group>";
 		};
-		TS500015 /* Mocks */ = {
-			isa = PBXGroup;
-			children = (
-				TS100038 /* MockTerminalAdapter.swift */,
-			);
-			path = Mocks;
-			sourceTree = "<group>";
-		};
 		TS500014 /* Markdown */ = {
 			isa = PBXGroup;
 			children = (
 				TS100037 /* MarkdownToHTMLTests.swift */,
 			);
 			path = Markdown;
+			sourceTree = "<group>";
+		};
+		TS500015 /* Mocks */ = {
+			isa = PBXGroup;
+			children = (
+				TS100038 /* MockTerminalAdapter.swift */,
+			);
+			path = Mocks;
 			sourceTree = "<group>";
 		};
 		UP200000 /* Updater */ = {
@@ -1014,12 +1016,13 @@
 				TS000008 /* MCPMessageStoreTests.swift in Sources */,
 				TS000009 /* MCPSessionManagerTests.swift in Sources */,
 				TS000010 /* MCPServiceTests.swift in Sources */,
-				TS000030 /* ClaudeHookHandlerTests.swift in Sources */,
+				TS000030 /* TerminalTextCleanerTests.swift in Sources */,
 				TS000011 /* MockAgentDataProvider.swift in Sources */,
 				TS000012 /* GitWorktreeManagerTests.swift in Sources */,
 				TS000014 /* DiffViewHelpersTests.swift in Sources */,
 				TS000015 /* AgentSheetHelpersTests.swift in Sources */,
 				TS000016 /* SidebarViewHelpersTests.swift in Sources */,
+				1A6D2316079752BE51601C58 /* AgentRowViewUITests.swift in Sources */,
 				TS000017 /* ContentViewHelpersTests.swift in Sources */,
 				TS000018 /* SettingsViewHelpersTests.swift in Sources */,
 				TS000019 /* CommitSheetHelpersTests.swift in Sources */,
@@ -1204,7 +1207,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 60;
+				CURRENT_PROJECT_VERSION = 61;
 				DEVELOPMENT_TEAM = S3Y2KVL7H7;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1236,7 +1239,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 60;
+				CURRENT_PROJECT_VERSION = 61;
 				DEVELOPMENT_TEAM = S3Y2KVL7H7;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
