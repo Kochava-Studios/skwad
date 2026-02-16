@@ -18,6 +18,9 @@ enum TimingConstants {
     /// Timeout for marking terminal as idle after last user input (keypress)
     static let userInputIdleTimeout: TimeInterval = 10.0
 
+    /// Fallback idle timeout for hook-based agents (terminal output safety net)
+    static let hookFallbackIdleTimeout: TimeInterval = 15.0
+
     /// First idle delay for fast-starting agents  
     static let registrationFirstIdleDelayShort: TimeInterval = 1.5
     

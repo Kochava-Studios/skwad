@@ -87,6 +87,11 @@ struct ClaudeHookHandler {
             }
             await mcpService.updateAgentStatus(for: agentId, status: .blocked, source: .hook)
         }
+
+        // Idle prompt → agent is waiting for user input → idle
+        if hookType.lowercased() == "notification" && notificationType?.lowercased() == "idle_prompt" {
+            await mcpService.updateAgentStatus(for: agentId, status: .idle, source: .hook)
+        }
     }
 
     // MARK: - Metadata Extraction

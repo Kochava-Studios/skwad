@@ -305,6 +305,11 @@ class TerminalSessionController: ObservableObject {
 
     // MARK: - Activity Detection
 
+    /// Whether this agent uses hook-based status detection (e.g. Claude)
+    private var isHookBased: Bool {
+        activityTracking == .userInput
+    }
+
     /// Signals that activity has been detected in the terminal.
     /// Stamps the time and ensures exactly one idle timer is running.
     /// - Parameter fromUserInput: If true, uses longer timeout for user typing
@@ -314,17 +319,28 @@ class TerminalSessionController: ObservableObject {
 
         // Check if this source is enabled in the current tracking bitfield
         let source: ActivityTracking = fromUserInput ? .userInput : .terminalOutput
-        
+
         // in any case idle is not happening anymore
         if idleTimer.isActive {
             idleTimer.invalidate()
         }
-        
-        // now only process if relevant
-        guard activityTracking.contains(source) else { return }
 
         // Stamp activity time (always — cheap, no allocation)
         lastActivityTime = CFAbsoluteTimeGetCurrent()
+
+        // For hook-based agents, terminal output doesn't set running but
+        // schedules a fallback idle timer (safety net for missed hook events)
+        if !fromUserInput && isHookBased {
+            lastActivitySource = .terminal
+            idleTimer.schedule(after: TimingConstants.hookFallbackIdleTimeout) { [weak self] in
+                self?.idleTimerFired()
+            }
+            return
+        }
+
+        // now only process if relevant
+        guard activityTracking.contains(source) else { return }
+
         lastActivitySource = fromUserInput ? .user : .terminal
 
         if fromUserInput {
@@ -343,7 +359,7 @@ class TerminalSessionController: ObservableObject {
             }
 
             // For hook-managed agents, user input doesn't drive the status state machine
-            if activityTracking == .userInput { return }
+            if isHookBased { return }
         }
 
         // Full terminal-based detection: set running + schedule idle timer
@@ -413,12 +429,13 @@ class TerminalSessionController: ObservableObject {
     
     private func idleTimerFired() {
         guard !isDisposed else { return }
+        let effectiveTimeout = isHookBased ? TimingConstants.hookFallbackIdleTimeout : idleTimeout
         let sinceLastActivity = CFAbsoluteTimeGetCurrent() - lastActivityTime
-        if sinceLastActivity >= idleTimeout {
+        if sinceLastActivity >= effectiveTimeout {
             markIdle()
         } else {
             // Activity happened since timer was scheduled — reschedule
-            let remaining = idleTimeout - sinceLastActivity
+            let remaining = effectiveTimeout - sinceLastActivity
             idleTimer.schedule(after: remaining) { [weak self] in
                 self?.idleTimerFired()
             }

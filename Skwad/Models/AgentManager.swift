@@ -742,9 +742,9 @@ final class AgentManager {
 
     func updateStatus(for agentId: UUID, status: AgentStatus, source: ActivitySource = .terminal) {
         if let index = agents.firstIndex(where: { $0.id == agentId }) {
-            // When hook-based detection is active, block terminal output updates
-            // (controller already filters via .userInput tracking, this is a safety net)
-            if source == .terminal && TerminalCommandBuilder.usesActivityHooks(agentType: agents[index].agentType) {
+            // When hook-based detection is active, only allow terminal → idle through
+            // (the fallback idle timer in TerminalSessionController provides a safety net)
+            if source == .terminal && TerminalCommandBuilder.usesActivityHooks(agentType: agents[index].agentType) && status != .idle {
                 return
             }
             guard agents[index].status != status else { return }
