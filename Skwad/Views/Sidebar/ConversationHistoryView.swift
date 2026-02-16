@@ -158,22 +158,23 @@ struct SessionRowView: View {
                     .frame(width: 8, height: 8)
                     .frame(width: 24, height: 24)
             } else if isHovered {
-                Button(action: onResume) {
-                    Image(systemName: "play.fill")
-                        .font(.system(size: 11))
-                        .foregroundColor(Theme.secondaryText)
-                        .frame(width: 24, height: 24)
-                        .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-                .help("Resume session")
+                Image(systemName: "play.fill")
+                    .font(.system(size: 11))
+                    .foregroundColor(Theme.secondaryText)
+                    .frame(width: 24, height: 24)
             }
         }
-        .padding(.horizontal, 8)
+        .padding(.leading, 12)
+        .padding(.trailing, 6)
         .padding(.vertical, 6)
         .background(isHovered ? Theme.selectionBackground.opacity(0.5) : Color.clear)
         .cornerRadius(6)
         .contentShape(Rectangle())
+        .onTapGesture {
+            if !isCurrent {
+                onResume()
+            }
+        }
     }
 
     private func relativeDate(_ date: Date) -> String {
