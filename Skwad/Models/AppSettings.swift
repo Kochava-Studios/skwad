@@ -221,6 +221,9 @@ class AppSettings: ObservableObject {
     @AppStorage("voicePushToTalkKey") var voicePushToTalkKey: Int = 60  // Right Shift keyCode
     @AppStorage("voiceAutoInsert") var voiceAutoInsert: Bool = true
 
+    // Markdown Preview
+    @AppStorage("markdownFontSize") var markdownFontSize: Int = 14
+
     // Notifications
     @AppStorage("desktopNotificationsEnabled") var desktopNotificationsEnabled: Bool = true
 

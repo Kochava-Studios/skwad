@@ -5,6 +5,7 @@ import WebKit
 /// On mouseup with selected text, calls `onSelection` with the selected text.
 struct MarkdownWebView: NSViewRepresentable {
     let markdown: String
+    var fontSize: Int = 14
     let backgroundColor: Color
     let isDarkMode: Bool
     var onSelection: (String, CGFloat) -> Void = { _, _ in }  // (text, yPosition)
@@ -32,14 +33,20 @@ struct MarkdownWebView: NSViewRepresentable {
         context.coordinator.onSelection = onSelection
         let markdownChanged = context.coordinator.lastMarkdown != markdown
         let darkModeChanged = context.coordinator.lastDarkMode != isDarkMode
-        guard markdownChanged || darkModeChanged else { return }
+        let fontSizeChanged = context.coordinator.lastFontSize != fontSize
+
+        guard markdownChanged || darkModeChanged || fontSizeChanged else { return }
 
         context.coordinator.lastMarkdown = markdown
         context.coordinator.lastDarkMode = isDarkMode
+        context.coordinator.lastFontSize = fontSize
 
         if darkModeChanged {
             // Theme changed — full reload needed (CSS is different)
             loadHTML(in: webView)
+        } else if fontSizeChanged {
+            // Font size changed — update via JS to preserve scroll position
+            webView.evaluateJavaScript("document.body.style.fontSize = '\(fontSize)px'") { _, _ in }
         } else {
             // Content changed — update body via JS to preserve scroll position
             let htmlBody = MarkdownToHTML.convert(markdown)
@@ -78,7 +85,7 @@ struct MarkdownWebView: NSViewRepresentable {
             * { margin: 0; padding: 0; box-sizing: border-box; }
             body {
                 font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
-                font-size: 14px;
+                font-size: \(fontSize)px;
                 line-height: 1.6;
                 color: \(textColor);
                 background-color: \(bgHex);
@@ -154,6 +161,7 @@ struct MarkdownWebView: NSViewRepresentable {
         var onSelection: (String, CGFloat) -> Void
         weak var webView: WKWebView?
         var lastMarkdown: String?
+        var lastFontSize: Int?
         var lastDarkMode: Bool?
 
         init(onSelection: @escaping (String, CGFloat) -> Void) {

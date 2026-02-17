@@ -80,6 +80,7 @@ struct MarkdownPanelView: View {
         } else if let markdown = content {
             MarkdownWebView(
                 markdown: markdown,
+                fontSize: settings.markdownFontSize,
                 backgroundColor: backgroundColor,
                 isDarkMode: colorScheme == .dark
             ) { text, y in
@@ -246,6 +247,44 @@ struct MarkdownPanelView: View {
                 }
                 .buttonStyle(.plain)
                 .help("Submit review comments to agent")
+            }
+
+            HStack(spacing: 4) {
+                Button {
+                    if settings.markdownFontSize > 10 {
+                        settings.markdownFontSize -= 1
+                    }
+                } label: {
+                    HStack(spacing: 1) {
+                        Text("A").font(.system(size: 12, weight: .medium))
+                        Image(systemName: "chevron.down").font(.system(size: 8, weight: .semibold))
+                    }
+                    .foregroundColor(.secondary)
+                    .frame(height: 24)
+                    .padding(.horizontal, 4)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .help("Decrease font size")
+                .disabled(settings.markdownFontSize <= 10)
+
+                Button {
+                    if settings.markdownFontSize < 24 {
+                        settings.markdownFontSize += 1
+                    }
+                } label: {
+                    HStack(spacing: 1) {
+                        Text("A").font(.system(size: 12, weight: .medium))
+                        Image(systemName: "chevron.up").font(.system(size: 8, weight: .semibold))
+                    }
+                    .foregroundColor(.secondary)
+                    .frame(height: 24)
+                    .padding(.horizontal, 4)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .help("Increase font size")
+                .disabled(settings.markdownFontSize >= 24)
             }
 
             Button {

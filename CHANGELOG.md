@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 - Claude: conversation history with resume capability
 - Desktop notifications when an agent needs attention (with click-to-navigate)
 - Compact agent sidebar mode
+- Markdown preview: font size controls (A▼/A▲) in title bar
 
 ### Changed
 - Claude: registration now uses hooks instead of MCP call on startup
