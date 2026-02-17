@@ -26,7 +26,7 @@ protocol AgentDataProvider: Sendable {
     func injectText(_ text: String, for agentId: UUID) async
     func addAgent(folder: String, name: String, avatar: String?, agentType: String, createdBy: UUID?, companion: Bool, shellCommand: String?) async -> UUID?
     func removeAgent(id: UUID) async -> Bool
-    func showMarkdownPanel(filePath: String, agentId: UUID) async -> Bool
+    func showMarkdownPanel(filePath: String, maximized: Bool, agentId: UUID) async -> Bool
     func updateMetadata(for agentId: UUID, metadata: [String: String]) async
 }
 
@@ -464,12 +464,12 @@ actor MCPService: MCPServiceProtocol {
 
     // MARK: - Markdown Panel
 
-    func showMarkdownPanel(filePath: String, agentId: UUID) async -> Bool {
+    func showMarkdownPanel(filePath: String, maximized: Bool, agentId: UUID) async -> Bool {
         guard let provider = agentDataProvider else {
             logger.error("[skwad] AgentDataProvider not available for showMarkdownPanel")
             return false
         }
-        return await provider.showMarkdownPanel(filePath: filePath, agentId: agentId)
+        return await provider.showMarkdownPanel(filePath: filePath, maximized: maximized, agentId: agentId)
     }
 
     // MARK: - Agent Queries
@@ -604,10 +604,10 @@ final class AgentManagerWrapper: AgentDataProvider, @unchecked Sendable {
         }
     }
 
-    func showMarkdownPanel(filePath: String, agentId: UUID) async -> Bool {
+    func showMarkdownPanel(filePath: String, maximized: Bool, agentId: UUID) async -> Bool {
         await MainActor.run {
             guard let manager = manager else { return false }
-            manager.showMarkdownPanel(filePath: filePath, forAgent: agentId)
+            manager.showMarkdownPanel(filePath: filePath, maximized: maximized, forAgent: agentId)
             return true
         }
     }

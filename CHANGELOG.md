@@ -12,6 +12,8 @@ All notable changes to this project will be documented in this file.
 - Desktop notifications when an agent needs attention (with click-to-navigate)
 - Compact agent sidebar mode
 - Markdown preview: font size controls (A▼/A▲) in title bar
+- Markdown preview: expand/collapse button to maximize panel
+- Markdown preview: `maximized` parameter on display-markdown MCP tool
 
 ### Changed
 - Claude: registration now uses hooks instead of MCP call on startup

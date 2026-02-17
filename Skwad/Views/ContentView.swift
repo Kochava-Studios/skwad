@@ -16,6 +16,7 @@ struct ContentView: View {
   @State private var dragStartRatioSecondary: CGFloat?
   @State private var isDropTargeted = false
   @State private var lastPaneRects: [UUID: CGRect] = [:]
+  @State private var markdownExpanded = false
 
   // Bindings from SkwadApp for menu commands
   @Binding var showNewAgentSheet: Bool
@@ -77,7 +78,7 @@ struct ContentView: View {
 
       GeometryReader { geo in
         ZStack(alignment: .topLeading) {
-          // Keep all terminals alive, show/hide via frame+offset per pane
+          // Keep all terminals alive, show/hide via opacity (never recreated)
           ForEach(agentManager.agents) { agent in
 
             let visible = agentManager.activeAgentIds.contains(agent.id)
@@ -320,6 +321,8 @@ struct ContentView: View {
           }
         }
       }
+      .opacity(markdownExpanded ? 0 : 1)
+      .frame(width: markdownExpanded ? 0 : nil)
 
       // Git panel (sliding from right)
       if showGitPanel, let agent = activeAgent {
@@ -336,8 +339,10 @@ struct ContentView: View {
         MarkdownPanelView(
           filePath: filePath,
           agentId: agent.id,
+          isExpanded: $markdownExpanded,
           onClose: {
             withAnimation(.easeInOut(duration: 0.2)) {
+              markdownExpanded = false
               agentManager.closeMarkdownPanel(for: agent.id)
             }
           },
@@ -379,7 +384,13 @@ struct ContentView: View {
         }
       }
     }
-    .onChange(of: activeAgent?.markdownFilePath) { _, _ in
+    .onChange(of: activeAgent?.markdownFilePath) { _, newValue in
+      // Sync maximized state from agent model when panel opens
+      if newValue != nil {
+        markdownExpanded = activeAgent?.markdownMaximized ?? false
+      } else {
+        markdownExpanded = false
+      }
       // Notify terminal to resize when markdown panel toggles
       DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
         if let activeId = agentManager.activeAgentId {

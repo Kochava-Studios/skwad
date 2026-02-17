@@ -983,9 +983,10 @@ final class AgentManager {
     // MARK: - Markdown Panel
 
     /// Show the markdown panel for a specific file
-    func showMarkdownPanel(filePath: String, forAgent agentId: UUID) {
+    func showMarkdownPanel(filePath: String, maximized: Bool = false, forAgent agentId: UUID) {
         if let index = agents.firstIndex(where: { $0.id == agentId }) {
             agents[index].markdownFilePath = filePath
+            agents[index].markdownMaximized = maximized
             // Add to history (remove if already present to move to front)
             agents[index].markdownFileHistory.removeAll { $0 == filePath }
             agents[index].markdownFileHistory.insert(filePath, at: 0)

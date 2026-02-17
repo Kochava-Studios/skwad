@@ -92,7 +92,7 @@ actor MockAgentDataProvider: AgentDataProvider {
         return false
     }
 
-    func showMarkdownPanel(filePath: String, agentId: UUID) async -> Bool {
+    func showMarkdownPanel(filePath: String, maximized: Bool, agentId: UUID) async -> Bool {
         // Mock implementation - just return true for tests
         return true
     }

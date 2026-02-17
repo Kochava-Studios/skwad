@@ -121,7 +121,8 @@ actor MCPToolHandler {
                 inputSchema: ToolInputSchema(
                     properties: [
                         "agentId": PropertySchema(type: "string", description: "Your agent ID"),
-                        "filePath": PropertySchema(type: "string", description: "Absolute path to the markdown file to display")
+                        "filePath": PropertySchema(type: "string", description: "Absolute path to the markdown file to display"),
+                        "maximized": PropertySchema(type: "boolean", description: "If true, maximize the panel to fill the available space. Only set to true if the user explicitly requests it. Default: false")
                     ],
                     required: ["agentId", "filePath"]
                 )
@@ -383,7 +384,8 @@ actor MCPToolHandler {
         }
 
         // Request the markdown panel to be shown
-        let success = await mcpService.showMarkdownPanel(filePath: filePath, agentId: agent.id)
+        let maximized = arguments["maximized"] as? Bool ?? false
+        let success = await mcpService.showMarkdownPanel(filePath: filePath, maximized: maximized, agentId: agent.id)
 
         if success {
             let response = ShowMarkdownResponse(

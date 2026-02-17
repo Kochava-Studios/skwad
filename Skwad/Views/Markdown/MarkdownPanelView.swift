@@ -4,6 +4,7 @@ import SwiftUI
 struct MarkdownPanelView: View {
     let filePath: String
     let agentId: UUID
+    @Binding var isExpanded: Bool
     let onClose: () -> Void
     let onComment: (String) -> Void  // formatted comment text -> inject into terminal
     let onSubmitReview: () -> Void  // send return to submit the prompt
@@ -33,7 +34,9 @@ struct MarkdownPanelView: View {
 
     var body: some View {
         HStack(spacing: 0) {
-            resizeHandle
+            if !isExpanded {
+                resizeHandle
+            }
 
             VStack(spacing: 0) {
                 header
@@ -51,8 +54,9 @@ struct MarkdownPanelView: View {
                     }
                 }
             }
-            .frame(width: panelWidth)
+            .frame(width: isExpanded ? nil : panelWidth)
         }
+        .frame(maxWidth: isExpanded ? .infinity : nil)
         .background(backgroundColor)
         .onAppear {
             loadContent()
@@ -233,6 +237,7 @@ struct MarkdownPanelView: View {
                 Button {
                     onSubmitReview()
                     commentSessionStarted = false
+                    isExpanded = false
                 } label: {
                     HStack(spacing: 4) {
                         Image(systemName: "paperplane.fill")
@@ -286,6 +291,19 @@ struct MarkdownPanelView: View {
                 .help("Increase font size")
                 .disabled(settings.markdownFontSize >= 24)
             }
+
+            Button {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    isExpanded.toggle()
+                }
+            } label: {
+                Image(systemName: isExpanded ? "arrow.down.right.and.arrow.up.left" : "arrow.up.left.and.arrow.down.right")
+                    .foregroundColor(.secondary)
+                    .frame(width: 24, height: 24)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .help(isExpanded ? "Collapse" : "Expand")
 
             Button {
                 onClose()
@@ -384,6 +402,7 @@ struct MarkdownPanelView: View {
     MarkdownPanelView(
         filePath: "/Users/nbonamy/src/skwad/README.md",
         agentId: UUID(),
+        isExpanded: .constant(false),
         onClose: {},
         onComment: { text in
             print("Comment: \(text)")
