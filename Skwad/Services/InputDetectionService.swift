@@ -16,21 +16,28 @@ actor InputDetectionService {
 
     /// The classification prompt template
     static let classificationPrompt = """
-        You are a binary classifier. Given the last message from an AI coding agent, determine if the message is asking the user for input, confirmation, a decision, or approval before continuing.
+        You are a binary classifier. Given the last message from an AI coding agent, determine if the agent is asking for simple approval or confirmation to continue with a plan it has already decided on.
+
+        Only answer "yes" when the agent has a clear plan and is waiting for a go-ahead. Answer "no" for everything else: questions asking the user to choose between options, requests for information, status updates, or completed work.
+
+        When in doubt, answer "no".
 
         Answer ONLY "yes" or "no".
 
         Examples of "yes":
         - "Should I proceed with this approach?"
         - "Do you want me to implement this?"
-        - "Which option would you prefer?"
-        - "Is this plan okay?"
         - "Shall I continue?"
+        - "Is this plan okay?"
+        - "Ready to proceed. Should I go ahead?"
 
         Examples of "no":
+        - "Which option would you prefer?"
+        - "Do you want approach A or approach B?"
+        - "What should the API key be called?"
         - "I've completed the refactoring. Here's what I changed..."
         - "The tests are all passing now."
-        - "Here's the implementation plan..."
+        - "Here's the implementation plan. Let me know if you'd like changes."
         - "I found the bug in line 42..."
         """
 
