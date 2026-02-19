@@ -39,8 +39,6 @@
 		8D7622B22F2C67CE006B6280 /* MCPTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D7622AE2F2C67CE006B6280 /* MCPTypes.swift */; };
 		8D7622B32F2C67CE006B6280 /* MCPTools.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D7622AC2F2C67CE006B6280 /* MCPTools.swift */; };
 		8D7622B42F2C67CE006B6280 /* MCPSessionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D7622AB2F2C67CE006B6280 /* MCPSessionManager.swift */; };
-		8DBD63342F474BD60049E5DC /* InputDetectionSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DBD63332F474BD60049E5DC /* InputDetectionSheet.swift */; };
-		8DBD63362F474BE00049E5DC /* InputDetectionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DBD63352F474BE00049E5DC /* InputDetectionService.swift */; };
 		8DBD63392F478DB40049E5DC /* AIProxy in Frameworks */ = {isa = PBXBuildFile; productRef = 8DBD63382F478DB40049E5DC /* AIProxy */; };
 		8DBD634E2F479A770049E5DC /* AutopilotSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DBD634D2F479A770049E5DC /* AutopilotSettingsView.swift */; };
 		8DBD63542F479B570049E5DC /* TerminalSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DBD63522F479B570049E5DC /* TerminalSettingsView.swift */; };
@@ -48,6 +46,9 @@
 		8DBD63562F479B570049E5DC /* MCPSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DBD63512F479B570049E5DC /* MCPSettingsView.swift */; };
 		8DBD63572F479B570049E5DC /* CodingSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DBD634F2F479B570049E5DC /* CodingSettingsView.swift */; };
 		8DBD63582F479B570049E5DC /* GeneralSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DBD63502F479B570049E5DC /* GeneralSettingsView.swift */; };
+		8DBD635C2F47B3290049E5DC /* AutopilotServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DBD635B2F47B3290049E5DC /* AutopilotServiceTests.swift */; };
+		8DBD635E2F47B3480049E5DC /* AutopilotService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DBD635D2F47B3480049E5DC /* AutopilotService.swift */; };
+		8DBD63602F47B3850049E5DC /* AutopilotDecisionSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DBD635F2F47B3850049E5DC /* AutopilotDecisionSheet.swift */; };
 		8DD8074D2F2E52E900D7A935 /* AgentSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DD8074C2F2E52E900D7A935 /* AgentSheet.swift */; };
 		8DEF1A6B2F3DB4DB00247C2C /* plugin in CopyFiles */ = {isa = PBXBuildFile; fileRef = 8DEF1A682F3DB49500247C2C /* plugin */; };
 		914A53BB8DBD66EC96B19BDA /* GitPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBECFB308DA186BC15E6AE50 /* GitPanelView.swift */; };
@@ -210,14 +211,15 @@
 		8D7622AC2F2C67CE006B6280 /* MCPTools.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPTools.swift; sourceTree = "<group>"; };
 		8D7622AD2F2C67CE006B6280 /* MCPTransport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPTransport.swift; sourceTree = "<group>"; };
 		8D7622AE2F2C67CE006B6280 /* MCPTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPTypes.swift; sourceTree = "<group>"; };
-		8DBD63332F474BD60049E5DC /* InputDetectionSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputDetectionSheet.swift; sourceTree = "<group>"; };
-		8DBD63352F474BE00049E5DC /* InputDetectionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputDetectionService.swift; sourceTree = "<group>"; };
 		8DBD634D2F479A770049E5DC /* AutopilotSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutopilotSettingsView.swift; sourceTree = "<group>"; };
 		8DBD634F2F479B570049E5DC /* CodingSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodingSettingsView.swift; sourceTree = "<group>"; };
 		8DBD63502F479B570049E5DC /* GeneralSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneralSettingsView.swift; sourceTree = "<group>"; };
 		8DBD63512F479B570049E5DC /* MCPSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPSettingsView.swift; sourceTree = "<group>"; };
 		8DBD63522F479B570049E5DC /* TerminalSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalSettingsView.swift; sourceTree = "<group>"; };
 		8DBD63532F479B570049E5DC /* VoiceSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceSettingsView.swift; sourceTree = "<group>"; };
+		8DBD635B2F47B3290049E5DC /* AutopilotServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutopilotServiceTests.swift; sourceTree = "<group>"; };
+		8DBD635D2F47B3480049E5DC /* AutopilotService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutopilotService.swift; sourceTree = "<group>"; };
+		8DBD635F2F47B3850049E5DC /* AutopilotDecisionSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutopilotDecisionSheet.swift; sourceTree = "<group>"; };
 		8DD8074C2F2E52E900D7A935 /* AgentSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentSheet.swift; sourceTree = "<group>"; };
 		8DEF1A682F3DB49500247C2C /* plugin */ = {isa = PBXFileReference; lastKnownFileType = folder; path = plugin; sourceTree = "<group>"; };
 		A486F6A72822BE9094B02DA7 /* CommitSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CommitSheet.swift; sourceTree = "<group>"; };
@@ -482,7 +484,6 @@
 				F8000015 /* Terminal */,
 				WS200001 /* Workspace */,
 				F8000002 /* ContentView.swift */,
-				8DBD63332F474BD60049E5DC /* InputDetectionSheet.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -529,6 +530,7 @@
 				8DD8074C2F2E52E900D7A935 /* AgentSheet.swift */,
 				SR100002 /* AgentTypePicker.swift */,
 				SR100003 /* AgentTypePickerContent.swift */,
+				8DBD635F2F47B3850049E5DC /* AutopilotDecisionSheet.swift */,
 				F800000C /* AvatarView.swift */,
 				8D6B972D2F2E366000CE877E /* MCPCommandView.swift */,
 				CAB09CF01B6F4CD118B448A6 /* OpenWithAppPicker.swift */,
@@ -606,13 +608,13 @@
 		SR200000 /* Services */ = {
 			isa = PBXGroup;
 			children = (
-				8DBD63352F474BE00049E5DC /* InputDetectionService.swift */,
+				8DBD635D2F47B3480049E5DC /* AutopilotService.swift */,
+				SR100009 /* ConversationHistoryService.swift */,
+				SR100008 /* NotificationService.swift */,
 				SR100001 /* RepoDiscoveryService.swift */,
 				SR100007 /* TerminalAdapter.swift */,
 				SR100004 /* TerminalCommandBuilder.swift */,
 				SR100006 /* TerminalSessionController.swift */,
-				SR100008 /* NotificationService.swift */,
-				SR100009 /* ConversationHistoryService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -762,6 +764,7 @@
 			isa = PBXGroup;
 			children = (
 				TS500015 /* Mocks */,
+				8DBD635B2F47B3290049E5DC /* AutopilotServiceTests.swift */,
 				TS100042 /* ConversationHistoryServiceTests.swift */,
 				TS100040 /* NotificationServiceTests.swift */,
 				TS100036 /* RepoDiscoveryServiceTests.swift */,
@@ -985,6 +988,7 @@
 				8D7622B32F2C67CE006B6280 /* MCPTools.swift in Sources */,
 				8D6B97282F2E316A00CE877E /* AppDelegate.swift in Sources */,
 				8D334BC82F35104700FB0E95 /* AgentContextMenu.swift in Sources */,
+				8DBD635E2F47B3480049E5DC /* AutopilotService.swift in Sources */,
 				8D7622B42F2C67CE006B6280 /* MCPSessionManager.swift in Sources */,
 				F8001012 /* Theme.swift in Sources */,
 				F8001013 /* AvatarView.swift in Sources */,
@@ -1001,9 +1005,9 @@
 				GH000007 /* Ghostty.MouseEvent.swift in Sources */,
 				GH000008 /* Ghostty.Surface.swift in Sources */,
 				GH000009 /* GhosttyIMEHandler.swift in Sources */,
+				8DBD63602F47B3850049E5DC /* AutopilotDecisionSheet.swift in Sources */,
 				GH000010 /* GhosttyInputHandler.swift in Sources */,
 				GH000011 /* GhosttyProgressState.swift in Sources */,
-				8DBD63362F474BE00049E5DC /* InputDetectionService.swift in Sources */,
 				8D6B972E2F2E366000CE877E /* MCPCommandView.swift in Sources */,
 				GH000012 /* GhosttyRenderingSetup.swift in Sources */,
 				GH000013 /* GhosttyTerminalView.swift in Sources */,
@@ -1025,7 +1029,6 @@
 				0327FDF2A2ECDCE0DF53BE02 /* DiffView.swift in Sources */,
 				914A53BB8DBD66EC96B19BDA /* GitPanelView.swift in Sources */,
 				MD000001 /* MarkdownPanelView.swift in Sources */,
-				8DBD63342F474BD60049E5DC /* InputDetectionSheet.swift in Sources */,
 				MD000004 /* MarkdownWebView.swift in Sources */,
 				01716FCA29A8F9522A2F8A9A /* GitFileWatcher.swift in Sources */,
 				3FFD4CA0073309E4B34E6B66 /* CommitSheet.swift in Sources */,
@@ -1074,6 +1077,7 @@
 				TS000029 /* WorkspaceAvatarViewUITests.swift in Sources */,
 				TS000030 /* TerminalTextCleanerTests.swift in Sources */,
 				TS000031 /* AgentTests.swift in Sources */,
+				8DBD635C2F47B3290049E5DC /* AutopilotServiceTests.swift in Sources */,
 				TS000032 /* ClipboardTests.swift in Sources */,
 				TS000033 /* AgentSheetUITests.swift in Sources */,
 				TS000034 /* GitPanelViewHelpersTests.swift in Sources */,

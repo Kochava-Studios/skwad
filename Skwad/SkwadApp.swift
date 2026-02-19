@@ -108,6 +108,9 @@ struct SkwadApp: App {
                     // Setup desktop notifications
                     NotificationService.shared.setup(agentManager: agentManager)
 
+                    // Setup autopilot service
+                    Task { await AutopilotService.shared.setup(agentManager: agentManager) }
+
                     // Setup menu bar if enabled
                     appDelegate.setupMenuBarIfNeeded()
 

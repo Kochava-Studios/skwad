@@ -749,11 +749,11 @@ final class AgentManager {
         if let index = agents.firstIndex(where: { $0.id == agentId }) {
             guard agents[index].status != status else { return }
             agents[index].status = status
+            if source == .hook {
+                controllers[agentId]?.cancelInputProtection()
+            }
             if status == .input {
                 controllers[agentId]?.status = .input
-            }
-            if status == .running && source == .hook {
-                controllers[agentId]?.cancelInputProtection()
             }
             if status == .idle && !agents[index].isShell {
                 refreshGitStats(for: agentId)
@@ -877,6 +877,16 @@ final class AgentManager {
     func focusPane(_ index: Int) {
         guard layoutMode != .single, index < activeAgentIds.count else { return }
         focusedPaneIndex = index
+    }
+
+    /// Switch to the workspace containing the given agent and bring the window to front.
+    func switchToAgent(_ agent: Agent) {
+        if let workspace = workspaces.first(where: { $0.agentIds.contains(agent.id) }) {
+            switchToWorkspace(workspace.id)
+        }
+        selectAgent(agent.id)
+        NSApp.windows.first(where: { $0.canBecomeMain })?.makeKeyAndOrderFront(nil)
+        NSRunningApplication.current.activate(options: [.activateIgnoringOtherApps])
     }
 
     func selectAgent(_ agentId: UUID, skipCompanionLayout: Bool = false) {

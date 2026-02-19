@@ -73,8 +73,9 @@ struct ClaudeHookHandler {
             }
         }
 
-        // Idle status + input detection enabled → analyze last assistant message
-        if agentStatus == .idle,
+        // Stop hook + autopilot enabled → classify last assistant message
+        let hook = json["hook"] as? String
+        if hook == "Stop",
            AppSettings.shared.autopilotEnabled,
            !AppSettings.shared.aiApiKey.isEmpty {
             let payload = json["payload"] as? [String: Any]
@@ -85,11 +86,10 @@ struct ClaudeHookHandler {
                 let agent = await mcpService.findAgentById(agentId)
                 let agentName = agent?.name ?? "Unknown"
                 Task {
-                    await InputDetectionService.shared.analyze(
+                    await AutopilotService.shared.analyze(
                         lastMessage: lastMessage,
                         agentId: agentId,
-                        agentName: agentName,
-                        mcpService: mcpService
+                        agentName: agentName
                     )
                 }
             }
