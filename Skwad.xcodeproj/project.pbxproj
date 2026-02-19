@@ -464,7 +464,6 @@
 		F8000013 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				8DBD63332F474BD60049E5DC /* InputDetectionSheet.swift */,
 				F8000017 /* Components */,
 				2EB8108896BD1402E4BDA10F /* Git */,
 				MD200001 /* Markdown */,
@@ -473,6 +472,7 @@
 				F8000015 /* Terminal */,
 				WS200001 /* Workspace */,
 				F8000002 /* ContentView.swift */,
+				8DBD63332F474BD60049E5DC /* InputDetectionSheet.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";

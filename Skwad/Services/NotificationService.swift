@@ -52,6 +52,11 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
 
     // MARK: - Agent Navigation
 
+    /// Inject text into an agent's terminal (e.g. auto-continue).
+    func injectText(_ text: String, for agentId: UUID) {
+        agentManager?.injectText(text, for: agentId)
+    }
+
     /// Switch to the workspace containing the given agent and bring the window to front.
     func switchToAgent(_ agent: Agent) {
         guard let manager = agentManager else { return }

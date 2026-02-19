@@ -186,7 +186,7 @@ actor InputDetectionService {
             if let agent = agent {
                 await MainActor.run {
                     NotificationService.shared.notifyAwaitingInput(agent: agent, message: "Agent is waiting for your input")
-                    InputDetectionSheet.show(agent: agent, lastMessage: lastMessage, mcpService: mcpService)
+                    InputDetectionSheet.show(agent: agent, lastMessage: lastMessage)
                 }
             }
 

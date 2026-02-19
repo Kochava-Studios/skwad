@@ -752,6 +752,9 @@ final class AgentManager {
             if status == .input {
                 controllers[agentId]?.status = .input
             }
+            if status == .running && source == .hook {
+                controllers[agentId]?.cancelInputProtection()
+            }
             if status == .idle && !agents[index].isShell {
                 refreshGitStats(for: agentId)
             }

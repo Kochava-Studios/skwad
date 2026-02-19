@@ -5,7 +5,6 @@ import SwiftUI
 struct InputDetectionSheet: View {
     let agent: Agent
     let lastMessage: String
-    let mcpService: MCPService
     let dismiss: () -> Void
 
     var body: some View {
@@ -42,15 +41,13 @@ struct InputDetectionSheet: View {
 
                 Spacer()
 
-                Button("Continue") {
-                    Task {
-                        await mcpService.injectText("yes, continue", for: agent.id)
-                    }
+                Button("Switch to Agent") {
+                    NotificationService.shared.switchToAgent(agent)
                     dismiss()
                 }
 
-                Button("Switch to Agent") {
-                    NotificationService.shared.switchToAgent(agent)
+                Button("Continue") {
+                    NotificationService.shared.injectText("yes, continue", for: agent.id)
                     dismiss()
                 }
                 .keyboardShortcut(.return, modifiers: [])
@@ -62,8 +59,15 @@ struct InputDetectionSheet: View {
 
     // MARK: - Window Presentation
 
+    /// Strong reference to the active panel so it isn't deallocated.
+    @MainActor private static var activePanel: NSPanel?
+
     @MainActor
-    static func show(agent: Agent, lastMessage: String, mcpService: MCPService) {
+    static func show(agent: Agent, lastMessage: String) {
+        // Close any existing panel first
+        activePanel?.close()
+        activePanel = nil
+
         let panel = NSPanel(
             contentRect: NSRect(x: 0, y: 0, width: 480, height: 350),
             styleMask: [.titled, .closable, .utilityWindow],
@@ -78,10 +82,13 @@ struct InputDetectionSheet: View {
         let view = InputDetectionSheet(
             agent: agent,
             lastMessage: lastMessage,
-            mcpService: mcpService,
-            dismiss: { panel.close() }
+            dismiss: {
+                panel.close()
+                InputDetectionSheet.activePanel = nil
+            }
         )
         panel.contentView = NSHostingView(rootView: view)
         panel.makeKeyAndOrderFront(nil)
+        activePanel = panel
     }
 }

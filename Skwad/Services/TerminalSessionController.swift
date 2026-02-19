@@ -287,6 +287,11 @@ class TerminalSessionController: ObservableObject {
         sendCommand(text)
     }
 
+    /// Cancel the input protection timer (e.g. when a hook confirms the agent is running).
+    func cancelInputProtection() {
+        inputProtectedTimer.invalidate()
+    }
+
     /// Focus the terminal
     func focus() {
         adapter?.focus()
