@@ -50,6 +50,19 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
         UNUserNotificationCenter.current().add(request)
     }
 
+    // MARK: - Agent Navigation
+
+    /// Switch to the workspace containing the given agent and bring the window to front.
+    func switchToAgent(_ agent: Agent) {
+        guard let manager = agentManager else { return }
+        if let workspace = manager.workspaces.first(where: { $0.agentIds.contains(agent.id) }) {
+            manager.switchToWorkspace(workspace.id)
+        }
+        manager.selectAgent(agent.id)
+        NSApp.windows.first(where: { $0.canBecomeMain })?.makeKeyAndOrderFront(nil)
+        NSRunningApplication.current.activate(options: [.activateIgnoringOtherApps])
+    }
+
     // MARK: - UNUserNotificationCenterDelegate
 
     /// Handle notification click: switch to the workspace/agent.
@@ -66,21 +79,12 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
         }
 
         Task { @MainActor in
-            guard let manager = self.agentManager else {
+            guard let manager = self.agentManager,
+                  let agent = manager.agents.first(where: { $0.id == agentId }) else {
                 completionHandler()
                 return
             }
-
-            // Find which workspace contains this agent and switch to it
-            if let workspace = manager.workspaces.first(where: { $0.agentIds.contains(agentId) }) {
-                manager.switchToWorkspace(workspace.id)
-            }
-            manager.selectAgent(agentId)
-
-            // Bring window to front
-            NSApp.windows.first(where: { $0.canBecomeMain })?.makeKeyAndOrderFront(nil)
-            NSRunningApplication.current.activate(options: [.activateIgnoringOtherApps])
-
+            self.switchToAgent(agent)
             completionHandler()
         }
     }
