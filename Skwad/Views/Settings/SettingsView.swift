@@ -2,7 +2,7 @@ import SwiftUI
 import Sparkle
 
 enum SettingsTab: Int, CaseIterable {
-  case general, coding, terminal, voice, mcp
+  case general, coding, terminal, voice, mcp, ai
 }
 
 /// Modifier key codes used for push-to-talk configuration
@@ -74,8 +74,12 @@ struct SettingsView: View {
         .tabItem {
           Label("Terminal", systemImage: "terminal")
         }
-      
-      
+
+      AISettingsView()
+        .tag(SettingsTab.ai)
+        .tabItem {
+          Label("AI", systemImage: "brain")
+        }
     }
     .frame(width: 550)
     .fixedSize(horizontal: false, vertical: true)
