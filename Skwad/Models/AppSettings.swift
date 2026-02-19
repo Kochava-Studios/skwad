@@ -225,22 +225,16 @@ class AppSettings: ObservableObject {
     @AppStorage("aiInputDetectionEnabled") var aiInputDetectionEnabled: Bool = false
     @AppStorage("aiProvider") var aiProvider: String = "openai"  // "openai", "anthropic", "google"
     @AppStorage("aiApiKey") var aiApiKey: String = ""
-    @AppStorage("aiModel") var aiModel: String = ""
     @AppStorage("aiInputDetectionAction") var aiInputDetectionAction: String = "mark"  // "mark", "ask", "continue"
 
-    /// Default model for each AI provider
-    static func defaultModel(for provider: String) -> String {
+    /// Hardcoded model for each AI provider (cheapest/fastest options)
+    static func aiModel(for provider: String) -> String {
         switch provider {
-        case "openai": return "gpt-4o-mini"
-        case "anthropic": return "claude-haiku-4-5-20251001"
-        case "google": return "gemini-2.0-flash"
+        case "openai": return "gpt-5-mini"
+        case "anthropic": return "claude-haiku-4-5"
+        case "google": return "gemini-flash-lite-latest"
         default: return ""
         }
-    }
-
-    /// Effective model: user-specified or default for provider
-    var effectiveAiModel: String {
-        aiModel.isEmpty ? Self.defaultModel(for: aiProvider) : aiModel
     }
 
     // Markdown Preview

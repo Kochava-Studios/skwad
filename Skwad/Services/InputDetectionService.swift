@@ -85,7 +85,7 @@ actor InputDetectionService {
     /// Build the appropriate language model based on user settings.
     private func buildLanguageModel() throws -> LanguageModel {
         let apiKey = settings.aiApiKey
-        let modelId = settings.effectiveAiModel
+        let modelId = AppSettings.aiModel(for: settings.aiProvider)
 
         guard !apiKey.isEmpty else {
             throw InputDetectionError.missingApiKey

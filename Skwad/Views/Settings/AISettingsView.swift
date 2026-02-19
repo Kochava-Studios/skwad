@@ -61,11 +61,6 @@ struct AISettingsView: View {
                         Text(provider.displayName).tag(provider.rawValue)
                     }
                 }
-                .onChange(of: settings.aiProvider) { _, _ in
-                    // Clear custom model when switching providers so default kicks in
-                    settings.aiModel = ""
-                }
-
                 LabeledContent("API Key") {
                     SecureField("", text: $settings.aiApiKey)
                         .textFieldStyle(.roundedBorder)
@@ -73,15 +68,12 @@ struct AISettingsView: View {
                 }
 
                 LabeledContent("Model") {
-                    TextField("", text: $settings.aiModel, prompt: Text(AppSettings.defaultModel(for: settings.aiProvider)))
-                        .textFieldStyle(.roundedBorder)
+                    Text(AppSettings.aiModel(for: settings.aiProvider))
                         .font(.system(.body, design: .monospaced))
+                        .foregroundColor(.secondary)
                 }
             } header: {
                 Text("AI Provider")
-            } footer: {
-                Text("Using model: \(settings.effectiveAiModel)")
-                    .foregroundColor(.secondary)
             }
 
             Section {
