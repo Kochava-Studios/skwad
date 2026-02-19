@@ -41,28 +41,47 @@ actor InputDetectionService {
         - "I found the bug in line 42..."
         """
 
+    /// Snapshot of settings read on MainActor to avoid cross-actor @AppStorage issues.
+    private struct SettingsSnapshot: Sendable {
+        let provider: String
+        let apiKey: String
+        let action: String
+    }
+
+    /// Read settings on MainActor and return a snapshot.
+    private func readSettings() async -> SettingsSnapshot {
+        await MainActor.run {
+            SettingsSnapshot(
+                provider: settings.aiProvider,
+                apiKey: settings.aiApiKey,
+                action: settings.aiInputDetectionAction
+            )
+        }
+    }
+
     /// Analyze the last assistant message to determine if user input is needed.
     /// If input is detected, dispatches the configured action.
     func analyze(lastMessage: String, agentId: UUID, agentName: String, mcpService: MCPService) async {
         guard !lastMessage.isEmpty else { return }
 
-        let needsInput = await classify(message: lastMessage)
+        let snap = await readSettings()
+        let needsInput = await classify(message: lastMessage, provider: snap.provider, apiKey: snap.apiKey)
         guard needsInput else {
             logger.info("Input detection: no input needed for agent \(agentName)")
             return
         }
 
-        logger.info("Input detection: input needed for agent \(agentName), action=\(settings.aiInputDetectionAction)")
+        logger.info("Input detection: input needed for agent \(agentName), action=\(snap.action)")
 
-        let action = InputDetectionAction(rawValue: settings.aiInputDetectionAction) ?? .mark
+        let action = InputDetectionAction(rawValue: snap.action) ?? .mark
         await dispatchAction(action, agentId: agentId, agentName: agentName, lastMessage: lastMessage, mcpService: mcpService)
     }
 
     /// Classify whether a message is asking for user input.
     /// Returns true if the LLM determines input is needed.
-    func classify(message: String) async -> Bool {
+    func classify(message: String, provider: String, apiKey: String) async -> Bool {
         do {
-            let model = try buildLanguageModel()
+            let model = try buildLanguageModel(provider: provider, apiKey: apiKey)
             let result: DefaultGenerateTextResult<Never> = try await generateText(
                 model: model,
                 system: Self.classificationPrompt,
@@ -89,16 +108,15 @@ actor InputDetectionService {
 
     // MARK: - Language Model
 
-    /// Build the appropriate language model based on user settings.
-    private func buildLanguageModel() throws -> LanguageModel {
-        let apiKey = settings.aiApiKey
-        let modelId = AppSettings.aiModel(for: settings.aiProvider)
+    /// Build the appropriate language model from explicit provider/key values.
+    private func buildLanguageModel(provider: String, apiKey: String) throws -> LanguageModel {
+        let modelId = AppSettings.aiModel(for: provider)
 
         guard !apiKey.isEmpty else {
             throw InputDetectionError.missingApiKey
         }
 
-        switch settings.aiProvider {
+        switch provider {
         case "openai":
             let provider = createOpenAIProvider(settings: OpenAIProviderSettings(apiKey: apiKey))
             let model = try provider.languageModel(modelId)
