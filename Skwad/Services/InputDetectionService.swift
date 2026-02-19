@@ -51,7 +51,7 @@ actor InputDetectionService {
             SettingsSnapshot(
                 provider: settings.aiProvider,
                 apiKey: settings.aiApiKey,
-                action: settings.aiInputDetectionAction
+                action: settings.autopilotAction
             )
         }
     }
@@ -70,7 +70,7 @@ actor InputDetectionService {
 
         logger.info("Input detection: input needed for agent \(agentName), action=\(snap.action)")
 
-        let action = InputDetectionAction(rawValue: snap.action) ?? .mark
+        let action = AutopilotAction(rawValue: snap.action) ?? .mark
         await dispatchAction(action, agentId: agentId, agentName: agentName, lastMessage: lastMessage, mcpService: mcpService)
     }
 
@@ -170,7 +170,7 @@ actor InputDetectionService {
     // MARK: - Action Dispatch
 
     /// Dispatch the configured action when input is detected.
-    private func dispatchAction(_ action: InputDetectionAction, agentId: UUID, agentName: String, lastMessage: String, mcpService: MCPService) async {
+    private func dispatchAction(_ action: AutopilotAction, agentId: UUID, agentName: String, lastMessage: String, mcpService: MCPService) async {
         switch action {
         case .mark:
             await mcpService.updateAgentStatus(for: agentId, status: .input, source: .hook)

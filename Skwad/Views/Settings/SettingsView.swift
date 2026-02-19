@@ -2,7 +2,7 @@ import SwiftUI
 import Sparkle
 
 enum SettingsTab: Int, CaseIterable {
-  case general, coding, terminal, voice, mcp, ai
+  case general, coding, autopilot, voice, mcp, terminal
 }
 
 /// Modifier key codes used for push-to-talk configuration
@@ -57,28 +57,29 @@ struct SettingsView: View {
         .tabItem {
           Label("Coding", systemImage: "chevron.left.forwardslash.chevron.right")
         }
-      
-      MCPSettingsView()
-        .tag(SettingsTab.mcp)
+
+      AutopilotSettingsView()
+        .tag(SettingsTab.autopilot)
         .tabItem {
-          Label("MCP", systemImage: "message.badge.waveform")
+          Label("Autopilot", systemImage: "autostartstop")
         }
-      
+
       VoiceSettingsView()
         .tag(SettingsTab.voice)
         .tabItem {
           Label("Voice", systemImage: "mic")
         }
+
+      MCPSettingsView()
+        .tag(SettingsTab.mcp)
+        .tabItem {
+          Label("MCP", systemImage: "message.badge.waveform")
+        }
+
       TerminalSettingsView()
         .tag(SettingsTab.terminal)
         .tabItem {
           Label("Terminal", systemImage: "terminal")
-        }
-
-      AISettingsView()
-        .tag(SettingsTab.ai)
-        .tabItem {
-          Label("AI", systemImage: "brain")
         }
     }
     .frame(width: 550)

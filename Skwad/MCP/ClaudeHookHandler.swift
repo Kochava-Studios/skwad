@@ -75,7 +75,7 @@ struct ClaudeHookHandler {
 
         // Idle status + input detection enabled → analyze last assistant message
         if agentStatus == .idle,
-           AppSettings.shared.aiInputDetectionEnabled,
+           AppSettings.shared.autopilotEnabled,
            !AppSettings.shared.aiApiKey.isEmpty {
             let payload = json["payload"] as? [String: Any]
             // Try last_assistant_message from payload first, fall back to parsing transcript

@@ -221,11 +221,11 @@ class AppSettings: ObservableObject {
     @AppStorage("voicePushToTalkKey") var voicePushToTalkKey: Int = 60  // Right Shift keyCode
     @AppStorage("voiceAutoInsert") var voiceAutoInsert: Bool = true
 
-    // AI Input Detection
-    @AppStorage("aiInputDetectionEnabled") var aiInputDetectionEnabled: Bool = false
+    // Autopilot
+    @AppStorage("aiInputDetectionEnabled") var autopilotEnabled: Bool = false
     @AppStorage("aiProvider") var aiProvider: String = "openai"  // "openai", "anthropic", "google"
     @AppStorage("aiApiKey") var aiApiKey: String = ""
-    @AppStorage("aiInputDetectionAction") var aiInputDetectionAction: String = "mark"  // "mark", "ask", "continue"
+    @AppStorage("aiInputDetectionAction") var autopilotAction: String = "mark"  // "mark", "ask", "continue"
 
     /// Hardcoded model for each AI provider (cheapest/fastest options)
     static func aiModel(for provider: String) -> String {

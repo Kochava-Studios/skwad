@@ -39,10 +39,10 @@
 		8D7622B22F2C67CE006B6280 /* MCPTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D7622AE2F2C67CE006B6280 /* MCPTypes.swift */; };
 		8D7622B32F2C67CE006B6280 /* MCPTools.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D7622AC2F2C67CE006B6280 /* MCPTools.swift */; };
 		8D7622B42F2C67CE006B6280 /* MCPSessionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D7622AB2F2C67CE006B6280 /* MCPSessionManager.swift */; };
-		8DBD63232F4746580049E5DC /* AISettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DBD63222F4746580049E5DC /* AISettingsView.swift */; };
 		8DBD63342F474BD60049E5DC /* InputDetectionSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DBD63332F474BD60049E5DC /* InputDetectionSheet.swift */; };
 		8DBD63362F474BE00049E5DC /* InputDetectionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DBD63352F474BE00049E5DC /* InputDetectionService.swift */; };
 		8DBD63392F478DB40049E5DC /* AIProxy in Frameworks */ = {isa = PBXBuildFile; productRef = 8DBD63382F478DB40049E5DC /* AIProxy */; };
+		8DBD634E2F479A770049E5DC /* AutopilotSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DBD634D2F479A770049E5DC /* AutopilotSettingsView.swift */; };
 		8DD8074D2F2E52E900D7A935 /* AgentSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DD8074C2F2E52E900D7A935 /* AgentSheet.swift */; };
 		8DEF1A6B2F3DB4DB00247C2C /* plugin in CopyFiles */ = {isa = PBXBuildFile; fileRef = 8DEF1A682F3DB49500247C2C /* plugin */; };
 		914A53BB8DBD66EC96B19BDA /* GitPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBECFB308DA186BC15E6AE50 /* GitPanelView.swift */; };
@@ -205,9 +205,9 @@
 		8D7622AC2F2C67CE006B6280 /* MCPTools.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPTools.swift; sourceTree = "<group>"; };
 		8D7622AD2F2C67CE006B6280 /* MCPTransport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPTransport.swift; sourceTree = "<group>"; };
 		8D7622AE2F2C67CE006B6280 /* MCPTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPTypes.swift; sourceTree = "<group>"; };
-		8DBD63222F4746580049E5DC /* AISettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AISettingsView.swift; sourceTree = "<group>"; };
 		8DBD63332F474BD60049E5DC /* InputDetectionSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputDetectionSheet.swift; sourceTree = "<group>"; };
 		8DBD63352F474BE00049E5DC /* InputDetectionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputDetectionService.swift; sourceTree = "<group>"; };
+		8DBD634D2F479A770049E5DC /* AutopilotSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutopilotSettingsView.swift; sourceTree = "<group>"; };
 		8DD8074C2F2E52E900D7A935 /* AgentSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentSheet.swift; sourceTree = "<group>"; };
 		8DEF1A682F3DB49500247C2C /* plugin */ = {isa = PBXFileReference; lastKnownFileType = folder; path = plugin; sourceTree = "<group>"; };
 		A486F6A72822BE9094B02DA7 /* CommitSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CommitSheet.swift; sourceTree = "<group>"; };
@@ -501,7 +501,7 @@
 		F8000016 /* Settings */ = {
 			isa = PBXGroup;
 			children = (
-				8DBD63222F4746580049E5DC /* AISettingsView.swift */,
+				8DBD634D2F479A770049E5DC /* AutopilotSettingsView.swift */,
 				F800000A /* SettingsView.swift */,
 			);
 			path = Settings;
@@ -933,6 +933,7 @@
 				SR000002 /* AgentTypePicker.swift in Sources */,
 				SR000003 /* AgentTypePickerContent.swift in Sources */,
 				SR000001 /* RepoDiscoveryService.swift in Sources */,
+				8DBD634E2F479A770049E5DC /* AutopilotSettingsView.swift in Sources */,
 				SR000004 /* TerminalCommandBuilder.swift in Sources */,
 				SR000006 /* TerminalSessionController.swift in Sources */,
 				SR000007 /* TerminalAdapter.swift in Sources */,
@@ -1004,7 +1005,6 @@
 				0327FDF2A2ECDCE0DF53BE02 /* DiffView.swift in Sources */,
 				914A53BB8DBD66EC96B19BDA /* GitPanelView.swift in Sources */,
 				MD000001 /* MarkdownPanelView.swift in Sources */,
-				8DBD63232F4746580049E5DC /* AISettingsView.swift in Sources */,
 				8DBD63342F474BD60049E5DC /* InputDetectionSheet.swift in Sources */,
 				MD000004 /* MarkdownWebView.swift in Sources */,
 				01716FCA29A8F9522A2F8A9A /* GitFileWatcher.swift in Sources */,

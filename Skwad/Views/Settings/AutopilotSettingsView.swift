@@ -14,7 +14,7 @@ enum AIProvider: String, CaseIterable {
     }
 }
 
-enum InputDetectionAction: String, CaseIterable {
+enum AutopilotAction: String, CaseIterable {
     case mark = "mark"
     case ask = "ask"
     case `continue` = "continue"
@@ -36,23 +36,18 @@ enum InputDetectionAction: String, CaseIterable {
     }
 }
 
-struct AISettingsView: View {
+struct AutopilotSettingsView: View {
     @ObservedObject private var settings = AppSettings.shared
 
     var body: some View {
         Form {
             Section {
-                Text("When an agent goes idle, analyze its last message with an LLM to detect if user input is needed.")
+                Toggle("Enable autopilot", isOn: $settings.autopilotEnabled)
+            } header: {
+                Text("Autopilot")
+            } footer: {
+                Text("Automatically detect when agents need input and take action — no need to babysit your agents.")
                     .foregroundColor(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-            } header: {
-                Text("About")
-            }
-
-            Section {
-                Toggle("Enable input detection", isOn: $settings.aiInputDetectionEnabled)
-            } header: {
-                Text("Input Detection")
             }
 
             Section {
@@ -77,15 +72,15 @@ struct AISettingsView: View {
             }
 
             Section {
-                Picker("When input is detected", selection: $settings.aiInputDetectionAction) {
-                    ForEach(InputDetectionAction.allCases, id: \.rawValue) { action in
+                Picker("When input is detected", selection: $settings.autopilotAction) {
+                    ForEach(AutopilotAction.allCases, id: \.rawValue) { action in
                         Text(action.displayName).tag(action.rawValue)
                     }
                 }
             } header: {
                 Text("Action")
             } footer: {
-                let action = InputDetectionAction(rawValue: settings.aiInputDetectionAction) ?? .mark
+                let action = AutopilotAction(rawValue: settings.autopilotAction) ?? .mark
                 Text(action.description)
                     .foregroundColor(.secondary)
             }
@@ -97,5 +92,5 @@ struct AISettingsView: View {
 }
 
 #Preview {
-    AISettingsView()
+    AutopilotSettingsView()
 }
