@@ -14,7 +14,7 @@ class ActivityDetectingTerminalView: LocalProcessTerminalView {
     }
 
     // SwiftTerm's keyDown is not open for override, so we use a local event monitor
-    // to capture keyCodes for blocked state handling (Return/Escape detection)
+    // to capture keyCodes for input state handling (Return/Escape detection)
     private var keyMonitor: Any?
 
     override func viewDidMoveToWindow() {

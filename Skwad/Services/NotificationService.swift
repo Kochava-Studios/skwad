@@ -1,7 +1,7 @@
 import AppKit
 import UserNotifications
 
-/// Handles macOS desktop notifications for agent events (e.g. blocked status).
+/// Handles macOS desktop notifications for agent events (e.g. awaiting input).
 /// Notification clicks switch to the relevant workspace and agent.
 @MainActor
 final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
@@ -22,14 +22,14 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
         center.requestAuthorization(options: [.alert, .sound]) { _, _ in }
     }
 
-    /// Send a desktop notification when an agent becomes blocked.
-    /// Skipped if agent is already blocked (dedup) or currently visible on screen.
-    func notifyBlocked(agent: Agent, message: String? = nil) {
+    /// Send a desktop notification when an agent is awaiting input.
+    /// Skipped if agent is already awaiting input (dedup) or currently visible on screen.
+    func notifyAwaitingInput(agent: Agent, message: String? = nil) {
         guard settings.desktopNotificationsEnabled else { return }
 
-        // Skip if agent is already blocked (second hook for same event)
+        // Skip if agent is already awaiting input (second hook for same event)
         if let current = agentManager?.agents.first(where: { $0.id == agent.id }),
-           current.status == .blocked { return }
+           current.status == .input { return }
 
         // Skip if agent is currently displayed
         if let manager = agentManager,
@@ -42,7 +42,7 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
         content.userInfo = ["agentId": agent.id.uuidString]
 
         let request = UNNotificationRequest(
-            identifier: "blocked-\(agent.id.uuidString)",
+            identifier: "input-\(agent.id.uuidString)",
             content: content,
             trigger: nil // deliver immediately
         )

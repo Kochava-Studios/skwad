@@ -8,8 +8,10 @@ import OSLog
 ///
 /// Presets:
 /// - shell agents → `.none` (no status tracking at all)
-/// - hook-detected agents (e.g. Claude+MCP) → `.userInput` (hooks handle agent output)
-/// - all other agents → `.all` (full terminal-based detection)
+/// - all other agents (including hook-based) → `.all` (full terminal-based detection)
+///
+/// Hook-based agents (e.g. Claude) use `.all` with a longer idle timeout.
+/// Hooks can shortcircuit transitions but terminal output still drives the state machine.
 struct ActivityTracking: OptionSet {
     let rawValue: Int
     static let userInput      = ActivityTracking(rawValue: 1 << 0)
@@ -72,8 +74,7 @@ class TerminalSessionController: ObservableObject {
     let forkSession: Bool
 
     /// Which terminal activity sources trigger status changes.
-    /// Starts as `.all` for non-shell agents; downgraded to `.userInput`
-    /// once hook-based detection is confirmed (sessionId set).
+    /// Shell agents use `.none`; all others (including hook-based) use `.all`.
     private(set) var activityTracking: ActivityTracking
 
     // MARK: - Dependencies
@@ -305,9 +306,11 @@ class TerminalSessionController: ObservableObject {
 
     // MARK: - Activity Detection
 
-    /// Whether this agent uses hook-based status detection (e.g. Claude)
+    /// Whether this agent uses hook-based status detection (e.g. Claude).
+    /// Hook agents work like normal agents (terminal output drives state) but hooks
+    /// can shortcircuit transitions and the idle timeout is longer (set at creation).
     private var isHookBased: Bool {
-        activityTracking == .userInput
+        TerminalCommandBuilder.usesActivityHooks(agentType: agentType)
     }
 
     /// Signals that activity has been detected in the terminal.
@@ -325,22 +328,11 @@ class TerminalSessionController: ObservableObject {
             idleTimer.invalidate()
         }
 
-        // Stamp activity time (always — cheap, no allocation)
-        lastActivityTime = CFAbsoluteTimeGetCurrent()
-
-        // For hook-based agents, terminal output doesn't set running but
-        // schedules a fallback idle timer (safety net for missed hook events)
-        if !fromUserInput && isHookBased {
-            lastActivitySource = .terminal
-            idleTimer.schedule(after: TimingConstants.hookFallbackIdleTimeout) { [weak self] in
-                self?.idleTimerFired()
-            }
-            return
-        }
-
         // now only process if relevant
         guard activityTracking.contains(source) else { return }
 
+        // Stamp activity time (always — cheap, no allocation)
+        lastActivityTime = CFAbsoluteTimeGetCurrent()
         lastActivitySource = fromUserInput ? .user : .terminal
 
         if fromUserInput {
@@ -349,8 +341,8 @@ class TerminalSessionController: ObservableObject {
                 self?.inputProtectionDidExpire()
             }
 
-            // Unblock only on Return (answered prompt → running) or Escape (dismissed → idle)
-            if _status == .blocked {
+            // Exit input only on Return (answered prompt → running) or Escape (dismissed → idle)
+            if _status == .input {
                 if keyCode == 36 {       // Return
                     status = .running
                 } else if keyCode == 53 { // Escape
@@ -362,7 +354,7 @@ class TerminalSessionController: ObservableObject {
             if isHookBased { return }
         }
 
-        // Full terminal-based detection: set running + schedule idle timer
+        // Set running + schedule idle timer
         status = .running
         if !idleTimer.isActive {
             let timeout = fromUserInput ? TimingConstants.userInputIdleTimeout : idleTimeout
@@ -428,14 +420,13 @@ class TerminalSessionController: ObservableObject {
     // MARK: - Private Methods
     
     private func idleTimerFired() {
-        guard !isDisposed else { return }
-        let effectiveTimeout = isHookBased ? TimingConstants.hookFallbackIdleTimeout : idleTimeout
+        guard !isDisposed, _status != .input else { return }
         let sinceLastActivity = CFAbsoluteTimeGetCurrent() - lastActivityTime
-        if sinceLastActivity >= effectiveTimeout {
+        if sinceLastActivity >= idleTimeout {
             markIdle()
         } else {
             // Activity happened since timer was scheduled — reschedule
-            let remaining = effectiveTimeout - sinceLastActivity
+            let remaining = idleTimeout - sinceLastActivity
             idleTimer.schedule(after: remaining) { [weak self] in
                 self?.idleTimerFired()
             }

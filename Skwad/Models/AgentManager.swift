@@ -194,12 +194,12 @@ final class AgentManager {
         saveWorkspaces()
     }
 
-    /// Returns the "worst" status across all agents in a workspace (blocked > running > idle)
+    /// Returns the "worst" status across all agents in a workspace (input > running > idle)
     func workspaceStatus(_ workspace: Workspace) -> AgentStatus? {
         let statuses = workspace.agentIds.compactMap { agentId in
             agents.first { $0.id == agentId }?.status
         }
-        if statuses.contains(.blocked) { return .blocked }
+        if statuses.contains(.input) { return .input }
         if statuses.contains(.running) { return .running }
         return nil
     }
@@ -261,19 +261,23 @@ final class AgentManager {
 
     /// Create a controller for an agent
     func createController(for agent: Agent) -> TerminalSessionController {
-        // Shell: no tracking. Hook agents (claude): .userInput only. Others: .all.
+        // Shell: no tracking. Hook agents (claude): .all with longer idle timeout. Others: .all.
         let tracking: ActivityTracking
+        let idleTimeout: TimeInterval
         if agent.isShell {
             tracking = .none
+            idleTimeout = TimingConstants.idleTimeout
         } else if TerminalCommandBuilder.usesActivityHooks(agentType: agent.agentType) {
-            tracking = .userInput
-            // Set placeholder so terminal output is blocked before registration
+            tracking = .all
+            idleTimeout = TimingConstants.hookFallbackIdleTimeout
+            // Set running so UI shows "Working" while agent boots up
             // Skip for resumed sessions — agent stays idle until user sends input
             if agent.resumeSessionId == nil, let index = agents.firstIndex(where: { $0.id == agent.id }) {
                 agents[index].status = .running
             }
         } else {
             tracking = .all
+            idleTimeout = TimingConstants.idleTimeout
         }
         let controller = TerminalSessionController(
             agentId: agent.id,
@@ -283,6 +287,7 @@ final class AgentManager {
             resumeSessionId: agent.resumeSessionId,
             forkSession: agent.forkSession,
             activityTracking: tracking,
+            idleTimeout: idleTimeout,
             onStatusChange: { [weak self] status, source in
                 self?.updateStatus(for: agent.id, status: status, source: source)
             },
@@ -742,15 +747,10 @@ final class AgentManager {
 
     func updateStatus(for agentId: UUID, status: AgentStatus, source: ActivitySource = .terminal) {
         if let index = agents.firstIndex(where: { $0.id == agentId }) {
-            // When hook-based detection is active, only allow terminal → idle through
-            // (the fallback idle timer in TerminalSessionController provides a safety net)
-            if source == .terminal && TerminalCommandBuilder.usesActivityHooks(agentType: agents[index].agentType) && status != .idle {
-                return
-            }
             guard agents[index].status != status else { return }
             agents[index].status = status
-            if status == .blocked {
-                controllers[agentId]?.status = .blocked
+            if status == .input {
+                controllers[agentId]?.status = .input
             }
             if status == .idle && !agents[index].isShell {
                 refreshGitStats(for: agentId)

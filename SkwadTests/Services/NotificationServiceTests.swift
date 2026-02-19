@@ -36,11 +36,11 @@ final class NotificationServiceTests: XCTestCase {
         NotificationService.shared.setup(agentManager: manager)
 
         // Set agent to blocked first
-        manager.agents[1].status = .blocked
+        manager.agents[1].status = .input
 
         // This should be skipped (agent already blocked)
         // We can't easily assert on UNNotificationCenter, but we verify no crash
-        NotificationService.shared.notifyBlocked(agent: agents[1])
+        NotificationService.shared.notifyAwaitingInput(agent: agents[1])
     }
 
     func testSkipsNotificationWhenAgentIsActive() {
@@ -49,7 +49,7 @@ final class NotificationServiceTests: XCTestCase {
 
         // Agent 0 is active (in activeAgentIds)
         // Notification should be skipped
-        NotificationService.shared.notifyBlocked(agent: agents[0])
+        NotificationService.shared.notifyAwaitingInput(agent: agents[0])
     }
 
     func testAllowsNotificationForInactiveAgent() {
@@ -58,7 +58,7 @@ final class NotificationServiceTests: XCTestCase {
 
         // Agent 1 is not in activeAgentIds (only agent 0 is)
         // Notification should proceed (no crash = success)
-        NotificationService.shared.notifyBlocked(agent: agents[1])
+        NotificationService.shared.notifyAwaitingInput(agent: agents[1])
     }
 
     func testSkipsNotificationWhenDisabled() {
@@ -68,7 +68,7 @@ final class NotificationServiceTests: XCTestCase {
         let savedValue = AppSettings.shared.desktopNotificationsEnabled
         AppSettings.shared.desktopNotificationsEnabled = false
 
-        NotificationService.shared.notifyBlocked(agent: agents[1])
+        NotificationService.shared.notifyAwaitingInput(agent: agents[1])
 
         // Restore
         AppSettings.shared.desktopNotificationsEnabled = savedValue

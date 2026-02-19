@@ -749,16 +749,16 @@ struct AgentManagerTests {
             #expect(status == nil)
         }
 
-        @Test("workspaceStatus returns .blocked if any agent is blocked")
+        @Test("workspaceStatus returns .input if any agent awaits input")
         @MainActor
-        func workspaceStatusReturnsBlockedIfBlocked() async {
+        func workspaceStatusReturnsInputIfInput() async {
             let manager = AgentManagerTests.setupManager(agentCount: 2)
             manager.agents[0].status = .running
-            manager.agents[1].status = .blocked
+            manager.agents[1].status = .input
 
             let status = manager.workspaceStatus(manager.currentWorkspace!)
 
-            #expect(status == .blocked)
+            #expect(status == .input)
         }
     }
 
@@ -767,15 +767,15 @@ struct AgentManagerTests {
     @Suite("Hook Activity Guard")
     struct HookActivityGuardTests {
 
-        @Test("terminal output is blocked for hook agents (claude)")
+        @Test("terminal output is accepted for hook agents (claude)")
         @MainActor
-        func terminalOutputBlockedForHookAgent() async {
+        func terminalOutputAcceptedForHookAgent() async {
             let manager = AgentManagerTests.setupManager(agentCount: 1, agentType: "claude")
             manager.agents[0].status = .idle
 
             manager.updateStatus(for: manager.agents[0].id, status: .running, source: .terminal)
 
-            #expect(manager.agents[0].status == .idle)
+            #expect(manager.agents[0].status == .running)
         }
 
         @Test("hook source is accepted for hook agents (claude)")

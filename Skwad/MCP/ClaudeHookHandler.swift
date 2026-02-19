@@ -46,12 +46,13 @@ struct ClaudeHookHandler {
 
     // MARK: - Activity Status
 
-    /// Handle activity status updates (UserPromptSubmit / Stop hooks).
+    /// Handle activity status updates (UserPromptSubmit / Stop / PreToolUse hooks).
     /// Returns the parsed AgentStatus or nil on error.
     func handleActivityStatus(agentId: UUID, json: [String: Any]) async -> AgentStatus? {
         guard let statusString = json["status"] as? String,
               let agentStatus = (statusString == "running" ? AgentStatus.running :
-                                 statusString == "idle" ? AgentStatus.idle : nil) else {
+                                 statusString == "idle" ? AgentStatus.idle :
+                                 statusString == "input" ? AgentStatus.input : nil) else {
             return nil
         }
 
@@ -60,38 +61,20 @@ struct ClaudeHookHandler {
             await mcpService.updateMetadata(for: agentId, metadata: metadata)
         }
 
-        await mcpService.updateAgentStatus(for: agentId, status: agentStatus, source: .hook)
-        return agentStatus
-    }
-
-    // MARK: - Hook Events
-
-    /// Handle generic hook events (PermissionRequest, Notification).
-    func handleHookEvent(agentId: UUID, json: [String: Any]) async {
-        guard let hookType = json["hook_type"] as? String else { return }
-
-        let payload = json["payload"] as? [String: Any]
-        let notificationType = payload?["notification_type"] as? String
-
-        let agentPrefix = "[skwad][\(String(agentId.uuidString.prefix(8)).lowercased())]"
-        logger.info("\(agentPrefix) Hook event: \(hookType) (notification_type=\(notificationType ?? "none"))")
-
-        // Permission request → blocked status + desktop notification
-        if hookType.lowercased() == "permission_request" || (hookType.lowercased() == "notification" && notificationType?.lowercased() == "permission_prompt") {
+        // Input status → desktop notification (with message from payload if available)
+        if agentStatus == .input {
+            let payload = json["payload"] as? [String: Any]
             let message = payload?["message"] as? String
             let agent = await mcpService.findAgentById(agentId)
             if let agent = agent {
                 await MainActor.run {
-                    NotificationService.shared.notifyBlocked(agent: agent, message: message)
+                    NotificationService.shared.notifyAwaitingInput(agent: agent, message: message)
                 }
             }
-            await mcpService.updateAgentStatus(for: agentId, status: .blocked, source: .hook)
         }
 
-        // Idle prompt → agent is waiting for user input → idle
-        if hookType.lowercased() == "notification" && notificationType?.lowercased() == "idle_prompt" {
-            await mcpService.updateAgentStatus(for: agentId, status: .idle, source: .hook)
-        }
+        await mcpService.updateAgentStatus(for: agentId, status: agentStatus, source: .hook)
+        return agentStatus
     }
 
     // MARK: - Metadata Extraction

@@ -53,11 +53,6 @@ actor MCPServer: MCPTransportProtocol {
             await handleActivityStatus(request, context: context)
         }
 
-        // Hook event logging endpoint
-        router.post("/api/v1/agent/hook-event") { [self] request, context in
-            await handleHookEvent(request, context: context)
-        }
-
         let app = Application(
             router: router,
             configuration: .init(
@@ -251,25 +246,6 @@ actor MCPServer: MCPTransportProtocol {
                     return plainResponse(status: .badRequest, body: "Invalid status (expected: running or idle)")
                 }
                 logger.info("[skwad][\(String(agentId.uuidString.prefix(8)).lowercased())] Hook status: \(agentStatus.rawValue)")
-                return plainResponse(status: .ok, body: "OK")
-            default:
-                return plainResponse(status: .badRequest, body: "Unknown agent type: \(agentType)")
-            }
-        } catch let error as HookParseError {
-            return plainResponse(status: .badRequest, body: error.message)
-        } catch {
-            return plainResponse(status: .badRequest, body: "Failed to read body")
-        }
-    }
-
-    private func handleHookEvent(_ request: Request, context: BasicRequestContext) async -> Response {
-        do {
-            let (json, agentId, _) = try await parseHookRequest(request)
-
-            let agentType = json["agent"] as? String ?? "claude"
-            switch agentType {
-            case "claude":
-                await claudeHookHandler.handleHookEvent(agentId: agentId, json: json)
                 return plainResponse(status: .ok, body: "OK")
             default:
                 return plainResponse(status: .badRequest, body: "Unknown agent type: \(agentType)")

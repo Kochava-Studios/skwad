@@ -5,14 +5,14 @@ import AppKit
 enum AgentStatus: String, Codable {
     case idle = "Idle"
     case running = "Working"
-    case blocked = "Blocked"
+    case input = "Awaiting input"
     case error = "Error"
 
     var color: Color {
         switch self {
         case .idle: return .green
         case .running: return .orange
-        case .blocked: return .red
+        case .input: return .red
         case .error: return .red
         }
     }
