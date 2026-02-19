@@ -225,7 +225,8 @@ class AppSettings: ObservableObject {
     @AppStorage("aiInputDetectionEnabled") var autopilotEnabled: Bool = false
     @AppStorage("aiProvider") var aiProvider: String = "openai"  // "openai", "anthropic", "google"
     @AppStorage("aiApiKey") var aiApiKey: String = ""
-    @AppStorage("aiInputDetectionAction") var autopilotAction: String = "mark"  // "mark", "ask", "continue"
+    @AppStorage("aiInputDetectionAction") var autopilotAction: String = "mark"  // "mark", "ask", "continue", "custom"
+    @AppStorage("autopilotCustomPrompt") var autopilotCustomPrompt: String = ""
 
     /// Hardcoded model for each AI provider (cheapest/fastest options)
     static func aiModel(for provider: String) -> String {

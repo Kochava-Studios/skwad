@@ -18,12 +18,14 @@ enum AutopilotAction: String, CaseIterable {
     case mark = "mark"
     case ask = "ask"
     case `continue` = "continue"
+    case custom = "custom"
 
     var displayName: String {
         switch self {
         case .mark: return "Mark conversation"
         case .ask: return "Ask me"
         case .continue: return "Auto-continue"
+        case .custom: return "Custom"
         }
     }
 
@@ -32,6 +34,7 @@ enum AutopilotAction: String, CaseIterable {
         case .mark: return "Set the agent status to indicate input is needed and send a notification."
         case .ask: return "Show a dialog letting you switch to the agent, dismiss, or auto-continue."
         case .continue: return "Automatically send \"yes, continue\" to the agent."
+        case .custom: return "Use your own prompt to decide what to reply. The LLM response is injected directly into the agent."
         }
     }
 }
@@ -75,6 +78,28 @@ struct AutopilotSettingsView: View {
                 Picker("When input is detected", selection: $settings.autopilotAction) {
                     ForEach(AutopilotAction.allCases, id: \.rawValue) { action in
                         Text(action.displayName).tag(action.rawValue)
+                    }
+                }
+
+                if settings.autopilotAction == AutopilotAction.custom.rawValue {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("System prompt")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                        TextEditor(text: $settings.autopilotCustomPrompt)
+                            .font(.system(.body, design: .monospaced))
+                            .frame(minHeight: 120)
+                            .scrollContentBackground(.hidden)
+                            .padding(8)
+                            .background(Color(nsColor: .textBackgroundColor))
+                            .clipShape(RoundedRectangle(cornerRadius: 6))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 6)
+                                    .stroke(Color(nsColor: .separatorColor))
+                            )
+                        Text("The agent's last message is sent as the user message. Reply with the text to send to the agent, or EMPTY for no action.")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
                     }
                 }
             } header: {

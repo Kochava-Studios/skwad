@@ -71,4 +71,39 @@ final class AutopilotServiceTests: XCTestCase {
     func testParseResponseNoDefaultsToCompleted() {
         XCTAssertEqual(AutopilotService.parseResponse("no"), .completed)
     }
+
+    // MARK: - isEmptyResponse
+
+    func testIsEmptyResponseEmpty() {
+        XCTAssertTrue(AutopilotService.isEmptyResponse(""))
+    }
+
+    func testIsEmptyResponseWhitespace() {
+        XCTAssertTrue(AutopilotService.isEmptyResponse("   \n\t  "))
+    }
+
+    func testIsEmptyResponseEmptyKeyword() {
+        XCTAssertTrue(AutopilotService.isEmptyResponse("EMPTY"))
+    }
+
+    func testIsEmptyResponseEmptyKeywordLowercase() {
+        XCTAssertTrue(AutopilotService.isEmptyResponse("empty"))
+    }
+
+    func testIsEmptyResponseEmptyKeywordMixedCase() {
+        XCTAssertTrue(AutopilotService.isEmptyResponse("Empty"))
+    }
+
+    func testIsEmptyResponseEmptyKeywordWithWhitespace() {
+        XCTAssertTrue(AutopilotService.isEmptyResponse("  EMPTY  "))
+    }
+
+    func testIsEmptyResponseActualText() {
+        XCTAssertFalse(AutopilotService.isEmptyResponse("yes, continue"))
+    }
+
+    func testIsEmptyResponseEmptyPrefix() {
+        // "EMPTY but not really" is real text, not empty
+        XCTAssertFalse(AutopilotService.isEmptyResponse("EMPTY but not really"))
+    }
 }

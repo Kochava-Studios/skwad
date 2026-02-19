@@ -252,6 +252,25 @@ struct MarkdownPanelView: View {
                 }
                 .buttonStyle(.plain)
                 .help("Submit review comments to agent")
+            } else {
+                Button {
+                    onComment("approved let's do it\n")
+                    onSubmitReview()
+                    isExpanded = false
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: "checkmark.circle.fill")
+                        Text("Approve")
+                    }
+                    .font(.caption)
+                    .foregroundColor(.primary)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 4)
+                    .background(Color.green.opacity(0.8))
+                    .cornerRadius(4)
+                }
+                .buttonStyle(.plain)
+                .help("Approve and continue")
             }
 
             HStack(spacing: 4) {

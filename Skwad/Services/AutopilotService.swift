@@ -68,6 +68,7 @@ actor AutopilotService {
         let provider: String
         let apiKey: String
         let action: String
+        let customPrompt: String
     }
 
     /// Read settings on MainActor and return a snapshot.
@@ -76,7 +77,8 @@ actor AutopilotService {
             SettingsSnapshot(
                 provider: settings.aiProvider,
                 apiKey: settings.aiApiKey,
-                action: settings.autopilotAction
+                action: settings.autopilotAction,
+                customPrompt: settings.autopilotCustomPrompt
             )
         }
     }
@@ -87,6 +89,14 @@ actor AutopilotService {
         guard !lastMessage.isEmpty else { return }
 
         let snap = await readSettings()
+        let action = AutopilotAction(rawValue: snap.action) ?? .mark
+
+        // Custom action: skip classification, use user's prompt directly
+        if action == .custom {
+            await analyzeCustom(lastMessage: lastMessage, customPrompt: snap.customPrompt, provider: snap.provider, apiKey: snap.apiKey, agentId: agentId, agentName: agentName)
+            return
+        }
+
         let classification = await classify(message: lastMessage, provider: snap.provider, apiKey: snap.apiKey)
 
         guard classification != .completed else {
@@ -95,8 +105,6 @@ actor AutopilotService {
         }
 
         logger.info("Autopilot: agent \(agentName) classified=\(classification.rawValue), action=\(snap.action)")
-
-        let action = AutopilotAction(rawValue: snap.action) ?? .mark
         await dispatchAction(action, classification: classification, agentId: agentId, agentName: agentName, lastMessage: lastMessage)
     }
 
@@ -131,6 +139,109 @@ actor AutopilotService {
     // Instance wrapper for static method
     private func parseResponse(_ response: String) -> InputClassification {
         Self.parseResponse(response)
+    }
+
+    // MARK: - Custom Autopilot
+
+    /// Check if an LLM response signals "no action".
+    /// Returns true for empty/whitespace strings or the keyword "EMPTY" (case-insensitive).
+    static func isEmptyResponse(_ response: String) -> Bool {
+        let trimmed = response.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty || trimmed.caseInsensitiveCompare("EMPTY") == .orderedSame
+    }
+
+    /// Analyze using the user's custom prompt. Skips tri-classification entirely.
+    private func analyzeCustom(lastMessage: String, customPrompt: String, provider: String, apiKey: String, agentId: UUID, agentName: String) async {
+        guard !customPrompt.isEmpty else {
+            logger.warning("Autopilot custom: no prompt configured, falling back to mark")
+            await markInput(agentId: agentId)
+            return
+        }
+
+        do {
+            let response = try await callLLMCustom(message: lastMessage, systemPrompt: customPrompt, provider: provider, apiKey: apiKey)
+            if Self.isEmptyResponse(response) {
+                logger.info("Autopilot custom: agent \(agentName) → empty response, no action")
+                return
+            }
+            let trimmed = response.trimmingCharacters(in: .whitespacesAndNewlines)
+            logger.info("Autopilot custom: agent \(agentName) → injecting \(trimmed.count) chars")
+            let manager = _agentManager
+            await MainActor.run {
+                guard let manager = manager else { return }
+                manager.updateStatus(for: agentId, status: .input, source: .hook)
+                manager.injectText(trimmed, for: agentId)
+            }
+        } catch {
+            logger.error("Autopilot custom LLM error: \(error), falling back to mark")
+            await markInput(agentId: agentId)
+        }
+    }
+
+    /// Call the LLM with a custom system prompt and higher token limit.
+    private func callLLMCustom(message: String, systemPrompt: String, provider: String, apiKey: String) async throws -> String {
+        let apiKey = apiKey.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !apiKey.isEmpty else {
+            throw AutopilotError.missingApiKey
+        }
+
+        let modelId = AppSettings.aiModel(for: provider)
+
+        switch provider {
+        case "openai":
+            return try await callOpenAICustom(message: message, systemPrompt: systemPrompt, apiKey: apiKey, model: modelId)
+        case "anthropic":
+            return try await callAnthropicCustom(message: message, systemPrompt: systemPrompt, apiKey: apiKey, model: modelId)
+        case "google":
+            return try await callGoogleCustom(message: message, systemPrompt: systemPrompt, apiKey: apiKey, model: modelId)
+        default:
+            throw AutopilotError.unsupportedProvider(provider)
+        }
+    }
+
+    private func callOpenAICustom(message: String, systemPrompt: String, apiKey: String, model: String) async throws -> String {
+        let service = AIProxy.openAIDirectService(unprotectedAPIKey: apiKey)
+        let body = OpenAIChatCompletionRequestBody(
+            model: model,
+            messages: [
+                .system(content: .text(systemPrompt)),
+                .user(content: .text(message)),
+            ]
+        )
+        let response = try await service.chatCompletionRequest(body: body, secondsToWait: 30)
+        return response.choices.first?.message.content ?? ""
+    }
+
+    private func callAnthropicCustom(message: String, systemPrompt: String, apiKey: String, model: String) async throws -> String {
+        let service = AIProxy.anthropicDirectService(unprotectedAPIKey: apiKey)
+        let body = AnthropicMessageRequestBody(
+            maxTokens: 1024,
+            messages: [
+                AnthropicMessageParam(content: .text(message), role: .user),
+            ],
+            model: model,
+            system: .text(systemPrompt)
+        )
+        let response = try await service.messageRequest(body: body, secondsToWait: 30)
+        if case .textBlock(let block) = response.content.first {
+            return block.text
+        }
+        return ""
+    }
+
+    private func callGoogleCustom(message: String, systemPrompt: String, apiKey: String, model: String) async throws -> String {
+        let service = AIProxy.geminiDirectService(unprotectedAPIKey: apiKey)
+        let body = GeminiGenerateContentRequestBody(
+            contents: [.init(parts: [.text(message)])],
+            systemInstruction: .init(parts: [.text(systemPrompt)])
+        )
+        let response = try await service.generateContentRequest(body: body, model: model, secondsToWait: 30)
+        for part in response.candidates?.first?.content?.parts ?? [] {
+            if case .text(let text) = part {
+                return text
+            }
+        }
+        return ""
     }
 
     // MARK: - LLM Calls
@@ -244,6 +355,10 @@ actor AutopilotService {
                 // Open questions can't be auto-answered — fall back to mark
                 await markInput(agentId: agentId)
             }
+
+        case .custom:
+            // Custom is handled in analyze() before dispatchAction is called
+            break
         }
     }
 }
