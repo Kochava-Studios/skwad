@@ -74,12 +74,14 @@ struct ClaudeHookHandler {
         }
 
         // Idle status + input detection enabled → analyze last assistant message
-        if agentStatus == .idle {
+        if agentStatus == .idle,
+           AppSettings.shared.aiInputDetectionEnabled,
+           !AppSettings.shared.aiApiKey.isEmpty {
             let payload = json["payload"] as? [String: Any]
+            // Try last_assistant_message from payload first, fall back to parsing transcript
             let lastMessage = payload?["last_assistant_message"] as? String
-            if let lastMessage = lastMessage,
-               AppSettings.shared.aiInputDetectionEnabled,
-               !AppSettings.shared.aiApiKey.isEmpty {
+                ?? Self.lastAssistantMessageFromTranscript(path: payload?["transcript_path"] as? String)
+            if let lastMessage = lastMessage {
                 let agent = await mcpService.findAgentById(agentId)
                 let agentName = agent?.name ?? "Unknown"
                 Task {
@@ -95,6 +97,39 @@ struct ClaudeHookHandler {
 
         await mcpService.updateAgentStatus(for: agentId, status: agentStatus, source: .hook)
         return agentStatus
+    }
+
+    // MARK: - Transcript Parsing
+
+    /// Extract the last assistant text message from a Claude transcript JSONL file.
+    /// Reads the file backwards to find the most recent assistant message efficiently.
+    static func lastAssistantMessageFromTranscript(path: String?) -> String? {
+        guard let path = path else { return nil }
+        guard let data = FileManager.default.contents(atPath: path),
+              let content = String(data: data, encoding: .utf8) else { return nil }
+
+        // Parse lines in reverse to find the last assistant message
+        let lines = content.components(separatedBy: .newlines)
+        for line in lines.reversed() {
+            guard !line.isEmpty,
+                  let lineData = line.data(using: .utf8),
+                  let json = try? JSONSerialization.jsonObject(with: lineData) as? [String: Any],
+                  json["type"] as? String == "assistant",
+                  let message = json["message"] as? [String: Any],
+                  let contentArray = message["content"] as? [[String: Any]] else {
+                continue
+            }
+
+            // Collect all text parts from the message
+            let textParts = contentArray.compactMap { part -> String? in
+                guard part["type"] as? String == "text" else { return nil }
+                return part["text"] as? String
+            }
+            let text = textParts.joined(separator: "\n")
+            if !text.isEmpty { return text }
+        }
+
+        return nil
     }
 
     // MARK: - Metadata Extraction
