@@ -498,6 +498,12 @@ actor MCPService: MCPServiceProtocol {
         await provider.setSessionId(for: agentId, sessionId: sessionId)
     }
 
+    /// Inject text into an agent's terminal
+    func injectText(_ text: String, for agentId: UUID) async {
+        guard let provider = agentDataProvider else { return }
+        await provider.injectText(text, for: agentId)
+    }
+
     /// Update agent metadata from hook events
     func updateMetadata(for agentId: UUID, metadata: [String: String]) async {
         guard let provider = agentDataProvider else { return }
