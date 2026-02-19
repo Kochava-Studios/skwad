@@ -40,15 +40,9 @@
 		8D7622B32F2C67CE006B6280 /* MCPTools.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D7622AC2F2C67CE006B6280 /* MCPTools.swift */; };
 		8D7622B42F2C67CE006B6280 /* MCPSessionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D7622AB2F2C67CE006B6280 /* MCPSessionManager.swift */; };
 		8DBD63232F4746580049E5DC /* AISettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DBD63222F4746580049E5DC /* AISettingsView.swift */; };
-		8DBD63262F4747E70049E5DC /* AISDKJSONSchema in Frameworks */ = {isa = PBXBuildFile; productRef = 8DBD63252F4747E70049E5DC /* AISDKJSONSchema */; };
-		8DBD63282F4747E70049E5DC /* AISDKProvider in Frameworks */ = {isa = PBXBuildFile; productRef = 8DBD63272F4747E70049E5DC /* AISDKProvider */; };
-		8DBD632A2F4747E70049E5DC /* AISDKProviderUtils in Frameworks */ = {isa = PBXBuildFile; productRef = 8DBD63292F4747E70049E5DC /* AISDKProviderUtils */; };
-		8DBD632C2F4747E70049E5DC /* AnthropicProvider in Frameworks */ = {isa = PBXBuildFile; productRef = 8DBD632B2F4747E70049E5DC /* AnthropicProvider */; };
-		8DBD632E2F4747E70049E5DC /* GoogleProvider in Frameworks */ = {isa = PBXBuildFile; productRef = 8DBD632D2F4747E70049E5DC /* GoogleProvider */; };
-		8DBD63302F4747E70049E5DC /* OpenAIProvider in Frameworks */ = {isa = PBXBuildFile; productRef = 8DBD632F2F4747E70049E5DC /* OpenAIProvider */; };
-		8DBD63322F4747E70049E5DC /* SwiftAISDK in Frameworks */ = {isa = PBXBuildFile; productRef = 8DBD63312F4747E70049E5DC /* SwiftAISDK */; };
 		8DBD63342F474BD60049E5DC /* InputDetectionSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DBD63332F474BD60049E5DC /* InputDetectionSheet.swift */; };
 		8DBD63362F474BE00049E5DC /* InputDetectionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DBD63352F474BE00049E5DC /* InputDetectionService.swift */; };
+		8DBD63392F478DB40049E5DC /* AIProxy in Frameworks */ = {isa = PBXBuildFile; productRef = 8DBD63382F478DB40049E5DC /* AIProxy */; };
 		8DD8074D2F2E52E900D7A935 /* AgentSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DD8074C2F2E52E900D7A935 /* AgentSheet.swift */; };
 		8DEF1A6B2F3DB4DB00247C2C /* plugin in CopyFiles */ = {isa = PBXBuildFile; fileRef = 8DEF1A682F3DB49500247C2C /* plugin */; };
 		914A53BB8DBD66EC96B19BDA /* GitPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBECFB308DA186BC15E6AE50 /* GitPanelView.swift */; };
@@ -346,25 +340,19 @@
 				8D7622932F2C652D006B6280 /* Hummingbird in Frameworks */,
 				8D7622982F2C6536006B6280 /* InMemoryLogging in Frameworks */,
 				F8001009 /* SwiftTerm in Frameworks */,
-				8DBD63302F4747E70049E5DC /* OpenAIProvider in Frameworks */,
 				8D7622952F2C652D006B6280 /* HummingbirdCore in Frameworks */,
-				8DBD632A2F4747E70049E5DC /* AISDKProviderUtils in Frameworks */,
 				8D7622902F2C6506006B6280 /* MCP in Frameworks */,
-				8DBD632E2F4747E70049E5DC /* GoogleProvider in Frameworks */,
 				MD000002 /* MarkdownUI in Frameworks */,
-				8DBD63282F4747E70049E5DC /* AISDKProvider in Frameworks */,
 				LG000001 /* libghostty.a in Frameworks */,
 				SF000001 /* Metal.framework in Frameworks */,
 				SF000002 /* MetalKit.framework in Frameworks */,
+				8DBD63392F478DB40049E5DC /* AIProxy in Frameworks */,
 				SF000003 /* QuartzCore.framework in Frameworks */,
 				SF000004 /* CoreText.framework in Frameworks */,
 				SF000005 /* CoreGraphics.framework in Frameworks */,
 				SF000006 /* Carbon.framework in Frameworks */,
-				8DBD63262F4747E70049E5DC /* AISDKJSONSchema in Frameworks */,
 				SF000007 /* IOSurface.framework in Frameworks */,
 				SF000008 /* CoreFoundation.framework in Frameworks */,
-				8DBD632C2F4747E70049E5DC /* AnthropicProvider in Frameworks */,
-				8DBD63322F4747E70049E5DC /* SwiftAISDK in Frameworks */,
 				SF000009 /* CoreVideo.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -852,13 +840,7 @@
 				8D7622972F2C6536006B6280 /* InMemoryLogging */,
 				8D7622992F2C6536006B6280 /* Logging */,
 				SP000002 /* Sparkle */,
-				8DBD63252F4747E70049E5DC /* AISDKJSONSchema */,
-				8DBD63272F4747E70049E5DC /* AISDKProvider */,
-				8DBD63292F4747E70049E5DC /* AISDKProviderUtils */,
-				8DBD632B2F4747E70049E5DC /* AnthropicProvider */,
-				8DBD632D2F4747E70049E5DC /* GoogleProvider */,
-				8DBD632F2F4747E70049E5DC /* OpenAIProvider */,
-				8DBD63312F4747E70049E5DC /* SwiftAISDK */,
+				8DBD63382F478DB40049E5DC /* AIProxy */,
 			);
 			productName = Skwad;
 			productReference = F8000100 /* Skwad.app */;
@@ -920,7 +902,7 @@
 				SP000001 /* XCRemoteSwiftPackageReference "Sparkle" */,
 				TS800000 /* XCRemoteSwiftPackageReference "ViewInspector" */,
 				MD300001 /* XCRemoteSwiftPackageReference "swift-markdown-ui" */,
-				8DBD63242F4747E70049E5DC /* XCRemoteSwiftPackageReference "swift-ai-sdk" */,
+				8DBD63372F478DB40049E5DC /* XCRemoteSwiftPackageReference "aiproxyswift" */,
 			);
 			productRefGroup = F8000101 /* Products */;
 			projectDirPath = "";
@@ -1389,12 +1371,12 @@
 				minimumVersion = 1.9.1;
 			};
 		};
-		8DBD63242F4747E70049E5DC /* XCRemoteSwiftPackageReference "swift-ai-sdk" */ = {
+		8DBD63372F478DB40049E5DC /* XCRemoteSwiftPackageReference "aiproxyswift" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/teunlao/swift-ai-sdk.git";
+			repositoryURL = "https://github.com/lzell/aiproxyswift";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 0.1.4;
+				minimumVersion = 0.145.1;
 			};
 		};
 		F8002000 /* XCRemoteSwiftPackageReference "SwiftTerm" */ = {
@@ -1457,40 +1439,10 @@
 			package = 8D7622962F2C6536006B6280 /* XCRemoteSwiftPackageReference "swift-log" */;
 			productName = Logging;
 		};
-		8DBD63252F4747E70049E5DC /* AISDKJSONSchema */ = {
+		8DBD63382F478DB40049E5DC /* AIProxy */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 8DBD63242F4747E70049E5DC /* XCRemoteSwiftPackageReference "swift-ai-sdk" */;
-			productName = AISDKJSONSchema;
-		};
-		8DBD63272F4747E70049E5DC /* AISDKProvider */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 8DBD63242F4747E70049E5DC /* XCRemoteSwiftPackageReference "swift-ai-sdk" */;
-			productName = AISDKProvider;
-		};
-		8DBD63292F4747E70049E5DC /* AISDKProviderUtils */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 8DBD63242F4747E70049E5DC /* XCRemoteSwiftPackageReference "swift-ai-sdk" */;
-			productName = AISDKProviderUtils;
-		};
-		8DBD632B2F4747E70049E5DC /* AnthropicProvider */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 8DBD63242F4747E70049E5DC /* XCRemoteSwiftPackageReference "swift-ai-sdk" */;
-			productName = AnthropicProvider;
-		};
-		8DBD632D2F4747E70049E5DC /* GoogleProvider */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 8DBD63242F4747E70049E5DC /* XCRemoteSwiftPackageReference "swift-ai-sdk" */;
-			productName = GoogleProvider;
-		};
-		8DBD632F2F4747E70049E5DC /* OpenAIProvider */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 8DBD63242F4747E70049E5DC /* XCRemoteSwiftPackageReference "swift-ai-sdk" */;
-			productName = OpenAIProvider;
-		};
-		8DBD63312F4747E70049E5DC /* SwiftAISDK */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 8DBD63242F4747E70049E5DC /* XCRemoteSwiftPackageReference "swift-ai-sdk" */;
-			productName = SwiftAISDK;
+			package = 8DBD63372F478DB40049E5DC /* XCRemoteSwiftPackageReference "aiproxyswift" */;
+			productName = AIProxy;
 		};
 		F8002001 /* SwiftTerm */ = {
 			isa = XCSwiftPackageProductDependency;

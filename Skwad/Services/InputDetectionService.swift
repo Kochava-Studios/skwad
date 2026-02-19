@@ -1,9 +1,6 @@
 import Foundation
 import Logging
-import SwiftAISDK
-import OpenAIProvider
-import AnthropicProvider
-import GoogleProvider
+import AIProxy
 
 /// Analyzes agent messages with an LLM to determine if user input is needed.
 /// When an agent goes idle, its last message is classified as "needs input" or not,
@@ -81,15 +78,11 @@ actor InputDetectionService {
     /// Returns true if the LLM determines input is needed.
     func classify(message: String, provider: String, apiKey: String) async -> Bool {
         do {
-            let model = try buildLanguageModel(provider: provider, apiKey: apiKey)
-            let result: DefaultGenerateTextResult<Never> = try await generateText(
-                model: model,
-                system: Self.classificationPrompt,
-                prompt: message
-            )
-            return parseResponse(result.text)
+            logger.info("Input detection: provider=\(provider) model=\(AppSettings.aiModel(for: provider))")
+            let text = try await callLLM(message: message, provider: provider, apiKey: apiKey)
+            return parseResponse(text)
         } catch {
-            logger.error("Input detection LLM error: \(error.localizedDescription)")
+            logger.error("Input detection LLM error: \(error)")
             return false
         }
     }
@@ -106,35 +99,72 @@ actor InputDetectionService {
         Self.parseResponse(response)
     }
 
-    // MARK: - Language Model
+    // MARK: - LLM Calls
 
-    /// Build the appropriate language model from explicit provider/key values.
-    private func buildLanguageModel(provider: String, apiKey: String) throws -> LanguageModel {
-        let modelId = AppSettings.aiModel(for: provider)
-
+    /// Call the appropriate LLM provider and return the response text.
+    private func callLLM(message: String, provider: String, apiKey: String) async throws -> String {
+        let apiKey = apiKey.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !apiKey.isEmpty else {
             throw InputDetectionError.missingApiKey
         }
 
+        let modelId = AppSettings.aiModel(for: provider)
+
         switch provider {
         case "openai":
-            let provider = createOpenAIProvider(settings: OpenAIProviderSettings(apiKey: apiKey))
-            let model = try provider.languageModel(modelId)
-            return .v3(model)
-
+            return try await callOpenAI(message: message, apiKey: apiKey, model: modelId)
         case "anthropic":
-            let provider = createAnthropicProvider(settings: AnthropicProviderSettings(apiKey: apiKey))
-            let model = try provider.languageModel(modelId: modelId)
-            return .v3(model)
-
+            return try await callAnthropic(message: message, apiKey: apiKey, model: modelId)
         case "google":
-            let provider = createGoogleGenerativeAI(settings: GoogleProviderSettings(apiKey: apiKey))
-            let model = try provider.languageModel(modelId: modelId)
-            return .v3(model)
-
+            return try await callGoogle(message: message, apiKey: apiKey, model: modelId)
         default:
-            throw InputDetectionError.unsupportedProvider(settings.aiProvider)
+            throw InputDetectionError.unsupportedProvider(provider)
         }
+    }
+
+    private func callOpenAI(message: String, apiKey: String, model: String) async throws -> String {
+        let service = AIProxy.openAIDirectService(unprotectedAPIKey: apiKey)
+        let body = OpenAIChatCompletionRequestBody(
+            model: model,
+            messages: [
+                .system(content: .text(Self.classificationPrompt)),
+                .user(content: .text(message)),
+            ]
+        )
+        let response = try await service.chatCompletionRequest(body: body, secondsToWait: 30)
+        return response.choices.first?.message.content ?? ""
+    }
+
+    private func callAnthropic(message: String, apiKey: String, model: String) async throws -> String {
+        let service = AIProxy.anthropicDirectService(unprotectedAPIKey: apiKey)
+        let body = AnthropicMessageRequestBody(
+            maxTokens: 16,
+            messages: [
+                AnthropicMessageParam(content: .text(message), role: .user),
+            ],
+            model: model,
+            system: .text(Self.classificationPrompt)
+        )
+        let response = try await service.messageRequest(body: body, secondsToWait: 30)
+        if case .textBlock(let block) = response.content.first {
+            return block.text
+        }
+        return ""
+    }
+
+    private func callGoogle(message: String, apiKey: String, model: String) async throws -> String {
+        let service = AIProxy.geminiDirectService(unprotectedAPIKey: apiKey)
+        let body = GeminiGenerateContentRequestBody(
+            contents: [.init(parts: [.text(message)])],
+            systemInstruction: .init(parts: [.text(Self.classificationPrompt)])
+        )
+        let response = try await service.generateContentRequest(body: body, model: model, secondsToWait: 30)
+        for part in response.candidates?.first?.content?.parts ?? [] {
+            if case .text(let text) = part {
+                return text
+            }
+        }
+        return ""
     }
 
     // MARK: - Action Dispatch

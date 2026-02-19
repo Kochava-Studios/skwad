@@ -14,7 +14,7 @@ let package = Package(
         .package(url: "https://github.com/sparkle-project/Sparkle", from: "2.6.0"),
         .package(url: "https://github.com/nalexn/ViewInspector.git", from: "0.10.0"),
         .package(url: "https://github.com/gonzalezreal/swift-markdown-ui", from: "2.4.0"),
-        .package(url: "https://github.com/teunlao/swift-ai-sdk", from: "1.0.0"),
+        .package(url: "https://github.com/lzell/AIProxySwift", from: "0.145.1"),
     ],
     targets: [
         .executableTarget(
@@ -26,10 +26,7 @@ let package = Package(
                 .product(name: "Logging", package: "swift-log"),
                 .product(name: "Sparkle", package: "Sparkle"),
                 .product(name: "MarkdownUI", package: "swift-markdown-ui"),
-                .product(name: "SwiftAISDK", package: "swift-ai-sdk"),
-                .product(name: "OpenAIProvider", package: "swift-ai-sdk"),
-                .product(name: "AnthropicProvider", package: "swift-ai-sdk"),
-                .product(name: "GoogleProvider", package: "swift-ai-sdk"),
+                .product(name: "AIProxy", package: "AIProxySwift"),
             ],
             path: "Skwad"
         ),
