@@ -2,6 +2,13 @@ import SwiftUI
 
 /// Sliding panel showing markdown content for a file
 struct MarkdownPanelView: View {
+
+    enum ReviewState {
+        case ready       // no comments yet — show Approve button
+        case commenting  // user has added comments — show Submit Review button
+        case submitted   // review sent — hide buttons until file reloads
+    }
+
     let filePath: String
     let agentId: UUID
     @Binding var isExpanded: Bool
@@ -20,7 +27,7 @@ struct MarkdownPanelView: View {
     // Comment popup state
     @State private var selectedText: String?
     @State private var commentText: String = ""
-    @State private var commentSessionStarted = false
+    @State private var reviewState: ReviewState = .ready
     @State private var selectionY: CGFloat = 0
     @FocusState private var isCommentFocused: Bool
 
@@ -179,8 +186,8 @@ struct MarkdownPanelView: View {
         guard !comment.isEmpty else { return }
 
         var text = ""
-        if !commentSessionStarted {
-            commentSessionStarted = true
+        if reviewState == .ready {
+            reviewState = .commenting
             text += "While reviewing \(fileName), user made the following comments:\n"
         }
         text += "- Re \"\(selected)\": \(comment)\n"
@@ -233,30 +240,12 @@ struct MarkdownPanelView: View {
 
             Spacer()
 
-            if commentSessionStarted {
+            switch reviewState {
+            case .ready:
                 Button {
+                    onComment("approved let's do it")
                     onSubmitReview()
-                    commentSessionStarted = false
-                    isExpanded = false
-                } label: {
-                    HStack(spacing: 4) {
-                        Image(systemName: "paperplane.fill")
-                        Text("Submit Review")
-                    }
-                    .font(.caption)
-                    .foregroundColor(.primary)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 4)
-                    .background(Color.green.opacity(0.8))
-                    .cornerRadius(4)
-                }
-                .buttonStyle(.plain)
-                .help("Submit review comments to agent")
-            } else {
-                Button {
-                    onComment("approved let's do it\n")
-                    onSubmitReview()
-                    isExpanded = false
+                    reviewState = .submitted
                 } label: {
                     HStack(spacing: 4) {
                         Image(systemName: "checkmark.circle.fill")
@@ -271,6 +260,26 @@ struct MarkdownPanelView: View {
                 }
                 .buttonStyle(.plain)
                 .help("Approve and continue")
+            case .commenting:
+                Button {
+                    onSubmitReview()
+                    reviewState = .submitted
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: "paperplane.fill")
+                        Text("Submit Review")
+                    }
+                    .font(.caption)
+                    .foregroundColor(.primary)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 4)
+                    .background(Color.green.opacity(0.8))
+                    .cornerRadius(4)
+                }
+                .buttonStyle(.plain)
+                .help("Submit review comments to agent")
+            case .submitted:
+                EmptyView()
             }
 
             HStack(spacing: 4) {
@@ -367,7 +376,7 @@ struct MarkdownPanelView: View {
     private func loadContent() {
         isLoading = true
         errorMessage = nil
-        commentSessionStarted = false
+        reviewState = .ready
 
         DispatchQueue.global(qos: .userInitiated).async {
             do {
