@@ -516,10 +516,16 @@ final class AgentManager {
             agents.append(agent)
         }
 
-        // Ensure we have a workspace (creates "Skwad" if needed)
-        let workspaceId = ensureWorkspaceExists()
+        // Determine target workspace: use creator's workspace if available, else current
+        let workspaceId: UUID
+        if let creatorId = createdBy,
+           let creatorWorkspace = workspaces.first(where: { $0.agentIds.contains(creatorId) }) {
+            workspaceId = creatorWorkspace.id
+        } else {
+            workspaceId = ensureWorkspaceExists()
+        }
 
-        // Add agent to current workspace
+        // Add agent to target workspace
         if let index = workspaces.firstIndex(where: { $0.id == workspaceId }) {
             if let insertAfterId = insertAfterId,
                let insertAfterIndex = workspaces[index].agentIds.firstIndex(of: insertAfterId) {
