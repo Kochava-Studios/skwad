@@ -79,10 +79,11 @@ struct ClaudeHookHandler {
            AppSettings.shared.autopilotEnabled,
            !AppSettings.shared.aiApiKey.isEmpty {
             let payload = json["payload"] as? [String: Any]
-            // Try last_assistant_message from payload first, fall back to parsing transcript
-            let lastMessage = payload?["last_assistant_message"] as? String
-                ?? Self.lastAssistantMessageFromTranscript(path: payload?["transcript_path"] as? String)
-            if let lastMessage = lastMessage {
+            let transcriptPath = payload?["transcript_path"] as? String
+
+            // Parse transcript: returns nil if unreadable, empty string for registration responses
+            let lastMessage = Self.lastAssistantMessageFromTranscript(path: transcriptPath)
+            if let lastMessage = lastMessage, !lastMessage.isEmpty {
                 let agent = await mcpService.findAgentById(agentId)
                 let agentName = agent?.name ?? "Unknown"
                 Task {
@@ -101,34 +102,64 @@ struct ClaudeHookHandler {
 
     // MARK: - Transcript Parsing
 
-    /// Extract the last assistant text message from a Claude transcript JSONL file.
-    /// Reads the file backwards to find the most recent assistant message efficiently.
+    /// Extract the last assistant message from a Claude transcript JSONL file.
+    /// Returns `nil` if the file can't be read or has no assistant message.
+    /// Returns empty string if the assistant message is a response to our registration prompt (caller should skip).
     static func lastAssistantMessageFromTranscript(path: String?) -> String? {
         guard let path = path else { return nil }
         guard let data = FileManager.default.contents(atPath: path),
               let content = String(data: data, encoding: .utf8) else { return nil }
 
-        // Parse lines in reverse to find the last assistant message
         let lines = content.components(separatedBy: .newlines)
+        var assistantText: String?
+
+        // Parse backwards: find the last assistant message, then check the preceding user message
         for line in lines.reversed() {
             guard !line.isEmpty,
                   let lineData = line.data(using: .utf8),
                   let json = try? JSONSerialization.jsonObject(with: lineData) as? [String: Any],
-                  json["type"] as? String == "assistant",
-                  let message = json["message"] as? [String: Any],
-                  let contentArray = message["content"] as? [[String: Any]] else {
+                  let type = json["type"] as? String else {
                 continue
             }
 
-            // Collect all text parts from the message
-            let textParts = contentArray.compactMap { part -> String? in
-                guard part["type"] as? String == "text" else { return nil }
-                return part["text"] as? String
+            if assistantText == nil {
+                // Looking for the last assistant message
+                guard type == "assistant",
+                      let message = json["message"] as? [String: Any] else {
+                    continue
+                }
+                assistantText = extractText(from: message)
+                if assistantText?.isEmpty ?? true { assistantText = nil; continue }
+                continue
             }
-            let text = textParts.joined(separator: "\n")
-            if !text.isEmpty { return text }
+
+            // Found assistant, now check the preceding user message
+            if type == "user" {
+                guard let message = json["message"] as? [String: Any] else { break }
+                let userText = extractText(from: message)
+                if userText == TerminalCommandBuilder.registrationUserPrompt {
+                    return ""
+                }
+                break
+            }
         }
 
+        return assistantText
+    }
+
+    /// Extract text from a message's content (supports both plain string and array-of-parts formats).
+    private static func extractText(from message: [String: Any]) -> String? {
+        if let plain = message["content"] as? String {
+            let trimmed = plain.trimmingCharacters(in: .whitespacesAndNewlines)
+            return trimmed.isEmpty ? nil : trimmed
+        }
+        if let parts = message["content"] as? [[String: Any]] {
+            let text = parts.compactMap { part -> String? in
+                guard part["type"] as? String == "text" else { return nil }
+                return part["text"] as? String
+            }.joined(separator: "\n")
+            return text.isEmpty ? nil : text
+        }
         return nil
     }
 

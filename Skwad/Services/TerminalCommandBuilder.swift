@@ -57,6 +57,9 @@ struct TerminalCommandBuilder {
 
   // MARK: - Registration Prompt Strings
 
+  /// The user prompt sent to Claude on first launch to trigger the agent list table.
+  static let registrationUserPrompt = "List other agents names and project (no ID) in a table based on context."
+
   /// System prompt for agents that support it (currently none besides Claude)
   private static func registrationSystemPrompt(agentId: UUID) -> String {
     "You are part of a team of agents called a skwad. A skwad is made of high-performing agents who collaborate to achieve complex goals so engage with them: ask for help and in return help them succeed. Your skwad agent ID: \(agentId.uuidString)."
@@ -132,7 +135,7 @@ struct TerminalCommandBuilder {
       if isResume {
         return #" --append-system-prompt "\#(systemPrompt)""#
       }
-      return #" --append-system-prompt "\#(systemPrompt)" "List other agents names and project (no ID) in a table based on context.""#
+      return #" --append-system-prompt "\#(systemPrompt)" "\#(registrationUserPrompt)""#
 
     case "codex":
       // Codex: user prompt as last argument (no flag)

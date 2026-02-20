@@ -280,4 +280,194 @@ final class ClaudeHookHandlerTests: XCTestCase {
         let metadata = handler.extractMetadata(from: nil)
         XCTAssertTrue(metadata.isEmpty)
     }
+
+    // MARK: - lastAssistantMessageFromTranscript
+
+    private func writeTempTranscript(_ lines: [String]) -> String {
+        let path = NSTemporaryDirectory() + "test-transcript-\(UUID().uuidString).jsonl"
+        let content = lines.joined(separator: "\n")
+        FileManager.default.createFile(atPath: path, contents: content.data(using: .utf8))
+        addTeardownBlock { try? FileManager.default.removeItem(atPath: path) }
+        return path
+    }
+
+    private func userLine(_ text: String) -> String {
+        #"{"type":"user","message":{"content":"\#(text)"}}"#
+    }
+
+    private func userLineArray(_ text: String) -> String {
+        #"{"type":"user","message":{"content":[{"type":"text","text":"\#(text)"}]}}"#
+    }
+
+    private func assistantLine(_ text: String) -> String {
+        #"{"type":"assistant","message":{"content":[{"type":"text","text":"\#(text)"}]}}"#
+    }
+
+    // nil path → nil
+    func testTranscriptNilPath() {
+        XCTAssertNil(ClaudeHookHandler.lastAssistantMessageFromTranscript(path: nil))
+    }
+
+    // File doesn't exist → nil
+    func testTranscriptMissingFile() {
+        XCTAssertNil(ClaudeHookHandler.lastAssistantMessageFromTranscript(path: "/nonexistent/path.jsonl"))
+    }
+
+    // Empty file → nil
+    func testTranscriptEmptyFile() {
+        let path = writeTempTranscript([])
+        XCTAssertNil(ClaudeHookHandler.lastAssistantMessageFromTranscript(path: path))
+    }
+
+    // Invalid JSON lines → nil
+    func testTranscriptInvalidJson() {
+        let path = writeTempTranscript(["not json", "{broken"])
+        XCTAssertNil(ClaudeHookHandler.lastAssistantMessageFromTranscript(path: path))
+    }
+
+    // Lines missing "type" field → nil
+    func testTranscriptMissingTypeField() {
+        let path = writeTempTranscript([
+            #"{"message":{"content":[{"type":"text","text":"hello"}]}}"#,
+        ])
+        XCTAssertNil(ClaudeHookHandler.lastAssistantMessageFromTranscript(path: path))
+    }
+
+    // Only user messages, no assistant → nil
+    func testTranscriptUserOnly() {
+        let path = writeTempTranscript([
+            userLine("Fix the bug"),
+        ])
+        XCTAssertNil(ClaudeHookHandler.lastAssistantMessageFromTranscript(path: path))
+    }
+
+    // Normal conversation — returns assistant text
+    func testTranscriptReturnsAssistantMessage() {
+        let path = writeTempTranscript([
+            userLine("Fix the bug"),
+            assistantLine("I found the issue. Should I proceed?"),
+        ])
+        XCTAssertEqual(ClaudeHookHandler.lastAssistantMessageFromTranscript(path: path), "I found the issue. Should I proceed?")
+    }
+
+    // Multiple turns — returns last assistant message
+    func testTranscriptReturnsLastAssistantMessage() {
+        let path = writeTempTranscript([
+            userLine("Fix the bug"),
+            assistantLine("First response"),
+            userLine("Now fix tests"),
+            assistantLine("Tests are passing now."),
+        ])
+        XCTAssertEqual(ClaudeHookHandler.lastAssistantMessageFromTranscript(path: path), "Tests are passing now.")
+    }
+
+    // Content as plain string (real transcript format)
+    func testTranscriptPlainStringContent() {
+        let path = writeTempTranscript([
+            #"{"type":"user","message":{"role":"user","content":"Fix the bug"}}"#,
+            #"{"type":"assistant","message":{"role":"assistant","content":"Done!"}}"#,
+        ])
+        XCTAssertEqual(ClaudeHookHandler.lastAssistantMessageFromTranscript(path: path), "Done!")
+    }
+
+    // Assistant message missing "message" field → skip it
+    func testTranscriptAssistantMissingMessageField() {
+        let path = writeTempTranscript([
+            userLine("Fix the bug"),
+            #"{"type":"assistant"}"#,
+        ])
+        XCTAssertNil(ClaudeHookHandler.lastAssistantMessageFromTranscript(path: path))
+    }
+
+    // Assistant content has no text parts → skip it
+    func testTranscriptAssistantNoTextParts() {
+        let path = writeTempTranscript([
+            userLine("Fix the bug"),
+            #"{"type":"assistant","message":{"content":[{"type":"tool_use","id":"123"}]}}"#,
+        ])
+        XCTAssertNil(ClaudeHookHandler.lastAssistantMessageFromTranscript(path: path))
+    }
+
+    // Assistant with extra fields — still works
+    func testTranscriptExtraFieldsInJson() {
+        let path = writeTempTranscript([
+            userLine("Fix the bug"),
+            #"{"type":"assistant","extra":"ignored","message":{"content":[{"type":"text","text":"Done!"}],"model":"claude"}}"#,
+        ])
+        XCTAssertEqual(ClaudeHookHandler.lastAssistantMessageFromTranscript(path: path), "Done!")
+    }
+
+    // Non-user type between user and assistant (e.g. system) — skipped, still returns message
+    func testTranscriptSkipsNonUserTypes() {
+        let path = writeTempTranscript([
+            userLine("Fix the bug"),
+            #"{"type":"system","message":"some event"}"#,
+            assistantLine("Done!"),
+        ])
+        XCTAssertEqual(ClaudeHookHandler.lastAssistantMessageFromTranscript(path: path), "Done!")
+    }
+
+    // Registration prompt → returns empty string (skip signal)
+    func testTranscriptRegistrationResponseReturnsEmpty() {
+        let path = writeTempTranscript([
+            userLine(TerminalCommandBuilder.registrationUserPrompt),
+            assistantLine("Here are the agents in the skwad..."),
+        ])
+        XCTAssertEqual(ClaudeHookHandler.lastAssistantMessageFromTranscript(path: path), "")
+    }
+
+    // Registration prompt with array content format → returns empty string
+    func testTranscriptRegistrationResponseArrayFormat() {
+        let path = writeTempTranscript([
+            userLineArray(TerminalCommandBuilder.registrationUserPrompt),
+            assistantLine("Here are the agents..."),
+        ])
+        XCTAssertEqual(ClaudeHookHandler.lastAssistantMessageFromTranscript(path: path), "")
+    }
+
+    // Registration happened first, real work followed → returns last assistant message (not empty)
+    func testTranscriptRegistrationThenRealWork() {
+        let path = writeTempTranscript([
+            userLine(TerminalCommandBuilder.registrationUserPrompt),
+            assistantLine("Here are the agents..."),
+            userLine("Now fix the tests"),
+            assistantLine("Tests are all passing now."),
+        ])
+        XCTAssertEqual(ClaudeHookHandler.lastAssistantMessageFromTranscript(path: path), "Tests are all passing now.")
+    }
+
+    // User message missing "message" field → returns assistant text (not registration)
+    func testTranscriptUserMissingMessageField() {
+        let path = writeTempTranscript([
+            #"{"type":"user"}"#,
+            assistantLine("Response"),
+        ])
+        XCTAssertEqual(ClaudeHookHandler.lastAssistantMessageFromTranscript(path: path), "Response")
+    }
+
+    // User message missing "content" → returns assistant text (not registration)
+    func testTranscriptUserMissingContent() {
+        let path = writeTempTranscript([
+            #"{"type":"user","message":{}}"#,
+            assistantLine("Response"),
+        ])
+        XCTAssertEqual(ClaudeHookHandler.lastAssistantMessageFromTranscript(path: path), "Response")
+    }
+
+    // User content has only tool_use (no text) → returns assistant text (not registration)
+    func testTranscriptUserNoTextParts() {
+        let path = writeTempTranscript([
+            #"{"type":"user","message":{"content":[{"type":"tool_use","id":"123"}]}}"#,
+            assistantLine("Response"),
+        ])
+        XCTAssertEqual(ClaudeHookHandler.lastAssistantMessageFromTranscript(path: path), "Response")
+    }
+
+    // Only assistant, no preceding user → returns assistant text
+    func testTranscriptAssistantOnly() {
+        let path = writeTempTranscript([
+            assistantLine("Hello!"),
+        ])
+        XCTAssertEqual(ClaudeHookHandler.lastAssistantMessageFromTranscript(path: path), "Hello!")
+    }
 }

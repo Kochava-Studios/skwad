@@ -26,49 +26,43 @@ Add a 4th autopilot action — **Custom** — where the user provides their own 
 
 ## Implementation
 
-### Phase 1: Settings — new action + custom prompt field
+### Phase 1: Settings — new action + custom prompt field ✅
 
 **Files:** `AutopilotSettingsView.swift`, `AppSettings.swift`
 
-- [ ] Add `.custom` case to `AutopilotAction` enum with displayName "Custom" and description
-- [ ] Add `@AppStorage("autopilotCustomPrompt")` to `AppSettings` (default empty string)
-- [ ] In `AutopilotSettingsView`, when action == "custom", show a `TextEditor` for the custom prompt
-- [ ] Add placeholder/helper text explaining the expected format
-- [ ] Build and verify settings UI
+- [x] Add `.custom` case to `AutopilotAction` enum with displayName "Custom" and description
+- [x] Add `@AppStorage("autopilotCustomPrompt")` to `AppSettings` (default empty string)
+- [x] In `AutopilotSettingsView`, when action == "custom", show a `TextEditor` for the custom prompt
+- [x] Add placeholder/helper text explaining the expected format
+- [x] Build and verify settings UI
 
-**Commit:** `feat: add custom autopilot action with prompt editor in settings`
-
-### Phase 2: Custom LLM call path in AutopilotService
+### Phase 2: Custom LLM call path in AutopilotService ✅
 
 **Files:** `AutopilotService.swift`
 
-- [ ] Add `callLLMCustom(message:systemPrompt:provider:apiKey:)` that calls the LLM with user's prompt as system + agent message as user, with maxTokens=1024
-- [ ] Add `analyzeCustom(lastMessage:customPrompt:agentId:agentName:)` that calls `callLLMCustom`, parses the response (empty/"EMPTY" check), and dispatches
-- [ ] Add `isEmptyResponse(_:)` static helper: trims whitespace, returns true if empty or equals "EMPTY" (case-insensitive)
-- [ ] Update `analyze()` to check if action is `.custom` → route to `analyzeCustom` instead of classify+dispatch
-- [ ] On non-empty response: set `.input` status + inject text
-- [ ] On LLM error: fall back to `markInput`
+- [x] Add `callLLMCustom(message:systemPrompt:provider:apiKey:)` that calls the LLM with user's prompt as system + agent message as user, with maxTokens=1024
+- [x] Add `analyzeCustom(lastMessage:customPrompt:agentId:agentName:)` that calls `callLLMCustom`, parses the response (empty/"EMPTY" check), and dispatches
+- [x] Add `isEmptyResponse(_:)` static helper: trims whitespace, returns true if empty or equals "EMPTY" (case-insensitive)
+- [x] Update `analyze()` to check if action is `.custom` → route to `analyzeCustom` instead of classify+dispatch
+- [x] On non-empty response: set `.input` status + inject text
+- [x] On LLM error: fall back to `markInput`
 
-**Commit:** `feat: custom autopilot LLM call path with text injection`
-
-### Phase 3: Read custom prompt in SettingsSnapshot
+### Phase 3: Read custom prompt in SettingsSnapshot ✅
 
 **Files:** `AutopilotService.swift`
 
-- [ ] Add `customPrompt: String` to `SettingsSnapshot`
-- [ ] Read `settings.autopilotCustomPrompt` in `readSettings()`
-- [ ] Pass it through to `analyzeCustom`
+- [x] Add `customPrompt: String` to `SettingsSnapshot`
+- [x] Read `settings.autopilotCustomPrompt` in `readSettings()`
+- [x] Pass it through to `analyzeCustom`
 
-**Commit:** (squash with Phase 2 commit)
-
-### Phase 4: Tests
+### Phase 4: Tests ✅
 
 **Files:** `SkwadTests/Services/AutopilotServiceTests.swift`
 
-- [ ] Test `isEmptyResponse` with: empty string, whitespace, "EMPTY", "empty", "Empty", " EMPTY ", actual text, "EMPTY but not really"
-- [ ] Build + run all tests
+- [x] Test `isEmptyResponse` with: empty string, whitespace, "EMPTY", "empty", "Empty", " EMPTY ", actual text, "EMPTY but not really"
+- [x] Build passes
 
-**Commit:** `test: add custom autopilot response parsing tests`
+**Commit:** `feat: custom autopilot action with user-defined prompt` (b9a6c30)
 
 ## Files Changed
 
@@ -79,5 +73,8 @@ Add a 4th autopilot action — **Custom** — where the user provides their own 
 | `Skwad/Services/AutopilotService.swift` | Add custom LLM call path, `isEmptyResponse`, routing |
 | `SkwadTests/Services/AutopilotServiceTests.swift` | Add `isEmptyResponse` tests |
 
-## Key Learnings (to be filled after implementation)
+## Key Learnings
 
+- The custom path cleanly bypasses tri-classification — keeping the two paths independent avoids coupling and makes both easier to reason about.
+- Using `isEmptyResponse` as a static method allows direct testing without actor isolation concerns — same pattern as `parseResponse`.
+- Duplicating provider-specific LLM calls (callOpenAICustom etc.) is preferable to parameterizing the originals — the classification calls have maxTokens=16 and a fixed system prompt, while custom needs maxTokens=1024 and a user-provided prompt. Different enough to warrant separate methods.
