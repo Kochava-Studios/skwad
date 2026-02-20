@@ -47,6 +47,9 @@ final class AgentManager {
     // Controllers for each agent (keyed by agent ID)
     private var controllers: [UUID: TerminalSessionController] = [:]
 
+    // Tracks last notified message ID per agent (for deduplication)
+    private var lastNotifiedMessageId: [UUID: UUID] = [:]
+
     // Serial queue for git stats refresh to avoid thundering herd at startup
     private let gitStatsQueue = DispatchQueue(label: "AgentManager.gitStats", qos: .utility)
 
@@ -293,6 +296,9 @@ final class AgentManager {
             },
             onTitleChange: { [weak self] title in
                 self?.updateTitle(for: agent.id, title: title)
+            },
+            onCheckMessages: { [weak self] in
+                self?.checkForUnreadMessages(for: agent.id)
             }
         )
 
@@ -422,6 +428,28 @@ final class AgentManager {
         controllers[agentId]?.injectText(text)
     }
 
+    /// Check for unread MCP messages and notify the agent if there are new ones
+    private func checkForUnreadMessages(for agentId: UUID) {
+        guard settings.mcpServerEnabled else { return }
+        guard let agent = agents.first(where: { $0.id == agentId }), !agent.isShell else { return }
+
+        Task {
+            let latestMessageId = await MCPService.shared.getLatestUnreadMessageId(for: agentId.uuidString)
+
+            guard let messageId = latestMessageId else { return }
+
+            await MainActor.run { [weak self] in
+                guard let self else { return }
+
+                // Deduplicate notifications
+                guard self.lastNotifiedMessageId[agentId] != messageId else { return }
+                self.lastNotifiedMessageId[agentId] = messageId
+
+                self.injectText("Check your inbox for messages from other agents", for: agentId)
+            }
+        }
+    }
+
     /// Notify terminal to resize (e.g., when git panel toggles)
     func notifyTerminalResize(for agentId: UUID) {
         controllers[agentId]?.notifyResize()
@@ -531,6 +559,7 @@ final class AgentManager {
 
         removeController(for: agent.id)
         unregisterTerminal(for: agent.id)
+        lastNotifiedMessageId.removeValue(forKey: agent.id)
 
         // Check if agent was in a pane BEFORE removing from workspace
         let wasInActivePane = activeAgentIds.contains(agent.id)

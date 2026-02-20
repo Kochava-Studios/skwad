@@ -35,7 +35,7 @@ enum ActivitySource {
 /// - Status state machine (idle → running → idle/error)
 /// - Activity detection with debouncing
 /// - Idle timeout management
-/// - MCP config, registration, and message checking
+/// - MCP config and registration
 ///
 /// Views become dumb adapters that only create the terminal and forward events.
 @MainActor
@@ -82,6 +82,7 @@ class TerminalSessionController: ObservableObject {
     private let settings = AppSettings.shared
     private let onStatusChange: (_ status: AgentStatus, _ source: ActivitySource) -> Void
     private let onTitleChange: ((String) -> Void)?
+    private let onCheckMessages: (() -> Void)?
 
     /// Called when a deferred-start agent's terminal is ready and needs its command queued
     var onDeferredStart: ((TerminalSessionController) -> Void)?
@@ -91,13 +92,9 @@ class TerminalSessionController: ObservableObject {
 
     // MARK: - State
 
-    /// Whether this session is monitoring MCP messages on idle
-    private var monitorsMCP: Bool
-
     private let idleTimer = ManagedTimer()
     private let inputProtectedTimer = ManagedTimer()
     private let idleTimeout: TimeInterval
-    private var lastNotifiedMessageId: UUID?
     private var isDisposed = false
     private var hasBecomeIdle = false
     private var didStart = false
@@ -133,7 +130,8 @@ class TerminalSessionController: ObservableObject {
         activityTracking: ActivityTracking = .all,
         idleTimeout: TimeInterval = TimingConstants.idleTimeout,
         onStatusChange: @escaping (_ status: AgentStatus, _ source: ActivitySource) -> Void,
-        onTitleChange: ((String) -> Void)? = nil
+        onTitleChange: ((String) -> Void)? = nil,
+        onCheckMessages: (() -> Void)? = nil
     ) {
         self.agentId = agentId
         self.folder = folder
@@ -142,10 +140,10 @@ class TerminalSessionController: ObservableObject {
         self.resumeSessionId = resumeSessionId
         self.forkSession = forkSession
         self.activityTracking = activityTracking
-        self.monitorsMCP = AppSettings.shared.mcpServerEnabled
         self.idleTimeout = idleTimeout
         self.onStatusChange = onStatusChange
         self.onTitleChange = onTitleChange
+        self.onCheckMessages = onCheckMessages
     }
     
     deinit {
@@ -451,7 +449,7 @@ class TerminalSessionController: ObservableObject {
         
         // Schedule or reschedule registration based on idle count
         // Skip for agents that support inline registration via CLI arguments
-        if !didInjectRegistration && monitorsMCP && !supportsInlineRegistration {
+        if !didInjectRegistration && settings.mcpServerEnabled && !supportsInlineRegistration {
             // Determine delay based on idle count and agent type
             let delay: TimeInterval
             if idleCount == 1 {
@@ -469,17 +467,13 @@ class TerminalSessionController: ObservableObject {
             scheduleRegistrationPrompt(delay: delay)
         }
         
-        // Check for messages if MCP monitoring is enabled
-        if monitorsMCP {
-            checkForUnreadMessages()
-        }
+        // Notify AgentManager to check for unread messages
+        onCheckMessages?()
     }
 
     private func inputProtectionDidExpire() {
         guard !isDisposed else { return }
-        if monitorsMCP {
-            checkForUnreadMessages()
-        }
+        onCheckMessages?()
     }
 
     private func evaluateRegistrationReadiness() {
@@ -507,28 +501,4 @@ class TerminalSessionController: ObservableObject {
         lastActivitySource = .terminal
     }
     
-    private func checkForUnreadMessages() {
-        Task {
-            let latestMessageId = await MCPService.shared.getLatestUnreadMessageId(for: agentId.uuidString)
-            
-            guard let messageId = latestMessageId else {
-                return
-            }
-            
-            await MainActor.run { [weak self] in
-                guard let self = self, !self.isDisposed else { return }
-                
-                // Deduplicate notifications
-                if self.lastNotifiedMessageId == messageId {
-                    return
-                }
-                
-                Self.logger.info("[skwad][\(String(self.agentId.uuidString.prefix(8)).lowercased())] Notifying about new message")
-                self.lastNotifiedMessageId = messageId
-
-                // Inject message notification directly
-                self.injectText("Check your inbox for messages from other agents")
-            }
-        }
-    }
 }
