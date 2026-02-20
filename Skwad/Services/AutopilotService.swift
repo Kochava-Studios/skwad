@@ -63,6 +63,28 @@ actor AutopilotService {
         - "What database should we use?"
         """
 
+    /// System framing prepended to the user's custom prompt.
+    static let customPromptPrefix = """
+        You are managing an AI coding agent. You will receive the agent's last message. \
+        Your response will be sent directly to the agent as input.
+
+        IMPORTANT: Reply with ONLY the exact text to send to the agent. \
+        No explanations, no reasoning, no preamble, no quotes — just the raw instruction for the agent. \
+        If no action is needed, reply with exactly "EMPTY" (nothing else).
+
+        GOOD: yes, continue
+        BAD: I think the agent should continue, so I'll reply with "yes, continue"
+
+        GOOD: use approach A with the factory pattern
+        BAD: Based on the agent's question, I recommend approach A. Here's what I'll tell it: "use approach A with the factory pattern"
+
+        GOOD: EMPTY
+        BAD: The agent has finished its work, no response needed. EMPTY
+
+        Additional instructions from the user:
+
+        """
+
     /// Snapshot of settings read on MainActor to avoid cross-actor @AppStorage issues.
     private struct SettingsSnapshot: Sendable {
         let provider: String
@@ -153,13 +175,14 @@ actor AutopilotService {
     /// Analyze using the user's custom prompt. Skips tri-classification entirely.
     private func analyzeCustom(lastMessage: String, customPrompt: String, provider: String, apiKey: String, agentId: UUID, agentName: String) async {
         guard !customPrompt.isEmpty else {
-            logger.warning("Autopilot custom: no prompt configured, falling back to mark")
-            await markInput(agentId: agentId)
+            logger.info("Autopilot custom: no prompt configured, skipping")
             return
         }
 
+        let fullPrompt = Self.customPromptPrefix + customPrompt
+
         do {
-            let response = try await callLLMCustom(message: lastMessage, systemPrompt: customPrompt, provider: provider, apiKey: apiKey)
+            let response = try await callLLMCustom(message: lastMessage, systemPrompt: fullPrompt, provider: provider, apiKey: apiKey)
             if Self.isEmptyResponse(response) {
                 logger.info("Autopilot custom: agent \(agentName) → empty response, no action")
                 return

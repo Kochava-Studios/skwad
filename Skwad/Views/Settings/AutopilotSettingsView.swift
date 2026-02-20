@@ -82,32 +82,38 @@ struct AutopilotSettingsView: View {
                 }
 
                 if settings.autopilotAction == AutopilotAction.custom.rawValue {
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("System prompt")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
+                    ZStack(alignment: .topLeading) {
                         TextEditor(text: $settings.autopilotCustomPrompt)
                             .font(.system(.body, design: .monospaced))
                             .frame(minHeight: 120)
                             .scrollContentBackground(.hidden)
                             .padding(8)
-                            .background(Color(nsColor: .textBackgroundColor))
-                            .clipShape(RoundedRectangle(cornerRadius: 6))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 6)
-                                    .stroke(Color(nsColor: .separatorColor))
-                            )
-                        Text("The agent's last message is sent as the user message. Reply with the text to send to the agent, or EMPTY for no action.")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+
+                        if settings.autopilotCustomPrompt.isEmpty {
+                            Text("Write your own system prompt to decide what to do after each agent message. The agent's last message is sent as user input and the model's response is sent to the agent automatically.")
+                                .font(.system(.body, design: .monospaced))
+                                .foregroundColor(.secondary)
+                                .opacity(0.5)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 8)
+                                .allowsHitTesting(false)
+                        }
                     }
+                    .background(Color(nsColor: .textBackgroundColor))
+                    .clipShape(RoundedRectangle(cornerRadius: 6))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 6)
+                            .stroke(Color(nsColor: .separatorColor))
+                    )
                 }
             } header: {
                 Text("Action")
             } footer: {
-                let action = AutopilotAction(rawValue: settings.autopilotAction) ?? .mark
-                Text(action.description)
-                    .foregroundColor(.secondary)
+                if settings.autopilotAction != AutopilotAction.custom.rawValue {
+                    let action = AutopilotAction(rawValue: settings.autopilotAction) ?? .mark
+                    Text(action.description)
+                        .foregroundColor(.secondary)
+                }
             }
         }
         .formStyle(.grouped)
