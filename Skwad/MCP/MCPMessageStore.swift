@@ -4,7 +4,7 @@ import Logging
 // MARK: - MCP Message Store
 
 /// Actor responsible for managing message storage and retrieval
-/// Extracted from MCPService to follow Single Responsibility Principle
+/// Extracted from AgentCoordinator to follow Single Responsibility Principle
 actor MCPMessageStore {
     private let logger = Logger(label: "com.skwad.mcp.messagestore")
     private var messages: [MCPMessage] = []

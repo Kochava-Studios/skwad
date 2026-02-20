@@ -35,7 +35,7 @@
 		8D76229A2F2C6536006B6280 /* Logging in Frameworks */ = {isa = PBXBuildFile; productRef = 8D7622992F2C6536006B6280 /* Logging */; };
 		8D7622AF2F2C67CE006B6280 /* MCPServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D7622A92F2C67CE006B6280 /* MCPServer.swift */; };
 		8D7622B02F2C67CE006B6280 /* MCPTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D7622AD2F2C67CE006B6280 /* MCPTransport.swift */; };
-		8D7622B12F2C67CE006B6280 /* MCPService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D7622AA2F2C67CE006B6280 /* MCPService.swift */; };
+		8D7622B12F2C67CE006B6280 /* AgentCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D7622AA2F2C67CE006B6280 /* AgentCoordinator.swift */; };
 		8D7622B22F2C67CE006B6280 /* MCPTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D7622AE2F2C67CE006B6280 /* MCPTypes.swift */; };
 		8D7622B32F2C67CE006B6280 /* MCPTools.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D7622AC2F2C67CE006B6280 /* MCPTools.swift */; };
 		8D7622B42F2C67CE006B6280 /* MCPSessionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D7622AB2F2C67CE006B6280 /* MCPSessionManager.swift */; };
@@ -118,7 +118,7 @@
 		TS000007 /* AgentManagerNavigationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100006 /* AgentManagerNavigationTests.swift */; };
 		TS000008 /* MCPMessageStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100007 /* MCPMessageStoreTests.swift */; };
 		TS000009 /* MCPSessionManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100008 /* MCPSessionManagerTests.swift */; };
-		TS000010 /* MCPServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100009 /* MCPServiceTests.swift */; };
+		TS000010 /* AgentCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100009 /* AgentCoordinatorTests.swift */; };
 		TS000011 /* MockAgentDataProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100010 /* MockAgentDataProvider.swift */; };
 		TS000012 /* GitWorktreeManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100011 /* GitWorktreeManagerTests.swift */; };
 		TS000014 /* DiffViewHelpersTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100013 /* DiffViewHelpersTests.swift */; };
@@ -206,7 +206,7 @@
 		8D6B972B2F2E32DD00CE877E /* NSImage+Scaling.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSImage+Scaling.swift"; sourceTree = "<group>"; };
 		8D6B972D2F2E366000CE877E /* MCPCommandView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPCommandView.swift; sourceTree = "<group>"; };
 		8D7622A92F2C67CE006B6280 /* MCPServer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPServer.swift; sourceTree = "<group>"; };
-		8D7622AA2F2C67CE006B6280 /* MCPService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPService.swift; sourceTree = "<group>"; };
+		8D7622AA2F2C67CE006B6280 /* AgentCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentCoordinator.swift; sourceTree = "<group>"; };
 		8D7622AB2F2C67CE006B6280 /* MCPSessionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPSessionManager.swift; sourceTree = "<group>"; };
 		8D7622AC2F2C67CE006B6280 /* MCPTools.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPTools.swift; sourceTree = "<group>"; };
 		8D7622AD2F2C67CE006B6280 /* MCPTransport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPTransport.swift; sourceTree = "<group>"; };
@@ -293,7 +293,7 @@
 		TS100006 /* AgentManagerNavigationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentManagerNavigationTests.swift; sourceTree = "<group>"; };
 		TS100007 /* MCPMessageStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPMessageStoreTests.swift; sourceTree = "<group>"; };
 		TS100008 /* MCPSessionManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPSessionManagerTests.swift; sourceTree = "<group>"; };
-		TS100009 /* MCPServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPServiceTests.swift; sourceTree = "<group>"; };
+		TS100009 /* AgentCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentCoordinatorTests.swift; sourceTree = "<group>"; };
 		TS100010 /* MockAgentDataProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockAgentDataProvider.swift; sourceTree = "<group>"; };
 		TS100011 /* GitWorktreeManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitWorktreeManagerTests.swift; sourceTree = "<group>"; };
 		TS100013 /* DiffViewHelpersTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiffViewHelpersTests.swift; sourceTree = "<group>"; };
@@ -418,7 +418,7 @@
 				CH100002 /* ClaudeHookHandler.swift */,
 				8D6B97212F2DC17900CE877E /* MCPMessageStore.swift */,
 				8D7622A92F2C67CE006B6280 /* MCPServer.swift */,
-				8D7622AA2F2C67CE006B6280 /* MCPService.swift */,
+				8D7622AA2F2C67CE006B6280 /* AgentCoordinator.swift */,
 				8D7622AB2F2C67CE006B6280 /* MCPSessionManager.swift */,
 				8D7622AC2F2C67CE006B6280 /* MCPTools.swift */,
 				8D7622AD2F2C67CE006B6280 /* MCPTransport.swift */,
@@ -684,7 +684,7 @@
 				TS100030 /* ClaudeHookHandlerTests.swift */,
 				TS100007 /* MCPMessageStoreTests.swift */,
 				TS100008 /* MCPSessionManagerTests.swift */,
-				TS100009 /* MCPServiceTests.swift */,
+				TS100009 /* AgentCoordinatorTests.swift */,
 			);
 			path = MCP;
 			sourceTree = "<group>";
@@ -983,7 +983,7 @@
 				CH000002 /* ClaudeHookHandler.swift in Sources */,
 				8D7622B02F2C67CE006B6280 /* MCPTransport.swift in Sources */,
 				8DD8074D2F2E52E900D7A935 /* AgentSheet.swift in Sources */,
-				8D7622B12F2C67CE006B6280 /* MCPService.swift in Sources */,
+				8D7622B12F2C67CE006B6280 /* AgentCoordinator.swift in Sources */,
 				8D7622B22F2C67CE006B6280 /* MCPTypes.swift in Sources */,
 				8D7622B32F2C67CE006B6280 /* MCPTools.swift in Sources */,
 				8D6B97282F2E316A00CE877E /* AppDelegate.swift in Sources */,
@@ -1054,7 +1054,7 @@
 				TS000007 /* AgentManagerNavigationTests.swift in Sources */,
 				TS000008 /* MCPMessageStoreTests.swift in Sources */,
 				TS000009 /* MCPSessionManagerTests.swift in Sources */,
-				TS000010 /* MCPServiceTests.swift in Sources */,
+				TS000010 /* AgentCoordinatorTests.swift in Sources */,
 				TS000030 /* TerminalTextCleanerTests.swift in Sources */,
 				TS000011 /* MockAgentDataProvider.swift in Sources */,
 				TS000012 /* GitWorktreeManagerTests.swift in Sources */,

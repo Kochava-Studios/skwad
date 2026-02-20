@@ -4,7 +4,7 @@ import Logging
 /// Handles hook events specific to Claude agents.
 /// Business logic only — HTTP concerns (request parsing, response building) stay in MCPServer.
 struct ClaudeHookHandler {
-    let mcpService: MCPService
+    let mcpService: AgentCoordinator
     let logger: Logger
 
     // MARK: - Hook Registration

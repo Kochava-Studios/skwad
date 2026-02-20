@@ -47,7 +47,7 @@ Skwad/
 │   ├── GitFileWatcher.swift     # FSEvents file monitoring
 │   └── GitTypes.swift           # FileStatus, DiffLine, etc.
 ├── MCP/
-│   ├── MCPService.swift         # Actor managing messages and agent data
+│   ├── AgentCoordinator.swift    # Actor managing messages and agent data
 │   ├── MCPServer.swift          # Hummingbird HTTP server + hook event handler
 │   ├── MCPSessionManager.swift  # MCP session tracking
 │   ├── MCPToolHandler.swift     # Tool execution
@@ -93,7 +93,7 @@ Skwad/
 - When idle, checks for unread MCP messages
 
 ### MCP Communication
-- `MCPService` (actor) manages message queue and agent queries
+- `AgentCoordinator` (actor) manages message queue and agent queries
 - `AgentDataProvider` protocol bridges MainActor-isolated AgentManager safely
 - Server starts AFTER AgentManager is set to avoid race conditions
 - Registration prompt injected ~3s after terminal starts (if MCP enabled)
@@ -124,7 +124,7 @@ Skwad/
 ## Key Patterns
 
 ### Concurrency Safety
-- `MCPService` is an actor for thread-safe message handling
+- `AgentCoordinator` is an actor for thread-safe message handling
 - `AgentDataProvider` protocol bridges MainActor ↔ actor boundaries safely
 - Never use `nonisolated(unsafe)` - use proper async boundaries instead
 - Terminal callbacks dispatch to MainActor when updating UI state
@@ -150,7 +150,7 @@ Skwad/
 3. Add tool definition in `MCPToolHandler.listTools()` in MCPTools.swift
 4. Add switch case in `MCPToolHandler.callTool()` in MCPTools.swift
 5. Implement handler method in MCPTools.swift
-6. Add service method in MCPService.swift if needed
+6. Add service method in AgentCoordinator.swift if needed
 7. If accessing AgentManager, extend `AgentDataProvider` protocol and `AgentManagerWrapper`
 
 ### Modifying Terminal Behavior

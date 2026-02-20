@@ -9,11 +9,11 @@ actor MCPServer: MCPTransportProtocol {
     private let logger = Logger(label: "com.skwad.mcp.server")
     private var app: Application<RouterResponder<BasicRequestContext>>?
     private var serverTask: Task<Void, Error>?
-    private let mcpService: MCPService
+    private let mcpService: AgentCoordinator
     private let toolHandler: MCPToolHandler
     private let claudeHookHandler: ClaudeHookHandler
 
-    init(port: Int = 8766, mcpService: MCPService = .shared) {
+    init(port: Int = 8766, mcpService: AgentCoordinator = .shared) {
         self.port = port
         self.mcpService = mcpService
         self.toolHandler = MCPToolHandler(mcpService: mcpService)

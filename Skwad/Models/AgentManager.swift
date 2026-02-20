@@ -434,7 +434,7 @@ final class AgentManager {
         guard let agent = agents.first(where: { $0.id == agentId }), !agent.isShell else { return }
 
         Task {
-            let latestMessageId = await MCPService.shared.getLatestUnreadMessageId(for: agentId.uuidString)
+            let latestMessageId = await AgentCoordinator.shared.getLatestUnreadMessageId(for: agentId.uuidString)
 
             guard let messageId = latestMessageId else { return }
 
@@ -553,7 +553,7 @@ final class AgentManager {
         // Unregister from MCP if registered
         if agent.isRegistered {
             Task {
-                await MCPService.shared.unregisterAgent(agentId: agent.id.uuidString)
+                await AgentCoordinator.shared.unregisterAgent(agentId: agent.id.uuidString)
             }
         }
 
@@ -616,7 +616,7 @@ final class AgentManager {
         // Unregister from MCP if registered
         if agent.isRegistered {
             Task {
-                await MCPService.shared.unregisterAgent(agentId: agent.id.uuidString)
+                await AgentCoordinator.shared.unregisterAgent(agentId: agent.id.uuidString)
             }
         }
 

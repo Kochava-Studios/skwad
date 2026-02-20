@@ -3,9 +3,9 @@ import Foundation
 // MARK: - MCP Tool Handler
 
 actor MCPToolHandler {
-    private let mcpService: MCPService
+    private let mcpService: AgentCoordinator
 
-    init(mcpService: MCPService) {
+    init(mcpService: AgentCoordinator) {
         self.mcpService = mcpService
     }
 

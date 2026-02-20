@@ -4,13 +4,13 @@ import Logging
 
 final class ClaudeHookHandlerTests: XCTestCase {
 
-    private var service: MCPService!
+    private var service: AgentCoordinator!
     private var provider: MockAgentDataProvider!
     private var handler: ClaudeHookHandler!
     private var agent: Agent!
 
     override func setUp() async throws {
-        service = MCPService.shared
+        service = AgentCoordinator.shared
         agent = Agent(name: "TestAgent", folder: "/test/path")
         provider = MockAgentDataProvider(
             agents: [agent],

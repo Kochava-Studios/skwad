@@ -1,9 +1,9 @@
 import Foundation
 import Logging
 
-// MARK: - MCP Service Protocol
+// MARK: - Agent Coordinator Protocol
 
-protocol MCPServiceProtocol {
+protocol AgentCoordinatorProtocol {
     func listAgents(callerAgentId: String) async -> [AgentInfo]
     func registerAgent(agentId: String, sessionId: String?) async -> Bool
     func unregisterAgent(agentId: String) async -> Bool
@@ -14,7 +14,7 @@ protocol MCPServiceProtocol {
 }
 
 // MARK: - Agent Data Provider Protocol
-// Allows MCPService to query agent data without holding a reference to AgentManager
+// Allows AgentCoordinator to query agent data without holding a reference to AgentManager
 
 protocol AgentDataProvider: Sendable {
     func getAgents() async -> [Agent]
@@ -30,10 +30,10 @@ protocol AgentDataProvider: Sendable {
     func updateMetadata(for agentId: UUID, metadata: [String: String]) async
 }
 
-// MARK: - MCP Service
+// MARK: - Agent Coordinator
 
-actor MCPService: MCPServiceProtocol {
-    static let shared = MCPService()
+actor AgentCoordinator: AgentCoordinatorProtocol {
+    static let shared = AgentCoordinator()
 
     private let logger = Logger(label: "com.skwad.mcp")
     private let sessionManager = MCPSessionManager()
@@ -520,7 +520,7 @@ actor MCPService: MCPServiceProtocol {
 
 // MARK: - Agent Manager Wrapper
 
-/// Wrapper that safely bridges MainActor-isolated AgentManager to the MCPService actor
+/// Wrapper that safely bridges MainActor-isolated AgentManager to the AgentCoordinator actor
 /// All calls go through proper async boundaries
 final class AgentManagerWrapper: AgentDataProvider, @unchecked Sendable {
     private weak var manager: AgentManager?

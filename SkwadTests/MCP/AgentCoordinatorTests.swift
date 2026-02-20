@@ -2,14 +2,14 @@ import XCTest
 import Foundation
 @testable import Skwad
 
-final class MCPServiceTests: XCTestCase {
+final class AgentCoordinatorTests: XCTestCase {
 
-    // Note: MCPService.shared is a singleton, so tests run with their own provider setup
+    // Note: AgentCoordinator.shared is a singleton, so tests run with their own provider setup
 
     // MARK: - List Agents
 
     func testReturnsOnlySameWorkspaceAgents() async {
-        let service = MCPService.shared
+        let service = AgentCoordinator.shared
 
         // Create two workspaces with different agents
         var agent1 = Agent(name: "Agent1", folder: "/path/1")
@@ -39,7 +39,7 @@ final class MCPServiceTests: XCTestCase {
     }
 
     func testReturnsEmptyForInvalidCallerId() async {
-        let service = MCPService.shared
+        let service = AgentCoordinator.shared
         let provider = MockAgentDataProvider()
         await service.setAgentDataProvider(provider)
 
@@ -51,7 +51,7 @@ final class MCPServiceTests: XCTestCase {
     // MARK: - Register Agent
 
     func testValidatesUuidFormat() async {
-        let service = MCPService.shared
+        let service = AgentCoordinator.shared
         let provider = MockAgentDataProvider()
         await service.setAgentDataProvider(provider)
 
@@ -61,7 +61,7 @@ final class MCPServiceTests: XCTestCase {
     }
 
     func testReturnsFalseForNonExistentAgent() async {
-        let service = MCPService.shared
+        let service = AgentCoordinator.shared
         let provider = MockAgentDataProvider()
         await service.setAgentDataProvider(provider)
 
@@ -71,7 +71,7 @@ final class MCPServiceTests: XCTestCase {
     }
 
     func testMarksAgentAsRegisteredOnSuccess() async {
-        let service = MCPService.shared
+        let service = AgentCoordinator.shared
 
         var agent = Agent(name: "Test", folder: "/path")
         agent.isRegistered = false
@@ -89,7 +89,7 @@ final class MCPServiceTests: XCTestCase {
     // MARK: - Send Message
 
     func testValidatesSenderIsRegistered() async {
-        let service = MCPService.shared
+        let service = AgentCoordinator.shared
 
         var sender = Agent(name: "Sender", folder: "/path/sender")
         sender.isRegistered = false
@@ -113,7 +113,7 @@ final class MCPServiceTests: XCTestCase {
     }
 
     func testValidatesRecipientExistsInSameWorkspace() async {
-        let service = MCPService.shared
+        let service = AgentCoordinator.shared
 
         var sender = Agent(name: "Sender", folder: "/path/sender")
         sender.isRegistered = true
@@ -140,7 +140,7 @@ final class MCPServiceTests: XCTestCase {
     }
 
     func testSucceedsWithValidSenderAndRecipient() async {
-        let service = MCPService.shared
+        let service = AgentCoordinator.shared
 
         var sender = Agent(name: "Sender", folder: "/path/sender")
         sender.isRegistered = true
@@ -166,7 +166,7 @@ final class MCPServiceTests: XCTestCase {
     // MARK: - Shell Agent Restrictions
 
     func testListAgentsExcludesShellAgents() async {
-        let service = MCPService.shared
+        let service = AgentCoordinator.shared
 
         var agent1 = Agent(name: "Agent1", folder: "/path/1")
         agent1.isRegistered = true
@@ -187,7 +187,7 @@ final class MCPServiceTests: XCTestCase {
     }
 
     func testSendMessageToShellAgentFails() async {
-        let service = MCPService.shared
+        let service = AgentCoordinator.shared
 
         var sender = Agent(name: "Sender", folder: "/path/sender")
         sender.isRegistered = true
@@ -212,7 +212,7 @@ final class MCPServiceTests: XCTestCase {
     }
 
     func testBroadcastExcludesShellAgents() async {
-        let service = MCPService.shared
+        let service = AgentCoordinator.shared
 
         var sender = Agent(name: "Sender", folder: "/path/sender")
         sender.isRegistered = true
@@ -239,7 +239,7 @@ final class MCPServiceTests: XCTestCase {
     // MARK: - Companion Agent Restrictions
 
     func testListAgentsExcludesOtherOwnersCompanions() async {
-        let service = MCPService.shared
+        let service = AgentCoordinator.shared
 
         var owner = Agent(name: "Owner", folder: "/path/owner")
         owner.isRegistered = true
@@ -265,7 +265,7 @@ final class MCPServiceTests: XCTestCase {
     }
 
     func testSendMessageToCompanionByNonOwnerFails() async {
-        let service = MCPService.shared
+        let service = AgentCoordinator.shared
 
         var owner = Agent(name: "Owner", folder: "/path/owner")
         owner.isRegistered = true
@@ -292,7 +292,7 @@ final class MCPServiceTests: XCTestCase {
     }
 
     func testSendMessageToCompanionByOwnerSucceeds() async {
-        let service = MCPService.shared
+        let service = AgentCoordinator.shared
 
         var owner = Agent(name: "Owner", folder: "/path/owner")
         owner.isRegistered = true
@@ -316,7 +316,7 @@ final class MCPServiceTests: XCTestCase {
     }
 
     func testCompanionCanOnlyMessageOwner() async {
-        let service = MCPService.shared
+        let service = AgentCoordinator.shared
 
         var owner = Agent(name: "Owner", folder: "/path/owner")
         owner.isRegistered = true
@@ -351,7 +351,7 @@ final class MCPServiceTests: XCTestCase {
     }
 
     func testBroadcastExcludesOtherOwnersCompanions() async {
-        let service = MCPService.shared
+        let service = AgentCoordinator.shared
 
         var sender = Agent(name: "Sender", folder: "/path/sender")
         sender.isRegistered = true
@@ -376,7 +376,7 @@ final class MCPServiceTests: XCTestCase {
     }
 
     func testBroadcastFromOwnerIncludesOwnCompanions() async {
-        let service = MCPService.shared
+        let service = AgentCoordinator.shared
 
         var owner = Agent(name: "Owner", folder: "/path/owner")
         owner.isRegistered = true
@@ -401,7 +401,7 @@ final class MCPServiceTests: XCTestCase {
     }
 
     func testBroadcastFromCompanionOnlyReachesOwner() async {
-        let service = MCPService.shared
+        let service = AgentCoordinator.shared
 
         var owner = Agent(name: "Owner", folder: "/path/owner")
         owner.isRegistered = true
@@ -428,7 +428,7 @@ final class MCPServiceTests: XCTestCase {
     // MARK: - Broadcast Message
 
     func testExcludesSenderFromBroadcast() async {
-        let service = MCPService.shared
+        let service = AgentCoordinator.shared
 
         var sender = Agent(name: "Sender", folder: "/path/sender")
         sender.isRegistered = true
@@ -453,7 +453,7 @@ final class MCPServiceTests: XCTestCase {
     }
 
     func testOnlyBroadcastsToRegisteredAgents() async {
-        let service = MCPService.shared
+        let service = AgentCoordinator.shared
 
         var sender = Agent(name: "Sender", folder: "/path/sender")
         sender.isRegistered = true
@@ -478,7 +478,7 @@ final class MCPServiceTests: XCTestCase {
     }
 
     func testReturnsZeroForUnregisteredSender() async {
-        let service = MCPService.shared
+        let service = AgentCoordinator.shared
 
         var sender = Agent(name: "Sender", folder: "/path/sender")
         sender.isRegistered = false
@@ -499,7 +499,7 @@ final class MCPServiceTests: XCTestCase {
     }
 
     func testOnlyBroadcastsToSameWorkspace() async {
-        let service = MCPService.shared
+        let service = AgentCoordinator.shared
 
         var sender = Agent(name: "Sender", folder: "/path/sender")
         sender.isRegistered = true
@@ -528,7 +528,7 @@ final class MCPServiceTests: XCTestCase {
     // MARK: - Agent Creation Validation
 
     func testValidatesBranchNameWhenCreateWorktree() async {
-        let service = MCPService.shared
+        let service = AgentCoordinator.shared
         let provider = MockAgentDataProvider()
         await service.setAgentDataProvider(provider)
 
@@ -549,7 +549,7 @@ final class MCPServiceTests: XCTestCase {
     }
 
     func testValidatesBranchNameNotEmpty() async {
-        let service = MCPService.shared
+        let service = AgentCoordinator.shared
         let provider = MockAgentDataProvider()
         await service.setAgentDataProvider(provider)
 
@@ -572,7 +572,7 @@ final class MCPServiceTests: XCTestCase {
     // MARK: - Companion Agent Validation
 
     func testCompanionCreationSetsIsCompanion() async {
-        let service = MCPService.shared
+        let service = AgentCoordinator.shared
 
         let owner = Agent(name: "Owner", folder: "/tmp")
         let workspace = Workspace(name: "Test", agentIds: [owner.id])
@@ -602,7 +602,7 @@ final class MCPServiceTests: XCTestCase {
     }
 
     func testMaxThreeCompanionsPerOwner() async {
-        let service = MCPService.shared
+        let service = AgentCoordinator.shared
 
         let owner = Agent(name: "Owner", folder: "/tmp")
 
@@ -633,7 +633,7 @@ final class MCPServiceTests: XCTestCase {
     }
 
     func testDifferentOwnersCanEachHaveCompanions() async {
-        let service = MCPService.shared
+        let service = AgentCoordinator.shared
 
         let owner1 = Agent(name: "Owner1", folder: "/tmp")
         let owner2 = Agent(name: "Owner2", folder: "/tmp")
@@ -666,7 +666,7 @@ final class MCPServiceTests: XCTestCase {
     // MARK: - Find Agent
 
     func testFindsByUUID() async {
-        let service = MCPService.shared
+        let service = AgentCoordinator.shared
 
         let agent = Agent(name: "Test", folder: "/path")
         let provider = MockAgentDataProvider(agents: [agent])
@@ -679,7 +679,7 @@ final class MCPServiceTests: XCTestCase {
     }
 
     func testFindsByNameCaseInsensitive() async {
-        let service = MCPService.shared
+        let service = AgentCoordinator.shared
 
         let agent = Agent(name: "TestAgent", folder: "/path")
         let provider = MockAgentDataProvider(agents: [agent])
@@ -692,7 +692,7 @@ final class MCPServiceTests: XCTestCase {
     }
 
     func testReturnsNilForNonExistentAgent() async {
-        let service = MCPService.shared
+        let service = AgentCoordinator.shared
 
         let provider = MockAgentDataProvider()
         await service.setAgentDataProvider(provider)
@@ -705,7 +705,7 @@ final class MCPServiceTests: XCTestCase {
     // MARK: - Unregister Agent
 
     func testUnregisterValidatesUuidFormat() async {
-        let service = MCPService.shared
+        let service = AgentCoordinator.shared
         let provider = MockAgentDataProvider()
         await service.setAgentDataProvider(provider)
 
@@ -715,7 +715,7 @@ final class MCPServiceTests: XCTestCase {
     }
 
     func testMarksAgentAsUnregistered() async {
-        let service = MCPService.shared
+        let service = AgentCoordinator.shared
 
         var agent = Agent(name: "Test", folder: "/path")
         agent.isRegistered = true

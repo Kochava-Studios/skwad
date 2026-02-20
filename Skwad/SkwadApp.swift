@@ -119,7 +119,7 @@ struct SkwadApp: App {
 
                     // Set agent manager reference in MCP service FIRST
                     Task {
-                        await MCPService.shared.setAgentManager(agentManager)
+                        await AgentCoordinator.shared.setAgentManager(agentManager)
 
                         // THEN start MCP server if enabled
                         if AppSettings.shared.mcpServerEnabled {
