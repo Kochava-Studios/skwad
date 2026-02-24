@@ -49,9 +49,12 @@ struct Agent: Identifiable, Codable, Hashable {
     var markdownFileHistory: [String] = []  // History of markdown files shown (most recent first)
     var metadata: [String: String] = [:]  // Hook-populated metadata (transcript_path, cwd, model, etc.)
 
-    /// Actual working directory: hook-reported cwd if available, otherwise configured folder
+    /// Actual working directory: hook-reported cwd if it differs from folder (e.g. worktree), otherwise folder.
+    /// Ignores cwd when it's a subdirectory of folder (e.g. agent cd'd into a subfolder).
     var workingFolder: String {
-        metadata["cwd"] ?? folder
+        let folderWithSlash = folder.hasSuffix("/") ? folder : folder + "/"
+        guard let cwd = metadata["cwd"], cwd != folder, !cwd.hasPrefix(folderWithSlash) else { return folder }
+        return cwd
     }
 
     // Only persist these fields
