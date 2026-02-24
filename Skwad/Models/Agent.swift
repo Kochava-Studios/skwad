@@ -49,6 +49,11 @@ struct Agent: Identifiable, Codable, Hashable {
     var markdownFileHistory: [String] = []  // History of markdown files shown (most recent first)
     var metadata: [String: String] = [:]  // Hook-populated metadata (transcript_path, cwd, model, etc.)
 
+    /// Actual working directory: hook-reported cwd if available, otherwise configured folder
+    var workingFolder: String {
+        metadata["cwd"] ?? folder
+    }
+
     // Only persist these fields
     enum CodingKeys: String, CodingKey {
         case id, name, avatar, folder, agentType, createdBy, isCompanion, shellCommand

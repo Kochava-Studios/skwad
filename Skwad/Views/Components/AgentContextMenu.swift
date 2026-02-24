@@ -125,7 +125,7 @@ struct AgentContextMenu<Content: View>: View {
                     switch element {
                     case .app(let app):
                         Button {
-                            OpenWithProvider.open(agent.folder, with: app)
+                            OpenWithProvider.open(agent.workingFolder, with: app)
                         } label: {
                             IconLabel(app.name, icon: app.icon ?? "", fallback: app.systemIcon)
                         }

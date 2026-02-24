@@ -237,7 +237,7 @@ struct AgentFullHeader: View {
                 .opacity(isUnfocusedInSplit ? Theme.unfocusedHeaderOpacity : 1.0)
 
             if showFolder {
-                Text(shortenPath(agent.folder))
+                Text(shortenPath(agent.workingFolder))
                     .font(.title3)
                     .foregroundColor(Theme.secondaryText)
                     .lineLimit(1)
@@ -297,7 +297,7 @@ struct AgentCompactHeader: View {
                 .fontWeight(.bold)
                 .foregroundColor(Theme.secondaryText)
 
-            Text(shortenPath(agent.folder))
+            Text(shortenPath(agent.workingFolder))
                 .font(.body)
                 .fontWeight(.bold)
                 .foregroundColor(Theme.secondaryText)

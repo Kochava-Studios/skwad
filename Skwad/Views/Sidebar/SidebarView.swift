@@ -431,10 +431,17 @@ struct AgentRowView: View {
                         .foregroundColor(Theme.secondaryText)
                         .lineLimit(1)
 
-                    Text(URL(fileURLWithPath: agent.folder).lastPathComponent)
-                        .font(.callout)
-                        .foregroundColor(Theme.secondaryText)
-                        .lineLimit(1)
+                    HStack(spacing: 4) {
+                        if agent.workingFolder != agent.folder {
+                            Image(systemName: "arrow.triangle.branch")
+                                .font(.caption2)
+                                .foregroundColor(Theme.secondaryText)
+                        }
+                        Text(URL(fileURLWithPath: agent.workingFolder).lastPathComponent)
+                            .font(.callout)
+                            .foregroundColor(Theme.secondaryText)
+                            .lineLimit(1)
+                    }
                 }
 
                 Spacer()
