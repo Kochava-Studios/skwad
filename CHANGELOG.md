@@ -9,15 +9,20 @@ All notable changes to this project will be documented in this file.
 - Claude: add keep conversation option when forking an agent
 - Claude: plugin with slash commands (/list-agents, /send, /check, /broadcast, /worktree, etc.)
 - Claude: conversation history with resume capability
+- Codex: hook handler for activity detection (working/idle status)
 - Desktop notifications when an agent needs attention (with click-to-navigate)
 - Compact agent sidebar mode
+- Markdown preview: two-phase panel — view mode (Approve/Review buttons) then review mode (comment popup on selection)
 - Markdown preview: font size controls (A▼/A▲) in title bar
 - Markdown preview: expand/collapse button to maximize panel
 - Markdown preview: `maximized` parameter on display-markdown MCP tool
+- Sidebar/header: show agent's actual working directory (from hook-reported cwd) with branch indicator when it differs from base folder
+- "Open In..." uses agent's actual working directory
 
 ### Changed
 - Claude: registration now uses hooks instead of MCP call on startup
 - Claude: hook-based activity detection replaces terminal output parsing for more accurate status
+- Reduced hook fallback idle timeout from 15s to 5s
 
 ### Fixed
 - N/A
