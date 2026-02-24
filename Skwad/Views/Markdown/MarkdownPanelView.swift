@@ -4,8 +4,8 @@ import SwiftUI
 struct MarkdownPanelView: View {
 
     enum ReviewState {
-        case ready       // no comments yet — show Approve button
-        case commenting  // user has added comments — show Submit Review button
+        case viewing     // passive reading — no comment popup on selection
+        case reviewing   // review mode active — comment popup on selection
         case submitted   // review sent — hide buttons until file reloads
     }
 
@@ -27,7 +27,7 @@ struct MarkdownPanelView: View {
     // Comment popup state
     @State private var selectedText: String?
     @State private var commentText: String = ""
-    @State private var reviewState: ReviewState = .ready
+    @State private var reviewState: ReviewState = .viewing
     @State private var selectionY: CGFloat = 0
     @FocusState private var isCommentFocused: Bool
 
@@ -82,6 +82,10 @@ struct MarkdownPanelView: View {
 
     // MARK: - Content
 
+    private var isReviewActive: Bool {
+        reviewState == .reviewing
+    }
+
     @ViewBuilder
     private var contentView: some View {
         if isLoading && content == nil {
@@ -95,6 +99,7 @@ struct MarkdownPanelView: View {
                 backgroundColor: backgroundColor,
                 isDarkMode: colorScheme == .dark
             ) { text, y in
+                guard isReviewActive else { return }
                 withAnimation(.easeInOut(duration: 0.15)) {
                     selectedText = text
                     commentText = ""
@@ -185,12 +190,7 @@ struct MarkdownPanelView: View {
         let comment = commentText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !comment.isEmpty else { return }
 
-        var text = ""
-        if reviewState == .ready {
-            reviewState = .commenting
-            text += "While reviewing \(fileName), user made the following comments:\n"
-        }
-        text += "- Re \"\(selected)\": \(comment)\n"
+        let text = "- Re \"\(selected)\": \(comment)\n"
         onComment(text)
 
         withAnimation(.easeInOut(duration: 0.15)) {
@@ -241,7 +241,7 @@ struct MarkdownPanelView: View {
             Spacer()
 
             switch reviewState {
-            case .ready:
+            case .viewing:
                 Button {
                     onComment("approved let's do it")
                     onSubmitReview()
@@ -260,7 +260,25 @@ struct MarkdownPanelView: View {
                 }
                 .buttonStyle(.plain)
                 .help("Approve and continue")
-            case .commenting:
+
+                Button {
+                    onComment("While reviewing \(fileName), user made the following comments:\n")
+                    reviewState = .reviewing
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: "magnifyingglass")
+                        Text("Review")
+                    }
+                    .font(.caption)
+                    .foregroundColor(.primary)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 4)
+                    .background(Color.blue.opacity(0.7))
+                    .cornerRadius(4)
+                }
+                .buttonStyle(.plain)
+                .help("Start reviewing with comments")
+            case .reviewing:
                 Button {
                     onSubmitReview()
                     reviewState = .submitted
@@ -376,7 +394,7 @@ struct MarkdownPanelView: View {
     private func loadContent() {
         isLoading = true
         errorMessage = nil
-        reviewState = .ready
+        reviewState = .viewing
 
         DispatchQueue.global(qos: .userInitiated).async {
             do {
