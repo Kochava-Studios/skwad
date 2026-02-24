@@ -96,7 +96,7 @@ struct TerminalCommandBuilder {
   /// When true, terminal-level activity tracking is disabled
   static func usesActivityHooks(agentType: String) -> Bool {
     switch agentType {
-    case "claude":
+    case "claude", "codex":
       return true
     default:
       return false
@@ -174,6 +174,15 @@ struct TerminalCommandBuilder {
       }
       return args
       
+    case "codex":
+      // Inject notify hook via -c flag for activity detection
+      var args = ""
+      if let pluginPath = resolvePluginPath(for: agentType) {
+        let notifyScript = "\(pluginPath)/scripts/notify.sh"
+        args += #" -c 'notify=["bash","\#(notifyScript)"]'"#
+      }
+      return args
+
     case "gemini":
       return " --allowed-mcp-server-names skwad"
       

@@ -19,7 +19,7 @@ enum TimingConstants {
     static let userInputIdleTimeout: TimeInterval = 10.0
 
     /// Fallback idle timeout for hook-based agents (terminal output safety net)
-    static let hookFallbackIdleTimeout: TimeInterval = 15.0
+    static let hookFallbackIdleTimeout: TimeInterval = 5.0
 
     /// First idle delay for fast-starting agents  
     static let registrationFirstIdleDelayShort: TimeInterval = 1.5

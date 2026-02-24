@@ -12,12 +12,15 @@ actor MCPServer: MCPTransportProtocol {
     private let mcpService: AgentCoordinator
     private let toolHandler: MCPToolHandler
     private let claudeHookHandler: ClaudeHookHandler
+    private let codexHookHandler: CodexHookHandler
 
     init(port: Int = 8766, mcpService: AgentCoordinator = .shared) {
         self.port = port
         self.mcpService = mcpService
         self.toolHandler = MCPToolHandler(mcpService: mcpService)
-        self.claudeHookHandler = ClaudeHookHandler(mcpService: mcpService, logger: Logger(label: "com.skwad.mcp.server"))
+        let logger = Logger(label: "com.skwad.mcp.server")
+        self.claudeHookHandler = ClaudeHookHandler(mcpService: mcpService, logger: logger)
+        self.codexHookHandler = CodexHookHandler(mcpService: mcpService, logger: logger)
     }
 
     func start() async throws {
@@ -244,6 +247,12 @@ actor MCPServer: MCPTransportProtocol {
             case "claude":
                 guard let agentStatus = await claudeHookHandler.handleActivityStatus(agentId: agentId, json: json) else {
                     return plainResponse(status: .badRequest, body: "Invalid status (expected: running or idle)")
+                }
+                logger.info("[skwad][\(String(agentId.uuidString.prefix(8)).lowercased())] Hook status: \(agentStatus.rawValue)")
+                return plainResponse(status: .ok, body: "OK")
+            case "codex":
+                guard let agentStatus = await codexHookHandler.handleActivityStatus(agentId: agentId, json: json) else {
+                    return plainResponse(status: .badRequest, body: "Invalid codex event")
                 }
                 logger.info("[skwad][\(String(agentId.uuidString.prefix(8)).lowercased())] Hook status: \(agentStatus.rawValue)")
                 return plainResponse(status: .ok, body: "OK")

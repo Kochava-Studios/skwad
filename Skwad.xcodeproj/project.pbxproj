@@ -15,6 +15,7 @@
 		48E4A7F10E3C047EF657C139 /* OpenWithAppPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAB09CF01B6F4CD118B448A6 /* OpenWithAppPicker.swift */; };
 		491170A3B86B4F821B4A1417 /* NewWorktreeSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B074ACAD44D9FA064E28A16 /* NewWorktreeSheet.swift */; };
 		49BE1929AE038865BFCD543D /* GitTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADCF18167D88BA578DBF2B2E /* GitTypes.swift */; };
+		8D03C5CA2F48A03F00CF0F07 /* CodexHookHandlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D03C5C92F48A03F00CF0F07 /* CodexHookHandlerTests.swift */; };
 		8D2673C92F31592C0043E3A6 /* VoiceInputManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D2673C72F31592C0043E3A6 /* VoiceInputManager.swift */; };
 		8D2673CA2F31592C0043E3A6 /* VoiceInputOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D2673C82F31592C0043E3A6 /* VoiceInputOverlay.swift */; };
 		8D2673CB2F31592C0043E3A6 /* PushToTalkMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D2673C62F31592C0043E3A6 /* PushToTalkMonitor.swift */; };
@@ -57,6 +58,7 @@
 		AS000001 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AS100001 /* Assets.xcassets */; };
 		CH000001 /* ConversationHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CH100001 /* ConversationHistoryView.swift */; };
 		CH000002 /* ClaudeHookHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = CH100002 /* ClaudeHookHandler.swift */; };
+		CH000003 /* CodexHookHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = CH100003 /* CodexHookHandler.swift */; };
 		EC4663850678FAF77C0F1381 /* GitRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 137C060CFAE6151E52210D1A /* GitRepository.swift */; };
 		F4AB26B99E3CC3D579D72293 /* OpenWithProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = E032A72A15B3456546418CF7 /* OpenWithProvider.swift */; };
 		F8001001 /* SkwadApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8000001 /* SkwadApp.swift */; };
@@ -193,6 +195,7 @@
 		241FF0F3B6265925356C1479 /* GitFileWatcher.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GitFileWatcher.swift; sourceTree = "<group>"; };
 		52D95A7EFF9B22BB564BAFA4 /* GitWorktreeManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GitWorktreeManager.swift; sourceTree = "<group>"; };
 		5B074ACAD44D9FA064E28A16 /* NewWorktreeSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NewWorktreeSheet.swift; sourceTree = "<group>"; };
+		8D03C5C92F48A03F00CF0F07 /* CodexHookHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodexHookHandlerTests.swift; sourceTree = "<group>"; };
 		8D2673C62F31592C0043E3A6 /* PushToTalkMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushToTalkMonitor.swift; sourceTree = "<group>"; };
 		8D2673C72F31592C0043E3A6 /* VoiceInputManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceInputManager.swift; sourceTree = "<group>"; };
 		8D2673C82F31592C0043E3A6 /* VoiceInputOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceInputOverlay.swift; sourceTree = "<group>"; };
@@ -230,6 +233,7 @@
 		CAB09CF01B6F4CD118B448A6 /* OpenWithAppPicker.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OpenWithAppPicker.swift; sourceTree = "<group>"; };
 		CH100001 /* ConversationHistoryView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ConversationHistoryView.swift; sourceTree = "<group>"; };
 		CH100002 /* ClaudeHookHandler.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ClaudeHookHandler.swift; sourceTree = "<group>"; };
+		CH100003 /* CodexHookHandler.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CodexHookHandler.swift; sourceTree = "<group>"; };
 		E032A72A15B3456546418CF7 /* OpenWithProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OpenWithProvider.swift; sourceTree = "<group>"; };
 		EA63472ED8A96242C89019C1 /* DiffView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DiffView.swift; sourceTree = "<group>"; };
 		F8000001 /* SkwadApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SkwadApp.swift; sourceTree = "<group>"; };
@@ -416,6 +420,7 @@
 			isa = PBXGroup;
 			children = (
 				CH100002 /* ClaudeHookHandler.swift */,
+				CH100003 /* CodexHookHandler.swift */,
 				8D6B97212F2DC17900CE877E /* MCPMessageStore.swift */,
 				8D7622A92F2C67CE006B6280 /* MCPServer.swift */,
 				8D7622AA2F2C67CE006B6280 /* AgentCoordinator.swift */,
@@ -682,6 +687,7 @@
 			children = (
 				TS500007 /* Mocks */,
 				TS100030 /* ClaudeHookHandlerTests.swift */,
+				8D03C5C92F48A03F00CF0F07 /* CodexHookHandlerTests.swift */,
 				TS100007 /* MCPMessageStoreTests.swift */,
 				TS100008 /* MCPSessionManagerTests.swift */,
 				TS100009 /* AgentCoordinatorTests.swift */,
@@ -981,6 +987,7 @@
 				8D2673CB2F31592C0043E3A6 /* PushToTalkMonitor.swift in Sources */,
 				8D7622AF2F2C67CE006B6280 /* MCPServer.swift in Sources */,
 				CH000002 /* ClaudeHookHandler.swift in Sources */,
+				CH000003 /* CodexHookHandler.swift in Sources */,
 				8D7622B02F2C67CE006B6280 /* MCPTransport.swift in Sources */,
 				8DD8074D2F2E52E900D7A935 /* AgentSheet.swift in Sources */,
 				8D7622B12F2C67CE006B6280 /* AgentCoordinator.swift in Sources */,
@@ -1086,6 +1093,7 @@
 				TS000037 /* RepoDiscoveryServiceTests.swift in Sources */,
 				TS000038 /* MarkdownToHTMLTests.swift in Sources */,
 				TS000039 /* MockTerminalAdapter.swift in Sources */,
+				8D03C5CA2F48A03F00CF0F07 /* CodexHookHandlerTests.swift in Sources */,
 				TS000040 /* TerminalSessionControllerTests.swift in Sources */,
 				TS000041 /* NotificationServiceTests.swift in Sources */,
 				TS000042 /* TerminalCommandBuilderTests.swift in Sources */,

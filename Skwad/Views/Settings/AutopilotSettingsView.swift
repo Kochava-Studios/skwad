@@ -49,7 +49,7 @@ struct AutopilotSettingsView: View {
             } header: {
                 Text("Autopilot")
             } footer: {
-                Text("Automatically detect when agents need input and take action — no need to babysit your agents.")
+                Text("Automatically detect when agents need input and take action — no need to babysit your agents. Only available with Claude Code.")
                     .foregroundColor(.secondary)
             }
 
