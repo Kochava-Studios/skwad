@@ -145,6 +145,37 @@ final class AgentTests: XCTestCase {
         XCTAssertTrue(decoded.metadata.isEmpty)
     }
 
+    // MARK: - Working Folder
+
+    func testWorkingFolderDefaultsToFolder() {
+        let agent = Agent(name: "Test", folder: "/Users/test/repo")
+        XCTAssertEqual(agent.workingFolder, "/Users/test/repo")
+    }
+
+    func testWorkingFolderReturnsCwdWhenDifferentRoot() {
+        var agent = Agent(name: "Test", folder: "/Users/test/repo")
+        agent.metadata["cwd"] = "/Users/test/repo-worktree"
+        XCTAssertEqual(agent.workingFolder, "/Users/test/repo-worktree")
+    }
+
+    func testWorkingFolderIgnoresSubdirectory() {
+        var agent = Agent(name: "Test", folder: "/Users/test/repo")
+        agent.metadata["cwd"] = "/Users/test/repo/frontend"
+        XCTAssertEqual(agent.workingFolder, "/Users/test/repo")
+    }
+
+    func testWorkingFolderIgnoresExactMatch() {
+        var agent = Agent(name: "Test", folder: "/Users/test/repo")
+        agent.metadata["cwd"] = "/Users/test/repo"
+        XCTAssertEqual(agent.workingFolder, "/Users/test/repo")
+    }
+
+    func testWorkingFolderWithTrailingSlashFolder() {
+        var agent = Agent(name: "Test", folder: "/Users/test/repo/")
+        agent.metadata["cwd"] = "/Users/test/repo-worktree"
+        XCTAssertEqual(agent.workingFolder, "/Users/test/repo-worktree")
+    }
+
     // MARK: - Resume/Fork Session
 
     func testResumeSessionIdStartsNil() {

@@ -116,6 +116,17 @@ actor MCPToolHandler {
                 )
             ),
             ToolDefinition(
+                name: MCPToolName.createWorktree.rawValue,
+                description: "Create a new git worktree from a repository. Returns the path to the new worktree.",
+                inputSchema: ToolInputSchema(
+                    properties: [
+                        "repoPath": PropertySchema(type: "string", description: "Path to the source repository"),
+                        "branchName": PropertySchema(type: "string", description: "Branch name for the new worktree")
+                    ],
+                    required: ["repoPath", "branchName"]
+                )
+            ),
+            ToolDefinition(
                 name: MCPToolName.displayMarkdown.rawValue,
                 description: "Display a markdown file in a panel for the user to review. Use this to show plans, documentation, or any markdown content that needs user attention. Also use if the user asks you to show him a file. Never assume the panel is open or displaying the right file as the user may have closed it: call the tool again when relevant.",
                 inputSchema: ToolInputSchema(
@@ -156,6 +167,8 @@ actor MCPToolHandler {
             return await handleCreateAgent(arguments)
         case .closeAgent:
             return await handleCloseAgent(arguments)
+        case .createWorktree:
+            return await handleCreateWorktree(arguments)
         case .displayMarkdown:
             return await handleDisplayMarkdown(arguments)
         }
@@ -363,6 +376,28 @@ actor MCPToolHandler {
 
         let result = await mcpService.closeAgent(callerAgentId: agentId, targetIdentifier: target)
         return successResult(result)
+    }
+
+    private func handleCreateWorktree(_ arguments: [String: Any]) async -> ToolCallResult {
+        guard let repoPath = arguments["repoPath"] as? String else {
+            return errorResult("Missing required parameter: repoPath")
+        }
+        guard let branchName = arguments["branchName"] as? String, !branchName.isEmpty else {
+            return errorResult("Missing required parameter: branchName")
+        }
+
+        let manager = GitWorktreeManager.shared
+        guard manager.isGitRepo(repoPath) else {
+            return errorResult("Not a git repository: \(repoPath)")
+        }
+
+        let worktreePath = manager.suggestedWorktreePath(repoPath: repoPath, branchName: branchName)
+        do {
+            try manager.createWorktree(repoPath: repoPath, branchName: branchName, destinationPath: worktreePath)
+            return successResult(CreateWorktreeResponse(success: true, path: worktreePath, message: "Worktree created at \(worktreePath)"))
+        } catch {
+            return errorResult("Failed to create worktree: \(error.localizedDescription)")
+        }
     }
 
     private func handleDisplayMarkdown(_ arguments: [String: Any]) async -> ToolCallResult {

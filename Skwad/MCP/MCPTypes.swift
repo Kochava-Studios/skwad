@@ -94,6 +94,12 @@ struct RegisterAgentResponse: Codable {
     let skwadMembers: [AgentInfo]
 }
 
+struct CreateWorktreeResponse: Codable {
+    let success: Bool
+    let path: String?
+    let message: String
+}
+
 struct ShowMarkdownResponse: Codable {
     let success: Bool
     let message: String
@@ -344,6 +350,7 @@ enum MCPToolName: String {
     case listWorktrees = "list-worktrees"
     case createAgent = "create-agent"
     case closeAgent = "close-agent"
+    case createWorktree = "create-worktree"
     case displayMarkdown = "display-markdown"
 }
 
