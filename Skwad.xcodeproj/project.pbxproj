@@ -165,6 +165,11 @@
 		WS000001 /* Workspace.swift in Sources */ = {isa = PBXBuildFile; fileRef = WS100001 /* Workspace.swift */; };
 		WS000002 /* WorkspaceBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = WS100002 /* WorkspaceBarView.swift */; };
 		WS000003 /* WorkspaceSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = WS100003 /* WorkspaceSheet.swift */; };
+		UT000008 /* FuzzyScorer.swift in Sources */ = {isa = PBXBuildFile; fileRef = UT100008 /* FuzzyScorer.swift */; };
+		SR000010 /* FileSearchService.swift in Sources */ = {isa = PBXBuildFile; fileRef = SR100010 /* FileSearchService.swift */; };
+		FF000001 /* FileFinderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF100001 /* FileFinderView.swift */; };
+		TS000044 /* FuzzyScorerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100044 /* FuzzyScorerTests.swift */; };
+		TS000045 /* FileSearchServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100045 /* FileSearchServiceTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -344,6 +349,11 @@
 		WS100001 /* Workspace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Workspace.swift; sourceTree = "<group>"; };
 		WS100002 /* WorkspaceBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkspaceBarView.swift; sourceTree = "<group>"; };
 		WS100003 /* WorkspaceSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkspaceSheet.swift; sourceTree = "<group>"; };
+		UT100008 /* FuzzyScorer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FuzzyScorer.swift; sourceTree = "<group>"; };
+		SR100010 /* FileSearchService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileSearchService.swift; sourceTree = "<group>"; };
+		FF100001 /* FileFinderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileFinderView.swift; sourceTree = "<group>"; };
+		TS100044 /* FuzzyScorerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FuzzyScorerTests.swift; sourceTree = "<group>"; };
+		TS100045 /* FileSearchServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileSearchServiceTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -482,6 +492,7 @@
 			isa = PBXGroup;
 			children = (
 				F8000017 /* Components */,
+				FF200000 /* FileFinder */,
 				2EB8108896BD1402E4BDA10F /* Git */,
 				MD200001 /* Markdown */,
 				F8000016 /* Settings */,
@@ -491,6 +502,14 @@
 				F8000002 /* ContentView.swift */,
 			);
 			path = Views;
+			sourceTree = "<group>";
+		};
+		FF200000 /* FileFinder */ = {
+			isa = PBXGroup;
+			children = (
+				FF100001 /* FileFinderView.swift */,
+			);
+			path = FileFinder;
 			sourceTree = "<group>";
 		};
 		F8000014 /* Sidebar */ = {
@@ -615,6 +634,7 @@
 			children = (
 				8DBD635D2F47B3480049E5DC /* AutopilotService.swift */,
 				SR100009 /* ConversationHistoryService.swift */,
+				SR100010 /* FileSearchService.swift */,
 				SR100008 /* NotificationService.swift */,
 				SR100001 /* RepoDiscoveryService.swift */,
 				SR100007 /* TerminalAdapter.swift */,
@@ -754,6 +774,7 @@
 			children = (
 				TS100029 /* TerminalTextCleanerTests.swift */,
 				TS100031 /* ClipboardTests.swift */,
+				TS100044 /* FuzzyScorerTests.swift */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -771,6 +792,7 @@
 			children = (
 				TS500015 /* Mocks */,
 				8DBD635B2F47B3290049E5DC /* AutopilotServiceTests.swift */,
+				TS100045 /* FileSearchServiceTests.swift */,
 				TS100042 /* ConversationHistoryServiceTests.swift */,
 				TS100040 /* NotificationServiceTests.swift */,
 				TS100036 /* RepoDiscoveryServiceTests.swift */,
@@ -814,6 +836,7 @@
 				UT100006 /* AvatarUtils.swift */,
 				UT100007 /* VoiceAudioUtils.swift */,
 				UT100005 /* PathUtils.swift */,
+				UT100008 /* FuzzyScorer.swift */,
 				UT100002 /* TerminalTextCleaner.swift */,
 				FW000002 /* FileWatcher.swift */,
 				8D6B97242F2DC47300CE877E /* TimingConstants.swift */,
@@ -1026,6 +1049,9 @@
 				UT000005 /* PathUtils.swift in Sources */,
 				UT000006 /* AvatarUtils.swift in Sources */,
 				UT000007 /* VoiceAudioUtils.swift in Sources */,
+				UT000008 /* FuzzyScorer.swift in Sources */,
+				SR000010 /* FileSearchService.swift in Sources */,
+				FF000001 /* FileFinderView.swift in Sources */,
 				VM000001 /* GitPanelViewModel.swift in Sources */,
 				05DDBA7B3DCF7C65CF6A9FFF /* GitWorktreeManager.swift in Sources */,
 				491170A3B86B4F821B4A1417 /* NewWorktreeSheet.swift in Sources */,
@@ -1098,6 +1124,8 @@
 				TS000041 /* NotificationServiceTests.swift in Sources */,
 				TS000042 /* TerminalCommandBuilderTests.swift in Sources */,
 				TS000043 /* ConversationHistoryServiceTests.swift in Sources */,
+				TS000044 /* FuzzyScorerTests.swift in Sources */,
+				TS000045 /* FileSearchServiceTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1255,7 +1283,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 82;
+				CURRENT_PROJECT_VERSION = 83;
 				DEVELOPMENT_TEAM = S3Y2KVL7H7;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1287,7 +1315,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 82;
+				CURRENT_PROJECT_VERSION = 83;
 				DEVELOPMENT_TEAM = S3Y2KVL7H7;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
