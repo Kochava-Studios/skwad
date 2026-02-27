@@ -210,7 +210,7 @@ private struct FocusableTextField: NSViewRepresentable {
 
 // MARK: - Result Row
 
-private struct FileResultRow: View {
+struct FileResultRow: View {
     let result: FileResult
     let isSelected: Bool
 
@@ -275,4 +275,121 @@ private struct FileResultRow: View {
         default: return "doc"
         }
     }
+}
+
+// MARK: - Previews
+
+private struct FileFinderPreview: View {
+    let results: [FileResult]
+    let tooManyFiles: Bool
+    let query: String
+    let selectedIndex: Int
+
+    private let settings = AppSettings.shared
+
+    var body: some View {
+        ZStack {
+            Color.black.opacity(0.4)
+                .ignoresSafeArea()
+
+            VStack(spacing: 0) {
+                HStack(spacing: 10) {
+                    Image(systemName: "magnifyingglass")
+                        .foregroundColor(.secondary)
+                        .font(.system(size: 18))
+
+                    Text(query.isEmpty ? "Search files..." : query)
+                        .font(.system(size: 18))
+                        .foregroundColor(query.isEmpty ? .secondary : .primary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 14)
+
+                if tooManyFiles && query.isEmpty {
+                    Divider()
+                    emptyState(icon: "exclamationmark.triangle", text: "Too many files (50,000+ limit)")
+                } else if !query.isEmpty && results.isEmpty {
+                    Divider()
+                    emptyState(icon: "magnifyingglass", text: "No matching files")
+                } else if !results.isEmpty {
+                    Divider()
+                    ScrollView {
+                        LazyVStack(spacing: 0) {
+                            ForEach(Array(results.enumerated()), id: \.element.id) { index, result in
+                                FileResultRow(
+                                    result: result,
+                                    isSelected: index == selectedIndex
+                                )
+                            }
+                        }
+                        .padding(.vertical, 4)
+                    }
+                    .frame(maxHeight: 450)
+                }
+            }
+            .background(settings.effectiveBackgroundColor)
+            .cornerRadius(12)
+            .shadow(color: .black.opacity(0.3), radius: 20, y: 10)
+            .frame(width: 650)
+            .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+
+    @ViewBuilder
+    private func emptyState(icon: String, text: String) -> some View {
+        VStack(spacing: 10) {
+            Image(systemName: icon)
+                .font(.system(size: 28))
+                .foregroundColor(.secondary)
+            Text(text)
+                .font(.system(size: 14))
+                .foregroundColor(.secondary)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 32)
+    }
+}
+
+#Preview("Empty") {
+    FileFinderPreview(
+        results: [],
+        tooManyFiles: false,
+        query: "",
+        selectedIndex: 0
+    )
+}
+
+#Preview("No Results") {
+    FileFinderPreview(
+        results: [],
+        tooManyFiles: false,
+        query: "xyznotfound",
+        selectedIndex: 0
+    )
+}
+
+#Preview("With Results") {
+    FileFinderPreview(
+        results: [
+            FileResult(relativePath: "Skwad/Views/ContentView.swift", score: 95, matchedIndices: [12, 13, 14, 15, 16, 17, 18]),
+            FileResult(relativePath: "Skwad/Views/Sidebar/SidebarView.swift", score: 80, matchedIndices: [12, 13, 14, 15]),
+            FileResult(relativePath: "Skwad/Views/Terminal/AgentTerminalView.swift", score: 75, matchedIndices: [12, 13, 14, 15]),
+            FileResult(relativePath: "Skwad/Models/Agent.swift", score: 60, matchedIndices: [14, 15, 16, 17, 18]),
+            FileResult(relativePath: "Skwad/Services/TerminalAdapter.swift", score: 55, matchedIndices: [9, 10, 11, 12]),
+            FileResult(relativePath: "Skwad/Git/GitRepository.swift", score: 40, matchedIndices: [10, 11, 12]),
+        ],
+        tooManyFiles: false,
+        query: "view",
+        selectedIndex: 1
+    )
+}
+
+#Preview("Too Many Files") {
+    FileFinderPreview(
+        results: [],
+        tooManyFiles: true,
+        query: "",
+        selectedIndex: 0
+    )
 }
