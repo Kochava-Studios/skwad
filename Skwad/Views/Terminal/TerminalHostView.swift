@@ -54,6 +54,7 @@ class TerminalContainerView: NSView {
 struct TerminalHostView: NSViewRepresentable {
     let controller: TerminalSessionController
     let isActive: Bool
+    let suppressFocus: Bool
     let onPaneTap: (() -> Void)?
 
     @ObservedObject private var settings = AppSettings.shared
@@ -110,7 +111,7 @@ struct TerminalHostView: NSViewRepresentable {
         applySettings(to: terminal)
 
         // Focus terminal when active
-        if isActive {
+        if isActive && !suppressFocus {
             DispatchQueue.main.async {
                 nsView.window?.makeFirstResponder(terminal)
             }

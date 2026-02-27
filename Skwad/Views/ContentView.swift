@@ -18,10 +18,13 @@ struct ContentView: View {
   @State private var lastPaneRects: [UUID: CGRect] = [:]
   @State private var markdownExpanded = false
 
+  @State private var showFileFinder = false
+
   // Bindings from SkwadApp for menu commands
   @Binding var showNewAgentSheet: Bool
   @Binding var toggleGitPanel: Bool
   @Binding var toggleSidebar: Bool
+  @Binding var toggleFileFinder: Bool
   @Binding var forkPrefill: AgentPrefill?
 
   static let minSidebarWidth: CGFloat = 80
@@ -88,6 +91,7 @@ struct ContentView: View {
             AgentTerminalView(
               agent: agent,
               paneIndex: paneIdx,
+              suppressFocus: showFileFinder,
               sidebarVisible: $sidebarVisible,
               forkPrefill: $forkPrefill,
               onGitStatsTap: {
@@ -369,9 +373,24 @@ struct ContentView: View {
       if showVoiceOverlay {
         voiceOverlay
       }
+
+      // File finder overlay
+      if showFileFinder, let agent = activeAgent {
+        FileFinderView(
+          folder: agent.workingFolder,
+          onDismiss: { showFileFinder = false },
+          onSelect: { path in
+            Clipboard.copy(path)
+            agentManager.sendText(path, for: agent.id)
+            showFileFinder = false
+          }
+        )
+        .transition(.opacity)
+      }
     }
     .onChange(of: agentManager.activeAgentIds) { _, _ in
       if showGitPanel { showGitPanel = false }
+      if showFileFinder { showFileFinder = false }
     }
     .onChange(of: agentManager.focusedPaneIndex) { _, _ in
       if showGitPanel { showGitPanel = false }
@@ -452,6 +471,11 @@ struct ContentView: View {
     .onChange(of: toggleSidebar) { _, _ in
       withAnimation(.easeInOut(duration: 0.25)) {
         sidebarVisible.toggle()
+      }
+    }
+    .onChange(of: toggleFileFinder) { _, _ in
+      if activeAgent != nil {
+        showFileFinder.toggle()
       }
     }
   }
@@ -794,12 +818,14 @@ struct ContentView: View {
   @Previewable @State var showNewAgentSheet = false
   @Previewable @State var toggleGitPanel = false
   @Previewable @State var toggleSidebar = false
+  @Previewable @State var toggleFileFinder = false
   @Previewable @State var forkPrefill: AgentPrefill? = nil
 
   ContentView(
     showNewAgentSheet: $showNewAgentSheet,
     toggleGitPanel: $toggleGitPanel,
     toggleSidebar: $toggleSidebar,
+    toggleFileFinder: $toggleFileFinder,
     forkPrefill: $forkPrefill
   )
     .environment(AgentManager())

@@ -47,6 +47,7 @@ struct AgentTerminalView: View {
     @ObservedObject private var settings = AppSettings.shared
     let agent: Agent
     let paneIndex: Int
+    let suppressFocus: Bool
     @Binding var sidebarVisible: Bool
     @Binding var forkPrefill: AgentPrefill?
     let onGitStatsTap: () -> Void
@@ -107,6 +108,7 @@ struct AgentTerminalView: View {
                     GhosttyTerminalWrapperView(
                         controller: controller,
                         isActive: isActive,
+                        suppressFocus: suppressFocus,
                         onTerminalCreated: { terminal in
                             agentManager.registerTerminal(terminal, for: agent.id)
                         },
@@ -116,6 +118,7 @@ struct AgentTerminalView: View {
                     SwiftTermTerminalWrapperView(
                         controller: controller,
                         isActive: isActive,
+                        suppressFocus: suppressFocus,
                         onPaneTap: onPaneTap
                     )
                 }
@@ -400,6 +403,7 @@ private func previewAgent(_ name: String, _ avatar: String, _ folder: String, st
 struct GhosttyTerminalWrapperView: View {
     let controller: TerminalSessionController
     let isActive: Bool
+    let suppressFocus: Bool
     let onTerminalCreated: (GhosttyTerminalView) -> Void
     let onPaneTap: (() -> Void)?
 
@@ -409,6 +413,7 @@ struct GhosttyTerminalWrapperView: View {
                 controller: controller,
                 size: proxy.size,
                 isActive: isActive,
+                suppressFocus: suppressFocus,
                 onTerminalCreated: onTerminalCreated,
                 onPaneTap: onPaneTap
             )
@@ -423,12 +428,14 @@ struct SwiftTermTerminalWrapperView: View {
     @ObservedObject private var settings = AppSettings.shared
     let controller: TerminalSessionController
     let isActive: Bool
+    let suppressFocus: Bool
     let onPaneTap: (() -> Void)?
 
     var body: some View {
         TerminalHostView(
             controller: controller,
             isActive: isActive,
+            suppressFocus: suppressFocus,
             onPaneTap: onPaneTap
         )
         .padding(12)

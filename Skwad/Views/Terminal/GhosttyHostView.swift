@@ -13,6 +13,7 @@ struct GhosttyHostView: NSViewRepresentable {
     let controller: TerminalSessionController
     let size: CGSize
     let isActive: Bool
+    let suppressFocus: Bool
     let onTerminalCreated: (GhosttyTerminalView) -> Void
     let onPaneTap: (() -> Void)?
 
@@ -67,7 +68,7 @@ struct GhosttyHostView: NSViewRepresentable {
         }
 
         // Focus terminal when active
-        if isActive {
+        if isActive && !suppressFocus {
             DispatchQueue.main.async {
                 nsView.window?.makeFirstResponder(nsView.surfaceView)
             }
