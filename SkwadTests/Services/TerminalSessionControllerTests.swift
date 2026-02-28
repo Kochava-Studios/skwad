@@ -295,7 +295,7 @@ struct TerminalSessionControllerTests {
         @MainActor
         func terminalOutputSetsRunning() async {
             let (controller, adapter) = TerminalSessionControllerTests.createController(
-                agentType: "codex"
+                agentType: "aider"
             )
 
             adapter.simulateActivity()
@@ -306,7 +306,7 @@ struct TerminalSessionControllerTests {
         @MainActor
         func userInputSetsRunning() async {
             let (controller, adapter) = TerminalSessionControllerTests.createController(
-                agentType: "codex"
+                agentType: "aider"
             )
             controller.status = .idle
 

@@ -21,6 +21,7 @@ struct SkwadApp: App {
     @State private var showNewWorkspaceSheet = false
     @State private var toggleGitPanel = false
     @State private var toggleSidebar = false
+    @State private var toggleFileFinder = false
     @State private var forkPrefill: AgentPrefill?
 
     private var settings: AppSettings { AppSettings.shared }
@@ -64,6 +65,7 @@ struct SkwadApp: App {
                 showNewAgentSheet: $showNewAgentSheet,
                 toggleGitPanel: $toggleGitPanel,
                 toggleSidebar: $toggleSidebar,
+                toggleFileFinder: $toggleFileFinder,
                 forkPrefill: $forkPrefill
             )
                 .environment(agentManager)
@@ -259,6 +261,12 @@ struct SkwadApp: App {
                     toggleSidebar.toggle()
                 }
                 .keyboardShortcut("b", modifiers: [.command, .option])
+
+                Button("Find File...") {
+                    toggleFileFinder.toggle()
+                }
+                .keyboardShortcut("f", modifiers: [.command, .shift])
+                .disabled(agentManager.activeAgentId == nil)
 
                 Divider()
 
