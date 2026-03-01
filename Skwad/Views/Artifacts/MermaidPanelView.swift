@@ -244,6 +244,7 @@ struct MermaidPanelView: View {
                             .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
+                        .focusEffectDisabled()
                     }
                 }
                 .padding(.horizontal, 4)
@@ -261,13 +262,13 @@ struct MermaidPanelView: View {
         if let error = renderError {
             errorView(error)
         } else if let image = renderedImage {
+            let scaledWidth = image.size.width * zoomLevel
+            let scaledHeight = image.size.height * zoomLevel
             ScrollView([.horizontal, .vertical]) {
                 Image(nsImage: image)
                     .interpolation(.high)
-                    .frame(
-                        width: image.size.width * zoomLevel,
-                        height: image.size.height * zoomLevel
-                    )
+                    .scaleEffect(zoomLevel, anchor: .topLeading)
+                    .frame(width: scaledWidth, height: scaledHeight, alignment: .topLeading)
             }
         } else {
             ProgressView()
