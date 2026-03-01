@@ -216,10 +216,24 @@ struct MarkdownPanelView: View {
                 .buttonStyle(.plain)
             }
 
-            Text(fileName)
-                .font(.headline)
-                .foregroundColor(.primary)
-                .lineLimit(1)
+            if isCollapsible {
+                Button {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        isCollapsed.toggle()
+                    }
+                } label: {
+                    Text(fileName)
+                        .font(.headline)
+                        .foregroundColor(.primary)
+                        .lineLimit(1)
+                }
+                .buttonStyle(.plain)
+            } else {
+                Text(fileName)
+                    .font(.headline)
+                    .foregroundColor(.primary)
+                    .lineLimit(1)
+            }
 
             Spacer()
 

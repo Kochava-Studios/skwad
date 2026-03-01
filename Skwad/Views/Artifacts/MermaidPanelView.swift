@@ -130,10 +130,25 @@ struct MermaidPanelView: View {
                 .buttonStyle(.plain)
             }
 
-            Text(title ?? "Diagram")
-                .font(.headline)
-                .foregroundColor(.primary)
-                .lineLimit(1)
+            // Clickable title to collapse/expand
+            if isCollapsible {
+                Button {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        isCollapsed.toggle()
+                    }
+                } label: {
+                    Text(title ?? "Diagram")
+                        .font(.headline)
+                        .foregroundColor(.primary)
+                        .lineLimit(1)
+                }
+                .buttonStyle(.plain)
+            } else {
+                Text(title ?? "Diagram")
+                    .font(.headline)
+                    .foregroundColor(.primary)
+                    .lineLimit(1)
+            }
 
             Spacer()
 
@@ -224,11 +239,14 @@ struct MermaidPanelView: View {
                             }
                             .padding(.horizontal, 12)
                             .padding(.vertical, 6)
+                            .background(option == selectedTheme ? Color.primary.opacity(0.08) : Color.clear)
+                            .cornerRadius(4)
                             .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
                     }
                 }
+                .padding(.horizontal, 4)
             }
             .frame(maxHeight: 300)
         }
@@ -245,14 +263,11 @@ struct MermaidPanelView: View {
         } else if let image = renderedImage {
             ScrollView([.horizontal, .vertical]) {
                 Image(nsImage: image)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .scaleEffect(zoomLevel)
+                    .interpolation(.high)
                     .frame(
                         width: image.size.width * zoomLevel,
                         height: image.size.height * zoomLevel
                     )
-                    .padding(16)
             }
         } else {
             ProgressView()
