@@ -11,24 +11,18 @@ All notable changes to this project will be documented in this file.
 - Claude: conversation history with resume capability
 - Codex: hook handler for activity detection (working/idle status)
 - Desktop notifications when an agent needs attention (with click-to-navigate)
-- Compact agent sidebar mode
 - File finder (Cmd+P): fuzzy search to open files from the agent's working directory
 - Markdown preview: two-phase panel — view mode (Approve/Review buttons) then review mode (comment popup on selection)
-- Markdown preview: font size controls (A▼/A▲) in title bar
-- Markdown preview: expand/collapse button to maximize panel
-- Markdown preview: `maximized` parameter on display-markdown MCP tool
+- Markdown preview: font size controls (A▼/A▲) in title bar 
 - Mermaid diagrams: new `view-mermaid` MCP tool for agents to display flowcharts, state, sequence, class, and ER diagrams
-- Mermaid diagrams: zoom in/out controls and theme picker (15 built-in themes + auto)
-- Artifact panel: unified right-side panel for markdown and mermaid with collapsible sections and draggable divider
 - Autopilot: LLM-based tri-classification of agent messages (completed/binary/open) with configurable actions per category (mark, ask, auto-continue, custom prompt)
-- Autopilot: supports OpenAI, Anthropic, and Google as LLM providers
-- Sidebar/header: show agent's actual working directory (from hook-reported cwd) with branch indicator when it differs from base folder
-- "Open In..." uses agent's actual working directory (Claude tracks working directory)
 
 ### Changed
-- Claude: registration now uses hooks instead of MCP call on startup
+- Sidebar/header: show agent's actual working directory (from hook-reported cwd) with branch indicator when it differs from base folder
 - Claude: hook-based activity detection replaces terminal output parsing for more accurate status
-- Reduced hook fallback idle timeout from 15s to 5s
+- Claude: registration now uses hooks instead of MCP call on startup
+- "Open In..." uses agent's actual working directory (Claude tracks working directory)
+- Compact agent sidebar mode
 
 ### Fixed
 - N/A
