@@ -104,7 +104,7 @@ struct ArtifactPanelView: View {
 
             // Divider between sections (only when both have content visible)
             if !markdownCollapsed && !mermaidCollapsed {
-                sectionDivider
+                sectionDivider(totalHeight: totalHeight)
             }
 
             // Mermaid section
@@ -127,7 +127,7 @@ struct ArtifactPanelView: View {
     private var panelToolbar: some View {
         HStack {
             Text("Artifacts")
-                .font(.subheadline.weight(.medium))
+                .font(.title3.weight(.medium))
                 .foregroundColor(.primary)
 
             Spacer()
@@ -156,27 +156,24 @@ struct ArtifactPanelView: View {
             .help("Close all")
         }
         .padding(.horizontal, 16)
-        .padding(.vertical, 6)
+        .padding(.vertical, 8)
         .background(Color.primary.opacity(0.03))
     }
 
     // MARK: - Section Divider
 
-    private var sectionDivider: some View {
+    private func sectionDivider(totalHeight: CGFloat) -> some View {
         Rectangle()
             .fill(Color.primary.opacity(0.15))
             .frame(height: 4)
             .contentShape(Rectangle())
             .gesture(
-                DragGesture()
+                DragGesture(coordinateSpace: .global)
                     .onChanged { value in
                         if dragStartRatio == nil {
                             dragStartRatio = splitRatio
                         }
-                        // Use total translation from drag start
-                        let delta = value.translation.height
-                        let sensitivity: CGFloat = 400
-                        let newRatio = dragStartRatio! + delta / sensitivity
+                        let newRatio = dragStartRatio! + value.translation.height / totalHeight
                         splitRatio = max(0.15, min(0.85, newRatio))
                     }
                     .onEnded { _ in
