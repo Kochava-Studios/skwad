@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.6.0] - WIP
+## [1.6.0] - 2026-03-01
 
 ### Added
 - Claude: detect when agent is prompting user. Shows new "Blocked" status (red dot on agent and workspace)
