@@ -20,6 +20,8 @@ All notable changes to this project will be documented in this file.
 - Mermaid diagrams: new `view-mermaid` MCP tool for agents to display flowcharts, state, sequence, class, and ER diagrams
 - Mermaid diagrams: zoom in/out controls and theme picker (15 built-in themes + auto)
 - Artifact panel: unified right-side panel for markdown and mermaid with collapsible sections and draggable divider
+- Autopilot: LLM-based tri-classification of agent messages (completed/binary/open) with configurable actions per category (mark, ask, auto-continue, custom prompt)
+- Autopilot: supports OpenAI, Anthropic, and Google as LLM providers
 - Sidebar/header: show agent's actual working directory (from hook-reported cwd) with branch indicator when it differs from base folder
 - "Open In..." uses agent's actual working directory (Claude tracks working directory)
 
