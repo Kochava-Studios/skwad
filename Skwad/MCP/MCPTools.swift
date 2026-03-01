@@ -137,6 +137,18 @@ actor MCPToolHandler {
                     ],
                     required: ["agentId", "filePath"]
                 )
+            ),
+            ToolDefinition(
+                name: MCPToolName.viewMermaid.rawValue,
+                description: "Display a Mermaid diagram in a panel for the user to view. Supports flowcharts (graph TD/LR), state diagrams, sequence diagrams, class diagrams, and ER diagrams. Pass the mermaid source text directly. The diagram will be rendered natively alongside any open markdown panel.",
+                inputSchema: ToolInputSchema(
+                    properties: [
+                        "agentId": PropertySchema(type: "string", description: "Your agent ID"),
+                        "source": PropertySchema(type: "string", description: "Mermaid diagram source text (e.g. 'graph TD; A-->B;')"),
+                        "title": PropertySchema(type: "string", description: "Optional title to display above the diagram")
+                    ],
+                    required: ["agentId", "source"]
+                )
             )
         ]
     }
@@ -171,6 +183,8 @@ actor MCPToolHandler {
             return await handleCreateWorktree(arguments)
         case .displayMarkdown:
             return await handleDisplayMarkdown(arguments)
+        case .viewMermaid:
+            return await handleViewMermaid(arguments)
         }
     }
 
@@ -430,6 +444,33 @@ actor MCPToolHandler {
             return successResult(response)
         } else {
             return errorResult("Failed to open markdown panel")
+        }
+    }
+
+    private func handleViewMermaid(_ arguments: [String: Any]) async -> ToolCallResult {
+        guard let agentId = arguments["agentId"] as? String else {
+            return errorResult("Missing required parameter: agentId")
+        }
+        guard let source = arguments["source"] as? String else {
+            return errorResult("Missing required parameter: source")
+        }
+
+        // Verify agent exists
+        guard let agent = await mcpService.findAgent(byNameOrId: agentId) else {
+            return await agentNotFoundError(agentId)
+        }
+
+        let title = arguments["title"] as? String
+        let success = await mcpService.showMermaidPanel(source: source, title: title, agentId: agent.id)
+
+        if success {
+            let response = ShowMermaidResponse(
+                success: true,
+                message: "Mermaid diagram panel opened. Supported diagram types: flowcharts, state, sequence, class, and ER diagrams."
+            )
+            return successResult(response)
+        } else {
+            return errorResult("Failed to open mermaid panel")
         }
     }
 

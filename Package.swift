@@ -15,6 +15,7 @@ let package = Package(
         .package(url: "https://github.com/nalexn/ViewInspector.git", from: "0.10.0"),
         .package(url: "https://github.com/gonzalezreal/swift-markdown-ui", from: "2.4.0"),
         .package(url: "https://github.com/lzell/AIProxySwift", from: "0.145.1"),
+        .package(url: "https://github.com/lukilabs/beautiful-mermaid-swift", from: "0.1.0"),
     ],
     targets: [
         .executableTarget(
@@ -27,6 +28,7 @@ let package = Package(
                 .product(name: "Sparkle", package: "Sparkle"),
                 .product(name: "MarkdownUI", package: "swift-markdown-ui"),
                 .product(name: "AIProxy", package: "AIProxySwift"),
+                .product(name: "BeautifulMermaid", package: "beautiful-mermaid-swift"),
             ],
             path: "Skwad"
         ),

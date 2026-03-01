@@ -47,6 +47,8 @@ struct Agent: Identifiable, Codable, Hashable {
     var markdownFilePath: String? = nil  // Markdown file being previewed (set by MCP tool)
     var markdownMaximized: Bool = false  // Whether the markdown panel should be maximized
     var markdownFileHistory: [String] = []  // History of markdown files shown (most recent first)
+    var mermaidSource: String? = nil  // Mermaid diagram source text (set by MCP tool)
+    var mermaidTitle: String? = nil  // Optional title for the mermaid diagram
     var metadata: [String: String] = [:]  // Hook-populated metadata (transcript_path, cwd, model, etc.)
 
     /// Actual working directory: hook-reported cwd if it differs from folder (e.g. worktree), otherwise folder.

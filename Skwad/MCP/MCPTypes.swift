@@ -105,6 +105,11 @@ struct ShowMarkdownResponse: Codable {
     let message: String
 }
 
+struct ShowMermaidResponse: Codable {
+    let success: Bool
+    let message: String
+}
+
 // MARK: - JSON-RPC Types
 
 struct JSONRPCRequest: Codable {
@@ -352,6 +357,7 @@ enum MCPToolName: String {
     case closeAgent = "close-agent"
     case createWorktree = "create-worktree"
     case displayMarkdown = "display-markdown"
+    case viewMermaid = "view-mermaid"
 }
 
 // MARK: - Tool Results

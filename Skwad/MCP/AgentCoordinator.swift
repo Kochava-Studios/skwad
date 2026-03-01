@@ -27,6 +27,7 @@ protocol AgentDataProvider: Sendable {
     func addAgent(folder: String, name: String, avatar: String?, agentType: String, createdBy: UUID?, companion: Bool, shellCommand: String?) async -> UUID?
     func removeAgent(id: UUID) async -> Bool
     func showMarkdownPanel(filePath: String, maximized: Bool, agentId: UUID) async -> Bool
+    func showMermaidPanel(source: String, title: String?, agentId: UUID) async -> Bool
     func updateMetadata(for agentId: UUID, metadata: [String: String]) async
 }
 
@@ -472,6 +473,16 @@ actor AgentCoordinator: AgentCoordinatorProtocol {
         return await provider.showMarkdownPanel(filePath: filePath, maximized: maximized, agentId: agentId)
     }
 
+    // MARK: - Mermaid Panel
+
+    func showMermaidPanel(source: String, title: String?, agentId: UUID) async -> Bool {
+        guard let provider = agentDataProvider else {
+            logger.error("[skwad] AgentDataProvider not available for showMermaidPanel")
+            return false
+        }
+        return await provider.showMermaidPanel(source: source, title: title, agentId: agentId)
+    }
+
     // MARK: - Agent Queries
 
     /// Get all agents
@@ -614,6 +625,14 @@ final class AgentManagerWrapper: AgentDataProvider, @unchecked Sendable {
         await MainActor.run {
             guard let manager = manager else { return false }
             manager.showMarkdownPanel(filePath: filePath, maximized: maximized, forAgent: agentId)
+            return true
+        }
+    }
+
+    func showMermaidPanel(source: String, title: String?, agentId: UUID) async -> Bool {
+        await MainActor.run {
+            guard let manager = manager else { return false }
+            manager.showMermaidPanel(source: source, title: title, forAgent: agentId)
             return true
         }
     }

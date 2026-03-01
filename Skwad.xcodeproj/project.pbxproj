@@ -40,6 +40,11 @@
 		8D7622B22F2C67CE006B6280 /* MCPTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D7622AE2F2C67CE006B6280 /* MCPTypes.swift */; };
 		8D7622B32F2C67CE006B6280 /* MCPTools.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D7622AC2F2C67CE006B6280 /* MCPTools.swift */; };
 		8D7622B42F2C67CE006B6280 /* MCPSessionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D7622AB2F2C67CE006B6280 /* MCPSessionManager.swift */; };
+		8D8C02FA2F53F97B00A06866 /* BeautifulMermaid in Frameworks */ = {isa = PBXBuildFile; productRef = 8D8C02F92F53F97B00A06866 /* BeautifulMermaid */; };
+		8D8C02FF2F53FBAE00A06866 /* ArtifactPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D8C02FB2F53FBAE00A06866 /* ArtifactPanelView.swift */; };
+		8D8C03002F53FBAE00A06866 /* MarkdownPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D8C02FC2F53FBAE00A06866 /* MarkdownPanelView.swift */; };
+		8D8C03012F53FBAE00A06866 /* MarkdownWebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D8C02FD2F53FBAE00A06866 /* MarkdownWebView.swift */; };
+		8D8C03032F53FBD300A06866 /* MermaidPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D8C03022F53FBD300A06866 /* MermaidPanelView.swift */; };
 		8DBD63392F478DB40049E5DC /* AIProxy in Frameworks */ = {isa = PBXBuildFile; productRef = 8DBD63382F478DB40049E5DC /* AIProxy */; };
 		8DBD634E2F479A770049E5DC /* AutopilotSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DBD634D2F479A770049E5DC /* AutopilotSettingsView.swift */; };
 		8DBD63542F479B570049E5DC /* TerminalSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DBD63522F479B570049E5DC /* TerminalSettingsView.swift */; };
@@ -74,6 +79,7 @@
 		F8001012 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = F800000B /* Theme.swift */; };
 		F8001013 /* AvatarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F800000C /* AvatarView.swift */; };
 		F8001014 /* GhosttyHostView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F800000D /* GhosttyHostView.swift */; };
+		FF000001 /* FileFinderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF100001 /* FileFinderView.swift */; };
 		FW000001 /* FileWatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = FW000002 /* FileWatcher.swift */; };
 		GH000001 /* Ghostty.Action.swift in Sources */ = {isa = PBXBuildFile; fileRef = GH100001 /* Ghostty.Action.swift */; };
 		GH000002 /* Ghostty.App.swift in Sources */ = {isa = PBXBuildFile; fileRef = GH100002 /* Ghostty.App.swift */; };
@@ -90,9 +96,7 @@
 		GH000013 /* GhosttyTerminalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = GH100013 /* GhosttyTerminalView.swift */; };
 		GH000014 /* TerminalScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = GH100014 /* TerminalScrollView.swift */; };
 		LG000001 /* libghostty.a in Frameworks */ = {isa = PBXBuildFile; fileRef = LG100001 /* libghostty.a */; };
-		MD000001 /* MarkdownPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MD100001 /* MarkdownPanelView.swift */; };
 		MD000002 /* MarkdownUI in Frameworks */ = {isa = PBXBuildFile; productRef = MD000003 /* MarkdownUI */; };
-		MD000004 /* MarkdownWebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MD100004 /* MarkdownWebView.swift */; };
 		SD000001 /* SplitDividerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = SD100001 /* SplitDividerView.swift */; };
 		SF000001 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = SF100001 /* Metal.framework */; };
 		SF000002 /* MetalKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = SF100002 /* MetalKit.framework */; };
@@ -111,6 +115,7 @@
 		SR000007 /* TerminalAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = SR100007 /* TerminalAdapter.swift */; };
 		SR000008 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = SR100008 /* NotificationService.swift */; };
 		SR000009 /* ConversationHistoryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = SR100009 /* ConversationHistoryService.swift */; };
+		SR000010 /* FileSearchService.swift in Sources */ = {isa = PBXBuildFile; fileRef = SR100010 /* FileSearchService.swift */; };
 		TS000001 /* GitOutputParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100001 /* GitOutputParserTests.swift */; };
 		TS000002 /* GitOutputFixtures.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100002 /* GitOutputFixtures.swift */; };
 		TS000003 /* CommitSheetTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100003 /* CommitSheetTests.swift */; };
@@ -153,6 +158,8 @@
 		TS000041 /* NotificationServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100040 /* NotificationServiceTests.swift */; };
 		TS000042 /* TerminalCommandBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100041 /* TerminalCommandBuilderTests.swift */; };
 		TS000043 /* ConversationHistoryServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100042 /* ConversationHistoryServiceTests.swift */; };
+		TS000044 /* FuzzyScorerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100044 /* FuzzyScorerTests.swift */; };
+		TS000045 /* FileSearchServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100045 /* FileSearchServiceTests.swift */; };
 		UP000001 /* UpdaterManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = UP100001 /* UpdaterManager.swift */; };
 		UT000001 /* Clipboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = UT100001 /* Clipboard.swift */; };
 		UT000002 /* TerminalTextCleaner.swift in Sources */ = {isa = PBXBuildFile; fileRef = UT100002 /* TerminalTextCleaner.swift */; };
@@ -161,15 +168,11 @@
 		UT000005 /* PathUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = UT100005 /* PathUtils.swift */; };
 		UT000006 /* AvatarUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = UT100006 /* AvatarUtils.swift */; };
 		UT000007 /* VoiceAudioUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = UT100007 /* VoiceAudioUtils.swift */; };
+		UT000008 /* FuzzyScorer.swift in Sources */ = {isa = PBXBuildFile; fileRef = UT100008 /* FuzzyScorer.swift */; };
 		VM000001 /* GitPanelViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = VM100001 /* GitPanelViewModel.swift */; };
 		WS000001 /* Workspace.swift in Sources */ = {isa = PBXBuildFile; fileRef = WS100001 /* Workspace.swift */; };
 		WS000002 /* WorkspaceBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = WS100002 /* WorkspaceBarView.swift */; };
 		WS000003 /* WorkspaceSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = WS100003 /* WorkspaceSheet.swift */; };
-		UT000008 /* FuzzyScorer.swift in Sources */ = {isa = PBXBuildFile; fileRef = UT100008 /* FuzzyScorer.swift */; };
-		SR000010 /* FileSearchService.swift in Sources */ = {isa = PBXBuildFile; fileRef = SR100010 /* FileSearchService.swift */; };
-		FF000001 /* FileFinderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF100001 /* FileFinderView.swift */; };
-		TS000044 /* FuzzyScorerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100044 /* FuzzyScorerTests.swift */; };
-		TS000045 /* FileSearchServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100045 /* FileSearchServiceTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -219,6 +222,10 @@
 		8D7622AC2F2C67CE006B6280 /* MCPTools.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPTools.swift; sourceTree = "<group>"; };
 		8D7622AD2F2C67CE006B6280 /* MCPTransport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPTransport.swift; sourceTree = "<group>"; };
 		8D7622AE2F2C67CE006B6280 /* MCPTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPTypes.swift; sourceTree = "<group>"; };
+		8D8C02FB2F53FBAE00A06866 /* ArtifactPanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArtifactPanelView.swift; sourceTree = "<group>"; };
+		8D8C02FC2F53FBAE00A06866 /* MarkdownPanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownPanelView.swift; sourceTree = "<group>"; };
+		8D8C02FD2F53FBAE00A06866 /* MarkdownWebView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownWebView.swift; sourceTree = "<group>"; };
+		8D8C03022F53FBD300A06866 /* MermaidPanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MermaidPanelView.swift; sourceTree = "<group>"; };
 		8DBD634D2F479A770049E5DC /* AutopilotSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutopilotSettingsView.swift; sourceTree = "<group>"; };
 		8DBD634F2F479B570049E5DC /* CodingSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodingSettingsView.swift; sourceTree = "<group>"; };
 		8DBD63502F479B570049E5DC /* GeneralSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneralSettingsView.swift; sourceTree = "<group>"; };
@@ -257,6 +264,7 @@
 		F8000200 /* Skwad.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Skwad.entitlements; sourceTree = "<group>"; };
 		FBECFB308DA186BC15E6AE50 /* GitPanelView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GitPanelView.swift; sourceTree = "<group>"; };
 		FCD187651343B17CF0D9CCCF /* GitCLI.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GitCLI.swift; sourceTree = "<group>"; };
+		FF100001 /* FileFinderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileFinderView.swift; sourceTree = "<group>"; };
 		FW000002 /* FileWatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileWatcher.swift; sourceTree = "<group>"; };
 		GH100001 /* Ghostty.Action.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ghostty.Action.swift; sourceTree = "<group>"; };
 		GH100002 /* Ghostty.App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ghostty.App.swift; sourceTree = "<group>"; };
@@ -274,8 +282,6 @@
 		GH100014 /* TerminalScrollView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalScrollView.swift; sourceTree = "<group>"; };
 		IP100001 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		LG100001 /* libghostty.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libghostty.a; path = Vendor/libghostty/lib/libghostty.a; sourceTree = "<group>"; };
-		MD100001 /* MarkdownPanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownPanelView.swift; sourceTree = "<group>"; };
-		MD100004 /* MarkdownWebView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownWebView.swift; sourceTree = "<group>"; };
 		SD100001 /* SplitDividerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplitDividerView.swift; sourceTree = "<group>"; };
 		SF100001 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
 		SF100002 /* MetalKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalKit.framework; path = System/Library/Frameworks/MetalKit.framework; sourceTree = SDKROOT; };
@@ -294,6 +300,7 @@
 		SR100007 /* TerminalAdapter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TerminalAdapter.swift; sourceTree = "<group>"; };
 		SR100008 /* NotificationService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
 		SR100009 /* ConversationHistoryService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ConversationHistoryService.swift; sourceTree = "<group>"; };
+		SR100010 /* FileSearchService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileSearchService.swift; sourceTree = "<group>"; };
 		TS100001 /* GitOutputParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitOutputParserTests.swift; sourceTree = "<group>"; };
 		TS100002 /* GitOutputFixtures.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitOutputFixtures.swift; sourceTree = "<group>"; };
 		TS100003 /* CommitSheetTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommitSheetTests.swift; sourceTree = "<group>"; };
@@ -336,6 +343,8 @@
 		TS100041 /* TerminalCommandBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalCommandBuilderTests.swift; sourceTree = "<group>"; };
 		TS100042 /* ConversationHistoryServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationHistoryServiceTests.swift; sourceTree = "<group>"; };
 		TS100043 /* AgentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentTests.swift; sourceTree = "<group>"; };
+		TS100044 /* FuzzyScorerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FuzzyScorerTests.swift; sourceTree = "<group>"; };
+		TS100045 /* FileSearchServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileSearchServiceTests.swift; sourceTree = "<group>"; };
 		TS100100 /* SkwadTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SkwadTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		UP100001 /* UpdaterManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdaterManager.swift; sourceTree = "<group>"; };
 		UT100001 /* Clipboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Clipboard.swift; sourceTree = "<group>"; };
@@ -345,15 +354,11 @@
 		UT100005 /* PathUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PathUtils.swift; sourceTree = "<group>"; };
 		UT100006 /* AvatarUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvatarUtils.swift; sourceTree = "<group>"; };
 		UT100007 /* VoiceAudioUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceAudioUtils.swift; sourceTree = "<group>"; };
+		UT100008 /* FuzzyScorer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FuzzyScorer.swift; sourceTree = "<group>"; };
 		VM100001 /* GitPanelViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitPanelViewModel.swift; sourceTree = "<group>"; };
 		WS100001 /* Workspace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Workspace.swift; sourceTree = "<group>"; };
 		WS100002 /* WorkspaceBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkspaceBarView.swift; sourceTree = "<group>"; };
 		WS100003 /* WorkspaceSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkspaceSheet.swift; sourceTree = "<group>"; };
-		UT100008 /* FuzzyScorer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FuzzyScorer.swift; sourceTree = "<group>"; };
-		SR100010 /* FileSearchService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileSearchService.swift; sourceTree = "<group>"; };
-		FF100001 /* FileFinderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileFinderView.swift; sourceTree = "<group>"; };
-		TS100044 /* FuzzyScorerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FuzzyScorerTests.swift; sourceTree = "<group>"; };
-		TS100045 /* FileSearchServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileSearchServiceTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -369,6 +374,7 @@
 				8D7622952F2C652D006B6280 /* HummingbirdCore in Frameworks */,
 				8D7622902F2C6506006B6280 /* MCP in Frameworks */,
 				MD000002 /* MarkdownUI in Frameworks */,
+				8D8C02FA2F53F97B00A06866 /* BeautifulMermaid in Frameworks */,
 				LG000001 /* libghostty.a in Frameworks */,
 				SF000001 /* Metal.framework in Frameworks */,
 				SF000002 /* MetalKit.framework in Frameworks */,
@@ -442,6 +448,17 @@
 			path = MCP;
 			sourceTree = "<group>";
 		};
+		8D8C02FE2F53FBAE00A06866 /* Artifacts */ = {
+			isa = PBXGroup;
+			children = (
+				8D8C02FB2F53FBAE00A06866 /* ArtifactPanelView.swift */,
+				8D8C02FC2F53FBAE00A06866 /* MarkdownPanelView.swift */,
+				8D8C02FD2F53FBAE00A06866 /* MarkdownWebView.swift */,
+				8D8C03022F53FBD300A06866 /* MermaidPanelView.swift */,
+			);
+			path = Artifacts;
+			sourceTree = "<group>";
+		};
 		AS200000 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
@@ -491,10 +508,10 @@
 		F8000013 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				8D8C02FE2F53FBAE00A06866 /* Artifacts */,
 				F8000017 /* Components */,
 				FF200000 /* FileFinder */,
 				2EB8108896BD1402E4BDA10F /* Git */,
-				MD200001 /* Markdown */,
 				F8000016 /* Settings */,
 				F8000014 /* Sidebar */,
 				F8000015 /* Terminal */,
@@ -502,14 +519,6 @@
 				F8000002 /* ContentView.swift */,
 			);
 			path = Views;
-			sourceTree = "<group>";
-		};
-		FF200000 /* FileFinder */ = {
-			isa = PBXGroup;
-			children = (
-				FF100001 /* FileFinderView.swift */,
-			);
-			path = FileFinder;
 			sourceTree = "<group>";
 		};
 		F8000014 /* Sidebar */ = {
@@ -582,6 +591,14 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		FF200000 /* FileFinder */ = {
+			isa = PBXGroup;
+			children = (
+				FF100001 /* FileFinderView.swift */,
+			);
+			path = FileFinder;
+			sourceTree = "<group>";
+		};
 		GH200000 /* GhosttyTerminal */ = {
 			isa = PBXGroup;
 			children = (
@@ -601,15 +618,6 @@
 				GH100014 /* TerminalScrollView.swift */,
 			);
 			path = GhosttyTerminal;
-			sourceTree = "<group>";
-		};
-		MD200001 /* Markdown */ = {
-			isa = PBXGroup;
-			children = (
-				MD100001 /* MarkdownPanelView.swift */,
-				MD100004 /* MarkdownWebView.swift */,
-			);
-			path = Markdown;
 			sourceTree = "<group>";
 		};
 		SF200000 /* Frameworks */ = {
@@ -888,6 +896,7 @@
 				8D7622992F2C6536006B6280 /* Logging */,
 				SP000002 /* Sparkle */,
 				8DBD63382F478DB40049E5DC /* AIProxy */,
+				8D8C02F92F53F97B00A06866 /* BeautifulMermaid */,
 			);
 			productName = Skwad;
 			productReference = F8000100 /* Skwad.app */;
@@ -950,6 +959,7 @@
 				TS800000 /* XCRemoteSwiftPackageReference "ViewInspector" */,
 				MD300001 /* XCRemoteSwiftPackageReference "swift-markdown-ui" */,
 				8DBD63372F478DB40049E5DC /* XCRemoteSwiftPackageReference "aiproxyswift" */,
+				8D8C02F82F53F97B00A06866 /* XCRemoteSwiftPackageReference "beautiful-mermaid-swift" */,
 			);
 			productRefGroup = F8000101 /* Products */;
 			projectDirPath = "";
@@ -984,6 +994,9 @@
 				SR000004 /* TerminalCommandBuilder.swift in Sources */,
 				SR000006 /* TerminalSessionController.swift in Sources */,
 				SR000007 /* TerminalAdapter.swift in Sources */,
+				8D8C02FF2F53FBAE00A06866 /* ArtifactPanelView.swift in Sources */,
+				8D8C03002F53FBAE00A06866 /* MarkdownPanelView.swift in Sources */,
+				8D8C03012F53FBAE00A06866 /* MarkdownWebView.swift in Sources */,
 				SR000008 /* NotificationService.swift in Sources */,
 				SR000009 /* ConversationHistoryService.swift in Sources */,
 				F8001001 /* SkwadApp.swift in Sources */,
@@ -1033,6 +1046,7 @@
 				GH000005 /* Ghostty.KeyEvent.swift in Sources */,
 				GH000006 /* Ghostty.Mods.swift in Sources */,
 				GH000007 /* Ghostty.MouseEvent.swift in Sources */,
+				8D8C03032F53FBD300A06866 /* MermaidPanelView.swift in Sources */,
 				GH000008 /* Ghostty.Surface.swift in Sources */,
 				GH000009 /* GhosttyIMEHandler.swift in Sources */,
 				8DBD63602F47B3850049E5DC /* AutopilotDecisionSheet.swift in Sources */,
@@ -1061,8 +1075,6 @@
 				EC4663850678FAF77C0F1381 /* GitRepository.swift in Sources */,
 				0327FDF2A2ECDCE0DF53BE02 /* DiffView.swift in Sources */,
 				914A53BB8DBD66EC96B19BDA /* GitPanelView.swift in Sources */,
-				MD000001 /* MarkdownPanelView.swift in Sources */,
-				MD000004 /* MarkdownWebView.swift in Sources */,
 				01716FCA29A8F9522A2F8A9A /* GitFileWatcher.swift in Sources */,
 				3FFD4CA0073309E4B34E6B66 /* CommitSheet.swift in Sources */,
 				8D6B97252F2DC47300CE877E /* AsyncDelay.swift in Sources */,
@@ -1431,6 +1443,14 @@
 				minimumVersion = 1.9.1;
 			};
 		};
+		8D8C02F82F53F97B00A06866 /* XCRemoteSwiftPackageReference "beautiful-mermaid-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/lukilabs/beautiful-mermaid-swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.1.1;
+			};
+		};
 		8DBD63372F478DB40049E5DC /* XCRemoteSwiftPackageReference "aiproxyswift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/lzell/aiproxyswift";
@@ -1498,6 +1518,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 8D7622962F2C6536006B6280 /* XCRemoteSwiftPackageReference "swift-log" */;
 			productName = Logging;
+		};
+		8D8C02F92F53F97B00A06866 /* BeautifulMermaid */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8D8C02F82F53F97B00A06866 /* XCRemoteSwiftPackageReference "beautiful-mermaid-swift" */;
+			productName = BeautifulMermaid;
 		};
 		8DBD63382F478DB40049E5DC /* AIProxy */ = {
 			isa = XCSwiftPackageProductDependency;

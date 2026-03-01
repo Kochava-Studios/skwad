@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Sliding panel showing markdown content for a file
+/// Markdown section content for the artifact panel
 struct MarkdownPanelView: View {
 
     enum ReviewState {
@@ -11,14 +11,14 @@ struct MarkdownPanelView: View {
 
     let filePath: String
     let agentId: UUID
-    @Binding var isExpanded: Bool
+    var isCollapsible: Bool = false
+    @Binding var isCollapsed: Bool
     let onClose: () -> Void
     let onComment: (String) -> Void  // formatted comment text -> inject into terminal
     let onSubmitReview: () -> Void  // send return to submit the prompt
 
     @Environment(\.colorScheme) private var colorScheme
     @ObservedObject private var settings = AppSettings.shared
-    @State private var panelWidth: CGFloat = 500
     @State private var content: String?
     @State private var errorMessage: String?
     @State private var isLoading = true
@@ -40,14 +40,10 @@ struct MarkdownPanelView: View {
     }
 
     var body: some View {
-        HStack(spacing: 0) {
-            if !isExpanded {
-                resizeHandle
-            }
+        VStack(spacing: 0) {
+            header
 
-            VStack(spacing: 0) {
-                header
-
+            if !isCollapsed {
                 Divider()
                     .background(Color.primary.opacity(0.2))
 
@@ -61,9 +57,7 @@ struct MarkdownPanelView: View {
                     }
                 }
             }
-            .frame(width: isExpanded ? nil : panelWidth)
         }
-        .frame(maxWidth: isExpanded ? .infinity : nil)
         .background(backgroundColor)
         .onAppear {
             loadContent()
@@ -203,33 +197,25 @@ struct MarkdownPanelView: View {
         commentText = ""
     }
 
-    // MARK: - Resize Handle
-
-    private var resizeHandle: some View {
-        Rectangle()
-            .fill(Color.primary.opacity(0.1))
-            .frame(width: 6)
-            .contentShape(Rectangle())
-            .gesture(
-                DragGesture()
-                    .onChanged { value in
-                        let newWidth = panelWidth - value.translation.width
-                        panelWidth = max(350, min(800, newWidth))
-                    }
-            )
-            .onHover { hovering in
-                if hovering {
-                    NSCursor.resizeLeftRight.push()
-                } else {
-                    NSCursor.pop()
-                }
-            }
-    }
-
     // MARK: - Header
 
     private var header: some View {
         HStack {
+            if isCollapsible {
+                Button {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        isCollapsed.toggle()
+                    }
+                } label: {
+                    Image(systemName: isCollapsed ? "chevron.right" : "chevron.down")
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundColor(.secondary)
+                        .frame(width: 12)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+            }
+
             Image(systemName: "doc.text")
                 .foregroundColor(.secondary)
 
@@ -240,116 +226,105 @@ struct MarkdownPanelView: View {
 
             Spacer()
 
-            switch reviewState {
-            case .viewing:
-                Button {
-                    onComment("approved let's do it")
-                    onSubmitReview()
-                    reviewState = .submitted
-                } label: {
-                    HStack(spacing: 4) {
-                        Image(systemName: "checkmark.circle.fill")
-                        Text("Approve")
+            if !isCollapsed {
+                switch reviewState {
+                case .viewing:
+                    Button {
+                        onComment("approved let's do it")
+                        onSubmitReview()
+                        reviewState = .submitted
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "checkmark.circle.fill")
+                            Text("Approve")
+                        }
+                        .font(.caption)
+                        .foregroundColor(.primary)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 4)
+                        .background(Color.green.opacity(0.8))
+                        .cornerRadius(4)
                     }
-                    .font(.caption)
-                    .foregroundColor(.primary)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 4)
-                    .background(Color.green.opacity(0.8))
-                    .cornerRadius(4)
-                }
-                .buttonStyle(.plain)
-                .help("Approve and continue")
+                    .buttonStyle(.plain)
+                    .help("Approve and continue")
 
-                Button {
-                    onComment("While reviewing \(fileName), user made the following comments:\n")
-                    reviewState = .reviewing
-                } label: {
-                    HStack(spacing: 4) {
-                        Image(systemName: "magnifyingglass")
-                        Text("Review")
+                    Button {
+                        onComment("While reviewing \(fileName), user made the following comments:\n")
+                        reviewState = .reviewing
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "magnifyingglass")
+                            Text("Review")
+                        }
+                        .font(.caption)
+                        .foregroundColor(.primary)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 4)
+                        .background(Color.blue.opacity(0.7))
+                        .cornerRadius(4)
                     }
-                    .font(.caption)
-                    .foregroundColor(.primary)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 4)
-                    .background(Color.blue.opacity(0.7))
-                    .cornerRadius(4)
-                }
-                .buttonStyle(.plain)
-                .help("Start reviewing with comments")
-            case .reviewing:
-                Button {
-                    onSubmitReview()
-                    reviewState = .submitted
-                } label: {
-                    HStack(spacing: 4) {
-                        Image(systemName: "paperplane.fill")
-                        Text("Submit Review")
+                    .buttonStyle(.plain)
+                    .help("Start reviewing with comments")
+                case .reviewing:
+                    Button {
+                        onSubmitReview()
+                        reviewState = .submitted
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "paperplane.fill")
+                            Text("Submit Review")
+                        }
+                        .font(.caption)
+                        .foregroundColor(.primary)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 4)
+                        .background(Color.green.opacity(0.8))
+                        .cornerRadius(4)
                     }
-                    .font(.caption)
-                    .foregroundColor(.primary)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 4)
-                    .background(Color.green.opacity(0.8))
-                    .cornerRadius(4)
+                    .buttonStyle(.plain)
+                    .help("Submit review comments to agent")
+                case .submitted:
+                    EmptyView()
                 }
-                .buttonStyle(.plain)
-                .help("Submit review comments to agent")
-            case .submitted:
-                EmptyView()
+
+                HStack(spacing: 4) {
+                    Button {
+                        if settings.markdownFontSize > 10 {
+                            settings.markdownFontSize -= 1
+                        }
+                    } label: {
+                        HStack(spacing: 1) {
+                            Text("A").font(.system(size: 12, weight: .medium))
+                            Image(systemName: "chevron.down").font(.system(size: 8, weight: .semibold))
+                        }
+                        .foregroundColor(.secondary)
+                        .frame(height: 24)
+                        .padding(.horizontal, 4)
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .help("Decrease font size")
+                    .disabled(settings.markdownFontSize <= 10)
+
+                    Button {
+                        if settings.markdownFontSize < 24 {
+                            settings.markdownFontSize += 1
+                        }
+                    } label: {
+                        HStack(spacing: 1) {
+                            Text("A").font(.system(size: 12, weight: .medium))
+                            Image(systemName: "chevron.up").font(.system(size: 8, weight: .semibold))
+                        }
+                        .foregroundColor(.secondary)
+                        .frame(height: 24)
+                        .padding(.horizontal, 4)
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .help("Increase font size")
+                    .disabled(settings.markdownFontSize >= 24)
+                }
             }
-
-            HStack(spacing: 4) {
-                Button {
-                    if settings.markdownFontSize > 10 {
-                        settings.markdownFontSize -= 1
-                    }
-                } label: {
-                    HStack(spacing: 1) {
-                        Text("A").font(.system(size: 12, weight: .medium))
-                        Image(systemName: "chevron.down").font(.system(size: 8, weight: .semibold))
-                    }
-                    .foregroundColor(.secondary)
-                    .frame(height: 24)
-                    .padding(.horizontal, 4)
-                    .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-                .help("Decrease font size")
-                .disabled(settings.markdownFontSize <= 10)
-
-                Button {
-                    if settings.markdownFontSize < 24 {
-                        settings.markdownFontSize += 1
-                    }
-                } label: {
-                    HStack(spacing: 1) {
-                        Text("A").font(.system(size: 12, weight: .medium))
-                        Image(systemName: "chevron.up").font(.system(size: 8, weight: .semibold))
-                    }
-                    .foregroundColor(.secondary)
-                    .frame(height: 24)
-                    .padding(.horizontal, 4)
-                    .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-                .help("Increase font size")
-                .disabled(settings.markdownFontSize >= 24)
-            }
-
-            Button {
-                withAnimation(.easeInOut(duration: 0.2)) {
-                    isExpanded.toggle()
-                }
-            } label: {
-                Image(systemName: isExpanded ? "arrow.down.right.and.arrow.up.left" : "arrow.up.left.and.arrow.down.right")
-                    .foregroundColor(.secondary)
-                    .frame(width: 24, height: 24)
-                    .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-            .help(isExpanded ? "Collapse" : "Expand")
 
             Button {
                 onClose()
@@ -361,7 +336,7 @@ struct MarkdownPanelView: View {
             .help("Close")
         }
         .padding(.horizontal, 16)
-        .padding(.vertical, 12)
+        .padding(.vertical, isCollapsible ? 8 : 12)
         .background(Color.primary.opacity(0.05))
     }
 
@@ -448,7 +423,7 @@ struct MarkdownPanelView: View {
     MarkdownPanelView(
         filePath: "/Users/nbonamy/src/skwad/README.md",
         agentId: UUID(),
-        isExpanded: .constant(false),
+        isCollapsed: .constant(false),
         onClose: {},
         onComment: { text in
             print("Comment: \(text)")

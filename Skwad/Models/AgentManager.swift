@@ -1047,4 +1047,22 @@ final class AgentManager {
             agents[index].markdownFilePath = nil
         }
     }
+
+    // MARK: - Mermaid Panel
+
+    /// Show the mermaid panel for an agent with diagram source
+    func showMermaidPanel(source: String, title: String?, forAgent agentId: UUID) {
+        if let index = agents.firstIndex(where: { $0.id == agentId }) {
+            agents[index].mermaidSource = source
+            agents[index].mermaidTitle = title
+        }
+    }
+
+    /// Close the mermaid panel for an agent
+    func closeMermaidPanel(for agentId: UUID) {
+        if let index = agents.firstIndex(where: { $0.id == agentId }) {
+            agents[index].mermaidSource = nil
+            agents[index].mermaidTitle = nil
+        }
+    }
 }

@@ -16,7 +16,7 @@ struct ContentView: View {
   @State private var dragStartRatioSecondary: CGFloat?
   @State private var isDropTargeted = false
   @State private var lastPaneRects: [UUID: CGRect] = [:]
-  @State private var markdownExpanded = false
+  @State private var artifactExpanded = false
 
   @State private var showFileFinder = false
 
@@ -325,8 +325,8 @@ struct ContentView: View {
           }
         }
       }
-      .opacity(markdownExpanded ? 0 : 1)
-      .frame(width: markdownExpanded ? 0 : nil)
+      .opacity(artifactExpanded ? 0 : 1)
+      .frame(width: artifactExpanded ? 0 : nil)
 
       // Git panel (sliding from right)
       if showGitPanel, let agent = activeAgent {
@@ -338,22 +338,31 @@ struct ContentView: View {
         .transition(.move(edge: .trailing))
       }
 
-      // Markdown panel (sliding from right)
-      if let agent = activeAgent, let filePath = agent.markdownFilePath {
-        MarkdownPanelView(
-          filePath: filePath,
-          agentId: agent.id,
-          isExpanded: $markdownExpanded,
-          onClose: {
+      // Artifact panel (markdown + mermaid, sliding from right)
+      if let agent = activeAgent, agent.markdownFilePath != nil || agent.mermaidSource != nil {
+        ArtifactPanelView(
+          agent: agent,
+          isExpanded: $artifactExpanded,
+          onCloseMarkdown: {
             withAnimation(.easeInOut(duration: 0.2)) {
-              markdownExpanded = false
               agentManager.closeMarkdownPanel(for: agent.id)
+              if agent.mermaidSource == nil {
+                artifactExpanded = false
+              }
             }
           },
-          onComment: { text in
+          onCloseMermaid: {
+            withAnimation(.easeInOut(duration: 0.2)) {
+              agentManager.closeMermaidPanel(for: agent.id)
+              if agent.markdownFilePath == nil {
+                artifactExpanded = false
+              }
+            }
+          },
+          onMarkdownComment: { text in
             agentManager.sendText(text, for: agent.id)
           },
-          onSubmitReview: {
+          onMarkdownSubmitReview: {
             agentManager.sendReturn(for: agent.id)
           }
         )
@@ -406,11 +415,22 @@ struct ContentView: View {
     .onChange(of: activeAgent?.markdownFilePath) { _, newValue in
       // Sync maximized state from agent model when panel opens
       if newValue != nil {
-        markdownExpanded = activeAgent?.markdownMaximized ?? false
-      } else {
-        markdownExpanded = false
+        artifactExpanded = activeAgent?.markdownMaximized ?? false
+      } else if activeAgent?.mermaidSource == nil {
+        artifactExpanded = false
       }
-      // Notify terminal to resize when markdown panel toggles
+      // Notify terminal to resize when artifact panel toggles
+      DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+        if let activeId = agentManager.activeAgentId {
+          agentManager.notifyTerminalResize(for: activeId)
+        }
+      }
+    }
+    .onChange(of: activeAgent?.mermaidSource) { _, newValue in
+      if newValue == nil && activeAgent?.markdownFilePath == nil {
+        artifactExpanded = false
+      }
+      // Notify terminal to resize when artifact panel toggles
       DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
         if let activeId = agentManager.activeAgentId {
           agentManager.notifyTerminalResize(for: activeId)
