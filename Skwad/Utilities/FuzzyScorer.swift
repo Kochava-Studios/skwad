@@ -193,8 +193,14 @@ enum FuzzyScorer {
             let stem = (filename as NSString).deletingPathExtension
             let exactStemMatch = stem.lowercased() == pattern.lowercased()
 
+            // Earlier first occurrence of pattern start in filename gets a small bonus (tiebreaker)
+            let firstChar = pattern.lowercased().first!
+            let firstCharPos = filename.lowercased().firstIndex(of: firstChar)
+                .map { filename.distance(from: filename.startIndex, to: $0) } ?? 0
+            let positionBonus = max(0, 5 - firstCharPos)
+
             adjustedFilenameMatch = ScoredMatch(
-                score: fm.score + filenameBonus + (exactStemMatch ? filenameExactBonus : 0),
+                score: fm.score + filenameBonus + positionBonus + (exactStemMatch ? filenameExactBonus : 0),
                 matchedIndices: adjustedIndices
             )
         }

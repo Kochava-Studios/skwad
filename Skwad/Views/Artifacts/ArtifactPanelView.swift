@@ -214,13 +214,19 @@ struct ArtifactPanelView: View {
 
     // MARK: - Layout Helpers
 
-    private enum Section { case markdown, mermaid }
+    enum Section { case markdown, mermaid }
 
-    private static let collapsedSectionHeight: CGFloat = 34
+    static let collapsedSectionHeight: CGFloat = 34
+    static let dividerHeight: CGFloat = 4
 
-    private func sectionHeight(for section: Section, totalHeight: CGFloat) -> CGFloat {
-        let headerHeight = Self.collapsedSectionHeight
-        let dividerHeight: CGFloat = 4
+    static func sectionHeight(
+        for section: Section,
+        totalHeight: CGFloat,
+        splitRatio: CGFloat,
+        markdownCollapsed: Bool,
+        mermaidCollapsed: Bool
+    ) -> CGFloat {
+        let headerHeight = collapsedSectionHeight
 
         // Both collapsed
         if markdownCollapsed && mermaidCollapsed {
@@ -243,5 +249,15 @@ struct ArtifactPanelView: View {
         case .mermaid:
             return availableHeight * (1 - splitRatio)
         }
+    }
+
+    private func sectionHeight(for section: Section, totalHeight: CGFloat) -> CGFloat {
+        Self.sectionHeight(
+            for: section,
+            totalHeight: totalHeight,
+            splitRatio: splitRatio,
+            markdownCollapsed: markdownCollapsed,
+            mermaidCollapsed: mermaidCollapsed
+        )
     }
 }

@@ -97,6 +97,10 @@ actor MockAgentDataProvider: AgentDataProvider {
         return true
     }
 
+    func showMermaidPanel(source: String, title: String?, agentId: UUID) async -> Bool {
+        return _agents.contains { $0.id == agentId }
+    }
+
     // MARK: - Test Helpers
 
     /// Helper to check if an agent ID was registered during tests

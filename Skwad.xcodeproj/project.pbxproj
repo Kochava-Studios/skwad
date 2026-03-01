@@ -45,6 +45,10 @@
 		8D8C03002F53FBAE00A06866 /* MarkdownPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D8C02FC2F53FBAE00A06866 /* MarkdownPanelView.swift */; };
 		8D8C03012F53FBAE00A06866 /* MarkdownWebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D8C02FD2F53FBAE00A06866 /* MarkdownWebView.swift */; };
 		8D8C03032F53FBD300A06866 /* MermaidPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D8C03022F53FBD300A06866 /* MermaidPanelView.swift */; };
+		8D8C03052F54085B00A06866 /* MCPToolHandlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D8C03042F54085B00A06866 /* MCPToolHandlerTests.swift */; };
+		8D8C03092F54090300A06866 /* ArtifactPanelLayoutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D8C03062F54090300A06866 /* ArtifactPanelLayoutTests.swift */; };
+		8D8C030A2F54090300A06866 /* MermaidThemeOptionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D8C03072F54090300A06866 /* MermaidThemeOptionTests.swift */; };
+		8D8C030C2F54092100A06866 /* MarkdownToHTMLTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D8C030B2F54092100A06866 /* MarkdownToHTMLTests.swift */; };
 		8DBD63392F478DB40049E5DC /* AIProxy in Frameworks */ = {isa = PBXBuildFile; productRef = 8DBD63382F478DB40049E5DC /* AIProxy */; };
 		8DBD634E2F479A770049E5DC /* AutopilotSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DBD634D2F479A770049E5DC /* AutopilotSettingsView.swift */; };
 		8DBD63542F479B570049E5DC /* TerminalSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DBD63522F479B570049E5DC /* TerminalSettingsView.swift */; };
@@ -152,7 +156,6 @@
 		TS000035 /* VoiceInputHelpersTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100034 /* VoiceInputHelpersTests.swift */; };
 		TS000036 /* AgentContextMenuTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100035 /* AgentContextMenuTests.swift */; };
 		TS000037 /* RepoDiscoveryServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100036 /* RepoDiscoveryServiceTests.swift */; };
-		TS000038 /* MarkdownToHTMLTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100037 /* MarkdownToHTMLTests.swift */; };
 		TS000039 /* MockTerminalAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100038 /* MockTerminalAdapter.swift */; };
 		TS000040 /* TerminalSessionControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100039 /* TerminalSessionControllerTests.swift */; };
 		TS000041 /* NotificationServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100040 /* NotificationServiceTests.swift */; };
@@ -226,6 +229,10 @@
 		8D8C02FC2F53FBAE00A06866 /* MarkdownPanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownPanelView.swift; sourceTree = "<group>"; };
 		8D8C02FD2F53FBAE00A06866 /* MarkdownWebView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownWebView.swift; sourceTree = "<group>"; };
 		8D8C03022F53FBD300A06866 /* MermaidPanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MermaidPanelView.swift; sourceTree = "<group>"; };
+		8D8C03042F54085B00A06866 /* MCPToolHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPToolHandlerTests.swift; sourceTree = "<group>"; };
+		8D8C03062F54090300A06866 /* ArtifactPanelLayoutTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArtifactPanelLayoutTests.swift; sourceTree = "<group>"; };
+		8D8C03072F54090300A06866 /* MermaidThemeOptionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MermaidThemeOptionTests.swift; sourceTree = "<group>"; };
+		8D8C030B2F54092100A06866 /* MarkdownToHTMLTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownToHTMLTests.swift; sourceTree = "<group>"; };
 		8DBD634D2F479A770049E5DC /* AutopilotSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutopilotSettingsView.swift; sourceTree = "<group>"; };
 		8DBD634F2F479B570049E5DC /* CodingSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodingSettingsView.swift; sourceTree = "<group>"; };
 		8DBD63502F479B570049E5DC /* GeneralSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneralSettingsView.swift; sourceTree = "<group>"; };
@@ -336,7 +343,6 @@
 		TS100034 /* VoiceInputHelpersTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceInputHelpersTests.swift; sourceTree = "<group>"; };
 		TS100035 /* AgentContextMenuTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentContextMenuTests.swift; sourceTree = "<group>"; };
 		TS100036 /* RepoDiscoveryServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepoDiscoveryServiceTests.swift; sourceTree = "<group>"; };
-		TS100037 /* MarkdownToHTMLTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownToHTMLTests.swift; sourceTree = "<group>"; };
 		TS100038 /* MockTerminalAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockTerminalAdapter.swift; sourceTree = "<group>"; };
 		TS100039 /* TerminalSessionControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalSessionControllerTests.swift; sourceTree = "<group>"; };
 		TS100040 /* NotificationServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationServiceTests.swift; sourceTree = "<group>"; };
@@ -455,6 +461,16 @@
 				8D8C02FC2F53FBAE00A06866 /* MarkdownPanelView.swift */,
 				8D8C02FD2F53FBAE00A06866 /* MarkdownWebView.swift */,
 				8D8C03022F53FBD300A06866 /* MermaidPanelView.swift */,
+			);
+			path = Artifacts;
+			sourceTree = "<group>";
+		};
+		8D8C03082F54090300A06866 /* Artifacts */ = {
+			isa = PBXGroup;
+			children = (
+				8D8C03062F54090300A06866 /* ArtifactPanelLayoutTests.swift */,
+				8D8C030B2F54092100A06866 /* MarkdownToHTMLTests.swift */,
+				8D8C03072F54090300A06866 /* MermaidThemeOptionTests.swift */,
 			);
 			path = Artifacts;
 			sourceTree = "<group>";
@@ -679,9 +695,9 @@
 		TS500002 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				8D8C03082F54090300A06866 /* Artifacts */,
 				TS500008 /* Components */,
 				TS500004 /* Git */,
-				TS500014 /* Markdown */,
 				TS500009 /* Sidebar */,
 				TS500010 /* Workspace */,
 				TS100016 /* ContentViewHelpersTests.swift */,
@@ -713,6 +729,7 @@
 		TS500005 /* MCP */ = {
 			isa = PBXGroup;
 			children = (
+				8D8C03042F54085B00A06866 /* MCPToolHandlerTests.swift */,
 				TS500007 /* Mocks */,
 				TS100030 /* ClaudeHookHandlerTests.swift */,
 				8D03C5C92F48A03F00CF0F07 /* CodexHookHandlerTests.swift */,
@@ -808,14 +825,6 @@
 				TS100039 /* TerminalSessionControllerTests.swift */,
 			);
 			path = Services;
-			sourceTree = "<group>";
-		};
-		TS500014 /* Markdown */ = {
-			isa = PBXGroup;
-			children = (
-				TS100037 /* MarkdownToHTMLTests.swift */,
-			);
-			path = Markdown;
 			sourceTree = "<group>";
 		};
 		TS500015 /* Mocks */ = {
@@ -1113,12 +1122,15 @@
 				TS000020 /* AvatarViewHelpersTests.swift in Sources */,
 				TS000021 /* MCPCommandViewHelpersTests.swift in Sources */,
 				TS000022 /* AgentManagerTests.swift in Sources */,
+				8D8C030C2F54092100A06866 /* MarkdownToHTMLTests.swift in Sources */,
 				TS000023 /* AvatarViewTests.swift in Sources */,
 				TS000024 /* AvatarViewUITests.swift in Sources */,
 				TS000025 /* MCPCommandViewUITests.swift in Sources */,
 				TS000026 /* DiffViewUITests.swift in Sources */,
 				TS000027 /* CommitSheetUITests.swift in Sources */,
 				TS000028 /* WorkspaceSheetUITests.swift in Sources */,
+				8D8C03092F54090300A06866 /* ArtifactPanelLayoutTests.swift in Sources */,
+				8D8C030A2F54090300A06866 /* MermaidThemeOptionTests.swift in Sources */,
 				TS000029 /* WorkspaceAvatarViewUITests.swift in Sources */,
 				TS000030 /* TerminalTextCleanerTests.swift in Sources */,
 				TS000031 /* AgentTests.swift in Sources */,
@@ -1126,10 +1138,10 @@
 				TS000032 /* ClipboardTests.swift in Sources */,
 				TS000033 /* AgentSheetUITests.swift in Sources */,
 				TS000034 /* GitPanelViewHelpersTests.swift in Sources */,
+				8D8C03052F54085B00A06866 /* MCPToolHandlerTests.swift in Sources */,
 				TS000035 /* VoiceInputHelpersTests.swift in Sources */,
 				TS000036 /* AgentContextMenuTests.swift in Sources */,
 				TS000037 /* RepoDiscoveryServiceTests.swift in Sources */,
-				TS000038 /* MarkdownToHTMLTests.swift in Sources */,
 				TS000039 /* MockTerminalAdapter.swift in Sources */,
 				8D03C5CA2F48A03F00CF0F07 /* CodexHookHandlerTests.swift in Sources */,
 				TS000040 /* TerminalSessionControllerTests.swift in Sources */,

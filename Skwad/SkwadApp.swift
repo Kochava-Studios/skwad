@@ -208,6 +208,14 @@ struct SkwadApp: App {
             CommandGroup(after: .textEditing) {
                 Divider()
 
+                Button("Find File...") {
+                    toggleFileFinder.toggle()
+                }
+                .keyboardShortcut("f", modifiers: [.command, .shift])
+                .disabled(agentManager.activeAgentId == nil)
+
+                Divider()
+
                 Button("Clear Agent") {
                     if let activeId = agentManager.activeAgentId {
                         agentManager.injectText("/clear", for: activeId)
@@ -261,14 +269,6 @@ struct SkwadApp: App {
                     toggleSidebar.toggle()
                 }
                 .keyboardShortcut("b", modifiers: [.command, .option])
-
-                Button("Find File...") {
-                    toggleFileFinder.toggle()
-                }
-                .keyboardShortcut("f", modifiers: [.command, .shift])
-                .disabled(agentManager.activeAgentId == nil)
-
-                Divider()
 
                 Button("Next Agent") {
                     agentManager.selectNextAgent()

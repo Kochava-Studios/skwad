@@ -946,6 +946,93 @@ struct AgentManagerTests {
         }
     }
 
+    // MARK: - Mermaid Panel Tests
+
+    @Suite("Mermaid Panel")
+    struct MermaidPanelTests {
+
+        @Test("showMermaidPanel sets source")
+        @MainActor
+        func showMermaidPanelSetsSource() async {
+            let manager = AgentManagerTests.setupManager(agentCount: 1)
+            let agentId = manager.agents[0].id
+
+            manager.showMermaidPanel(source: "graph TD; A-->B;", title: nil, forAgent: agentId)
+
+            #expect(manager.agents[0].mermaidSource == "graph TD; A-->B;")
+        }
+
+        @Test("showMermaidPanel sets title")
+        @MainActor
+        func showMermaidPanelSetsTitle() async {
+            let manager = AgentManagerTests.setupManager(agentCount: 1)
+            let agentId = manager.agents[0].id
+
+            manager.showMermaidPanel(source: "graph TD; A-->B;", title: "Flow", forAgent: agentId)
+
+            #expect(manager.agents[0].mermaidTitle == "Flow")
+        }
+
+        @Test("showMermaidPanel with nil title")
+        @MainActor
+        func showMermaidPanelWithNilTitle() async {
+            let manager = AgentManagerTests.setupManager(agentCount: 1)
+            let agentId = manager.agents[0].id
+
+            manager.showMermaidPanel(source: "graph TD; A-->B;", title: nil, forAgent: agentId)
+
+            #expect(manager.agents[0].mermaidTitle == nil)
+        }
+
+        @Test("showMermaidPanel ignores unknown agent")
+        @MainActor
+        func showMermaidPanelIgnoresUnknownAgent() async {
+            let manager = AgentManagerTests.setupManager(agentCount: 1)
+
+            manager.showMermaidPanel(source: "graph TD; A-->B;", title: nil, forAgent: UUID())
+
+            #expect(manager.agents[0].mermaidSource == nil)
+        }
+
+        @Test("closeMermaidPanel clears source and title")
+        @MainActor
+        func closeMermaidPanelClearsSourceAndTitle() async {
+            let manager = AgentManagerTests.setupManager(agentCount: 1)
+            let agentId = manager.agents[0].id
+            manager.showMermaidPanel(source: "graph TD; A-->B;", title: "Flow", forAgent: agentId)
+
+            manager.closeMermaidPanel(for: agentId)
+
+            #expect(manager.agents[0].mermaidSource == nil)
+            #expect(manager.agents[0].mermaidTitle == nil)
+        }
+
+        @Test("closeMermaidPanel ignores unknown agent")
+        @MainActor
+        func closeMermaidPanelIgnoresUnknownAgent() async {
+            let manager = AgentManagerTests.setupManager(agentCount: 1)
+            let agentId = manager.agents[0].id
+            manager.showMermaidPanel(source: "graph TD; A-->B;", title: "Flow", forAgent: agentId)
+
+            manager.closeMermaidPanel(for: UUID())
+
+            #expect(manager.agents[0].mermaidSource == "graph TD; A-->B;")
+        }
+
+        @Test("showMermaidPanel replaces previous source")
+        @MainActor
+        func showMermaidPanelReplacesPrevious() async {
+            let manager = AgentManagerTests.setupManager(agentCount: 1)
+            let agentId = manager.agents[0].id
+
+            manager.showMermaidPanel(source: "graph TD; A-->B;", title: "First", forAgent: agentId)
+            manager.showMermaidPanel(source: "graph LR; X-->Y;", title: "Second", forAgent: agentId)
+
+            #expect(manager.agents[0].mermaidSource == "graph LR; X-->Y;")
+            #expect(manager.agents[0].mermaidTitle == "Second")
+        }
+    }
+
     // MARK: - Restart Tests
 
     @Suite("Restart")
