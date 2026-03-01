@@ -35,13 +35,10 @@ struct ArtifactPanelView: View {
             }
 
             VStack(spacing: 0) {
-                // Panel-level toolbar (only when both sections active)
-                if hasBoth {
-                    panelToolbar
+                panelToolbar
 
-                    Divider()
-                        .background(Color.primary.opacity(0.2))
-                }
+                Divider()
+                    .background(Color.primary.opacity(0.2))
 
                 // Sections
                 GeometryReader { geo in
@@ -129,9 +126,6 @@ struct ArtifactPanelView: View {
 
     private var panelToolbar: some View {
         HStack {
-            Image(systemName: "square.stack")
-                .foregroundColor(.secondary)
-
             Text("Artifacts")
                 .font(.subheadline.weight(.medium))
                 .foregroundColor(.primary)

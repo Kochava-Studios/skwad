@@ -216,9 +216,6 @@ struct MarkdownPanelView: View {
                 .buttonStyle(.plain)
             }
 
-            Image(systemName: "doc.text")
-                .foregroundColor(.secondary)
-
             Text(fileName)
                 .font(.headline)
                 .foregroundColor(.primary)

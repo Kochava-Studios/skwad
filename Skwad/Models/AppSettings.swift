@@ -241,6 +241,10 @@ class AppSettings: ObservableObject {
     // Markdown Preview
     @AppStorage("markdownFontSize") var markdownFontSize: Int = 14
 
+    // Mermaid Diagrams
+    @AppStorage("mermaidTheme") var mermaidTheme: String = "auto"
+    @AppStorage("mermaidScale") var mermaidScale: Double = 1.0
+
     // Notifications
     @AppStorage("desktopNotificationsEnabled") var desktopNotificationsEnabled: Bool = true
 
