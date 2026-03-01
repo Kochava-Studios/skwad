@@ -88,6 +88,7 @@ struct WorkspaceBarView: View {
                         .font(.system(size: 12, weight: .medium))
                         .foregroundColor(Theme.secondaryText)
                         .frame(width: 32, height: 32)
+                        .contentShape(Circle())
                         .background(
                             Circle()
                                 .strokeBorder(Color.gray.opacity(0.4), lineWidth: 1)
