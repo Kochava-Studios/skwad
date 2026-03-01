@@ -140,7 +140,7 @@ actor MCPToolHandler {
             ),
             ToolDefinition(
                 name: MCPToolName.viewMermaid.rawValue,
-                description: "Display a Mermaid diagram in a panel for the user to view. Supports flowcharts (graph TD/LR), state diagrams, sequence diagrams, class diagrams, and ER diagrams. Pass the mermaid source text directly. The diagram will be rendered natively alongside any open markdown panel.",
+                description: "Display a Mermaid diagram in a panel for the user to view. Supports flowcharts (graph TD/LR), state diagrams, sequence diagrams, class diagrams, and ER diagrams. Pass the mermaid source text directly. The diagram will be rendered natively alongside any open markdown panel. Not supported: HTML in node labels, tooltips, multiline labels with <br> tags, styling via style and linkStyle directives, subgraph styling.",
                 inputSchema: ToolInputSchema(
                     properties: [
                         "agentId": PropertySchema(type: "string", description: "Your agent ID"),
