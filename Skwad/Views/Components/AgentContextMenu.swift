@@ -104,13 +104,7 @@ struct AgentContextMenu<Content: View>: View {
                 }
             }
 
-            if visibility.showSaveToBench, let onSaveToBench {
-                Button {
-                    onSaveToBench()
-                } label: {
-                    Label("Save to Bench", systemImage: "tray.and.arrow.down")
-                }
-            }
+            Divider()
 
             if visibility.showMoveToWorkspace {
                 // Move to Workspace submenu (only show if there are other workspaces)
@@ -126,6 +120,14 @@ struct AgentContextMenu<Content: View>: View {
                     } label: {
                         Label("Move to Workspace", systemImage: "arrow.right.square")
                     }
+                }
+            }
+
+            if visibility.showSaveToBench, let onSaveToBench {
+                Button {
+                    onSaveToBench()
+                } label: {
+                    Label("Save to Bench", systemImage: "tray.and.arrow.down")
                 }
             }
 

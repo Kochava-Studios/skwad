@@ -19,7 +19,6 @@ struct ContentView: View {
   @State private var artifactExpanded = false
 
   @State private var showFileFinder = false
-  @State private var showBenchPopover = false
 
   // Bindings from SkwadApp for menu commands
   @Binding var showNewAgentSheet: Bool
@@ -202,18 +201,15 @@ struct ContentView: View {
             .background(settings.effectiveBackgroundColor)
           }
 
-          // Toolbar buttons — positioned in top-right corner
-          HStack {
-            Spacer()
-            HStack(spacing: 8) {
-              benchButton
-              if agentManager.currentWorkspaceAgents.count >= 2 {
-                layoutToggleButton
-              }
+          // Layout toggle button — positioned in top-right corner
+          if agentManager.currentWorkspaceAgents.count >= 2 {
+            HStack {
+              Spacer()
+              layoutToggleButton
             }
+            .padding(.top, sidebarVisible ? 76 : 36)
+            .padding(.trailing, 12)
           }
-          .padding(.top, sidebarVisible ? 76 : 36)
-          .padding(.trailing, 12)
 
           // Git toggle button — positioned in bottom-right of active pane
           if canShowGitPanel {
@@ -730,24 +726,6 @@ struct ContentView: View {
       }
     }
     return false
-  }
-
-  private var benchButton: some View {
-    Button {
-      showBenchPopover.toggle()
-    } label: {
-      Image(systemName: "tray.2")
-        .font(.system(size: 16, weight: .medium))
-        .foregroundColor(Theme.secondaryText)
-    }
-    .buttonStyle(.plain)
-    .help("Bench")
-    .popover(isPresented: $showBenchPopover) {
-      BenchPopoverView(forkPrefill: $forkPrefill) {
-        showBenchPopover = false
-      }
-      .environment(agentManager)
-    }
   }
 
   private var layoutToggleButton: some View {
