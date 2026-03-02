@@ -37,9 +37,10 @@ final class BenchAgentTests: XCTestCase {
 
         // Should only have 2 entries (folder1 was deduplicated)
         XCTAssertEqual(settings.benchAgents.count, 2)
-        // The updated agent should be first
-        XCTAssertEqual(settings.benchAgents.first?.name, "Agent1Updated")
-        XCTAssertEqual(settings.benchAgents.first?.agentType, "gemini")
+        // The updated agent should exist with new values
+        let updated = settings.benchAgents.first { $0.folder == "/path/to/folder1" }
+        XCTAssertEqual(updated?.name, "Agent1Updated")
+        XCTAssertEqual(updated?.agentType, "gemini")
 
         // Restore
         settings.benchAgents = original
@@ -67,30 +68,25 @@ final class BenchAgentTests: XCTestCase {
     }
 
     @MainActor
-    func testMoveBenchAgent() {
+    func testBenchAgentsSortedAlphabetically() {
         let settings = AppSettings.shared
         let original = settings.benchAgents
 
         settings.benchAgents = []
-        let agent1 = Agent(name: "Agent1", folder: "/path/to/folder1")
-        let agent2 = Agent(name: "Agent2", folder: "/path/to/folder2")
-        let agent3 = Agent(name: "Agent3", folder: "/path/to/folder3")
-        settings.addToBench(agent1)
-        settings.addToBench(agent2)
-        settings.addToBench(agent3)
+        let agentC = Agent(name: "Charlie", folder: "/path/to/charlie")
+        let agentA = Agent(name: "Alpha", folder: "/path/to/alpha")
+        let agentB = Agent(name: "Bravo", folder: "/path/to/bravo")
+        let agentA2 = Agent(name: "Alpha", folder: "/path/to/alpha2")
+        settings.addToBench(agentC)
+        settings.addToBench(agentA)
+        settings.addToBench(agentB)
+        settings.addToBench(agentA2)
 
-        // After addToBench (inserts at front): [agent3, agent2, agent1]
-        XCTAssertEqual(settings.benchAgents[0].folder, "/path/to/folder3")
-        XCTAssertEqual(settings.benchAgents[1].folder, "/path/to/folder2")
-        XCTAssertEqual(settings.benchAgents[2].folder, "/path/to/folder1")
-
-        // Move index 0 (agent3) to position 3 (end)
-        settings.moveBenchAgent(from: IndexSet(integer: 0), to: 3)
-
-        // After move: [agent2, agent1, agent3]
-        XCTAssertEqual(settings.benchAgents[0].folder, "/path/to/folder2")
-        XCTAssertEqual(settings.benchAgents[1].folder, "/path/to/folder1")
-        XCTAssertEqual(settings.benchAgents[2].folder, "/path/to/folder3")
+        // Should be sorted by name (case-insensitive), then folder
+        XCTAssertEqual(settings.benchAgents[0].folder, "/path/to/alpha")
+        XCTAssertEqual(settings.benchAgents[1].folder, "/path/to/alpha2")
+        XCTAssertEqual(settings.benchAgents[2].name, "Bravo")
+        XCTAssertEqual(settings.benchAgents[3].name, "Charlie")
 
         // Restore
         settings.benchAgents = original

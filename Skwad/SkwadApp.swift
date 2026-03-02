@@ -162,10 +162,6 @@ struct SkwadApp: App {
 
                 Divider()
 
-                benchMenu
-
-                Divider()
-
                 Button("Broadcast to All Agents...") {
                     broadcastMessage = ""
                     showBroadcastSheet = true
@@ -304,42 +300,6 @@ struct SkwadApp: App {
                 CheckForUpdatesView(updater: updaterManager.updater)
             }
         }
-    }
-
-    @ViewBuilder
-    private var benchMenu: some View {
-        Menu("Bench") {
-            if settings.benchAgents.isEmpty {
-                Button("No Agents on Bench") {}
-                    .disabled(true)
-            } else {
-                ForEach(settings.benchAgents) { benchAgent in
-                    Button {
-                        deployBenchAgent(benchAgent)
-                    } label: {
-                        Text("\(benchAgent.name) — \(URL(fileURLWithPath: benchAgent.folder).lastPathComponent)")
-                    }
-                }
-
-                Divider()
-
-                Button("Clear Bench") {
-                    settings.benchAgents = []
-                }
-            }
-        }
-    }
-
-    private func deployBenchAgent(_ benchAgent: BenchAgent) {
-        let fileManager = FileManager.default
-        var isDirectory: ObjCBool = false
-        guard fileManager.fileExists(atPath: benchAgent.folder, isDirectory: &isDirectory), isDirectory.boolValue else {
-            settings.removeFromBench(benchAgent)
-            alertMessage = "The folder \"\(benchAgent.folder)\" no longer exists."
-            showAlert = true
-            return
-        }
-        agentManager.addAgent(folder: benchAgent.folder, name: benchAgent.name, avatar: benchAgent.avatar, agentType: benchAgent.agentType, shellCommand: benchAgent.shellCommand)
     }
 
     private func broadcastToAllAgents(_ message: String) {

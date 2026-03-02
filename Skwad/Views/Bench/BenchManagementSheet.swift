@@ -40,9 +40,6 @@ struct BenchManagementSheet: View {
                             settings.removeFromBench(benchAgent)
                         })
                     }
-                    .onMove { source, destination in
-                        settings.moveBenchAgent(from: source, to: destination)
-                    }
                 }
                 .listStyle(.inset)
             }

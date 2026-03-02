@@ -215,7 +215,8 @@ class AppSettings: ObservableObject {
 
     var benchAgents: [BenchAgent] {
         get {
-            (try? JSONDecoder().decode([BenchAgent].self, from: benchAgentsData)) ?? []
+            let agents = (try? JSONDecoder().decode([BenchAgent].self, from: benchAgentsData)) ?? []
+            return agents.sorted { ($0.name.lowercased(), $0.folder) < ($1.name.lowercased(), $1.folder) }
         }
         set {
             benchAgentsData = (try? JSONEncoder().encode(newValue)) ?? Data()
@@ -227,19 +228,13 @@ class AppSettings: ObservableObject {
         // Replace if same folder already exists
         bench.removeAll { $0.folder == agent.folder }
         let entry = BenchAgent(from: agent)
-        bench.insert(entry, at: 0)
+        bench.append(entry)
         benchAgents = bench
     }
 
     func removeFromBench(_ benchAgent: BenchAgent) {
         var bench = benchAgents
         bench.removeAll { $0.id == benchAgent.id }
-        benchAgents = bench
-    }
-
-    func moveBenchAgent(from source: IndexSet, to destination: Int) {
-        var bench = benchAgents
-        bench.move(fromOffsets: source, toOffset: destination)
         benchAgents = bench
     }
 
