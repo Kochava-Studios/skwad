@@ -41,6 +41,33 @@ struct SavedAgent: Codable, Identifiable {
     }
 }
 
+struct BenchAgent: Codable, Identifiable {
+    let id: UUID
+    var name: String
+    var avatar: String
+    var folder: String
+    var agentType: String
+    var shellCommand: String?
+
+    init(id: UUID = UUID(), name: String, avatar: String, folder: String, agentType: String = "claude", shellCommand: String? = nil) {
+        self.id = id
+        self.name = name
+        self.avatar = avatar
+        self.folder = folder
+        self.agentType = agentType
+        self.shellCommand = shellCommand
+    }
+
+    init(from agent: Agent) {
+        self.id = UUID()
+        self.name = agent.name
+        self.avatar = agent.avatar ?? "🤖"
+        self.folder = agent.folder
+        self.agentType = agent.agentType
+        self.shellCommand = agent.shellCommand
+    }
+}
+
 enum AppearanceMode: String, CaseIterable {
     case auto = "auto"
     case system = "system"
@@ -183,36 +210,45 @@ class AppSettings: ObservableObject {
         recentRepos = recent
     }
 
-    // Recent agents tracking (last 8 closed agents)
-    @AppStorage("recentAgentsData") private var recentAgentsData: Data = Data()
+    // Bench agents (user-curated agent templates)
+    @AppStorage("benchAgentsData") private var benchAgentsData: Data = Data()
 
-    var recentAgents: [SavedAgent] {
+    var benchAgents: [BenchAgent] {
         get {
-            (try? JSONDecoder().decode([SavedAgent].self, from: recentAgentsData)) ?? []
+            (try? JSONDecoder().decode([BenchAgent].self, from: benchAgentsData)) ?? []
         }
         set {
-            recentAgentsData = (try? JSONEncoder().encode(newValue)) ?? Data()
+            benchAgentsData = (try? JSONEncoder().encode(newValue)) ?? Data()
         }
     }
 
-    func addRecentAgent(_ agent: Agent) {
-        var recent = recentAgents
-        // Remove if already present (same folder)
-        recent.removeAll { $0.folder == agent.folder }
-        // Add to front
-        let saved = SavedAgent(id: UUID(), name: agent.name, avatar: agent.avatar ?? "🤖", folder: agent.folder)
-        recent.insert(saved, at: 0)
-        // Keep only last 8
-        if recent.count > 8 {
-            recent = Array(recent.prefix(8))
-        }
-        recentAgents = recent
+    func addToBench(_ agent: Agent) {
+        var bench = benchAgents
+        // Replace if same folder already exists
+        bench.removeAll { $0.folder == agent.folder }
+        let entry = BenchAgent(from: agent)
+        bench.insert(entry, at: 0)
+        benchAgents = bench
     }
 
-    func removeRecentAgent(_ agent: SavedAgent) {
-        var recent = recentAgents
-        recent.removeAll { $0.folder == agent.folder }
-        recentAgents = recent
+    func removeFromBench(_ benchAgent: BenchAgent) {
+        var bench = benchAgents
+        bench.removeAll { $0.id == benchAgent.id }
+        benchAgents = bench
+    }
+
+    func moveBenchAgent(from source: IndexSet, to destination: Int) {
+        var bench = benchAgents
+        bench.move(fromOffsets: source, toOffset: destination)
+        benchAgents = bench
+    }
+
+    func updateBenchAgent(id: UUID, name: String) {
+        var bench = benchAgents
+        if let index = bench.firstIndex(where: { $0.id == id }) {
+            bench[index].name = name
+            benchAgents = bench
+        }
     }
 
     // Voice Input

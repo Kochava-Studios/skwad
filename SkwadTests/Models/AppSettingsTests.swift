@@ -279,54 +279,6 @@ final class AppSettingsTests: XCTestCase {
         settings.recentRepos = original
     }
 
-    // MARK: - Recent Agents
-
-    @MainActor
-    func testAddRecentAgentDeduplicatesByFolder() {
-        let settings = AppSettings.shared
-        let original = settings.recentAgents
-
-        // Create test agents
-        let agent1 = Agent(name: "Agent1", folder: "/path/to/folder1")
-        let agent2 = Agent(name: "Agent2", folder: "/path/to/folder2")
-        let agent1Updated = Agent(name: "Agent1Updated", folder: "/path/to/folder1")
-
-        settings.recentAgents = []
-        settings.addRecentAgent(agent1)
-        settings.addRecentAgent(agent2)
-        settings.addRecentAgent(agent1Updated)
-
-        // Should only have 2 entries (folder1 was deduplicated)
-        XCTAssertEqual(settings.recentAgents.count, 2)
-        // The updated agent should be first
-        XCTAssertEqual(settings.recentAgents.first?.folder, "/path/to/folder1")
-
-        // Restore
-        settings.recentAgents = original
-    }
-
-    @MainActor
-    func testAddRecentAgentLimitsTo8() {
-        let settings = AppSettings.shared
-        let original = settings.recentAgents
-
-        settings.recentAgents = []
-
-        // Add 9 agents
-        for i in 1...9 {
-            let agent = Agent(name: "Agent\(i)", folder: "/path/to/folder\(i)")
-            settings.addRecentAgent(agent)
-        }
-
-        XCTAssertEqual(settings.recentAgents.count, 8)
-        // Most recent should be first
-        XCTAssertEqual(settings.recentAgents.first?.folder, "/path/to/folder9")
-        // Oldest (folder1) should be gone
-        XCTAssertFalse(settings.recentAgents.contains { $0.folder == "/path/to/folder1" })
-
-        // Restore
-        settings.recentAgents = original
-    }
 
     // MARK: - SavedAgent Companion Persistence
 
@@ -364,28 +316,6 @@ final class AppSettingsTests: XCTestCase {
         XCTAssertFalse(decoded.isCompanion)
     }
 
-    @MainActor
-    func testRemoveRecentAgentByFolder() {
-        let settings = AppSettings.shared
-        let original = settings.recentAgents
-
-        // Setup
-        settings.recentAgents = []
-        let agent1 = Agent(name: "Agent1", folder: "/path/to/folder1")
-        let agent2 = Agent(name: "Agent2", folder: "/path/to/folder2")
-        settings.addRecentAgent(agent1)
-        settings.addRecentAgent(agent2)
-
-        // Create a SavedAgent to remove
-        let savedToRemove = SavedAgent(id: UUID(), name: "Agent2", avatar: "🤖", folder: "/path/to/folder2")
-        settings.removeRecentAgent(savedToRemove)
-
-        XCTAssertEqual(settings.recentAgents.count, 1)
-        XCTAssertEqual(settings.recentAgents.first?.folder, "/path/to/folder1")
-
-        // Restore
-        settings.recentAgents = original
-    }
 
     // MARK: - Load Saved Agents (isPendingStart)
 

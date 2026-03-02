@@ -33,6 +33,7 @@ struct AgentMenuVisibility {
     let showShellCompanion: Bool
     let showFork: Bool
     let showDuplicate: Bool
+    let showSaveToBench: Bool
     let showMoveToWorkspace: Bool
     let showRegister: Bool
 
@@ -41,6 +42,7 @@ struct AgentMenuVisibility {
         showShellCompanion = !agent.isCompanion
         showFork = !agent.isCompanion
         showDuplicate = !agent.isCompanion
+        showSaveToBench = !agent.isCompanion
         showMoveToWorkspace = !agent.isCompanion
         showRegister = agent.agentType != "shell"
     }
@@ -53,6 +55,7 @@ struct AgentContextMenu<Content: View>: View {
     let onFork: () -> Void
     let onNewCompanion: () -> Void
     let onShellCompanion: () -> Void
+    var onSaveToBench: (() -> Void)? = nil
     @ViewBuilder let content: Content
 
     @Environment(AgentManager.self) var agentManager
@@ -98,6 +101,14 @@ struct AgentContextMenu<Content: View>: View {
                     agentManager.duplicateAgent(agent)
                 } label: {
                     Label("Duplicate Agent", systemImage: "plus.square.on.square")
+                }
+            }
+
+            if visibility.showSaveToBench, let onSaveToBench {
+                Button {
+                    onSaveToBench()
+                } label: {
+                    Label("Save to Bench", systemImage: "tray.and.arrow.down")
                 }
             }
 

@@ -178,6 +178,9 @@
 		WS000001 /* Workspace.swift in Sources */ = {isa = PBXBuildFile; fileRef = WS100001 /* Workspace.swift */; };
 		WS000002 /* WorkspaceBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = WS100002 /* WorkspaceBarView.swift */; };
 		WS000003 /* WorkspaceSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = WS100003 /* WorkspaceSheet.swift */; };
+		BN000001 /* BenchPopoverView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BN100001 /* BenchPopoverView.swift */; };
+		BN000002 /* BenchManagementSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = BN100002 /* BenchManagementSheet.swift */; };
+		BN000003 /* BenchAgentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BN100003 /* BenchAgentTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -369,6 +372,9 @@
 		WS100001 /* Workspace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Workspace.swift; sourceTree = "<group>"; };
 		WS100002 /* WorkspaceBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkspaceBarView.swift; sourceTree = "<group>"; };
 		WS100003 /* WorkspaceSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkspaceSheet.swift; sourceTree = "<group>"; };
+		BN100001 /* BenchPopoverView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BenchPopoverView.swift; sourceTree = "<group>"; };
+		BN100002 /* BenchManagementSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BenchManagementSheet.swift; sourceTree = "<group>"; };
+		BN100003 /* BenchAgentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BenchAgentTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -526,10 +532,20 @@
 			path = Models;
 			sourceTree = "<group>";
 		};
+		BN200000 /* Bench */ = {
+			isa = PBXGroup;
+			children = (
+				BN100001 /* BenchPopoverView.swift */,
+				BN100002 /* BenchManagementSheet.swift */,
+			);
+			path = Bench;
+			sourceTree = "<group>";
+		};
 		F8000013 /* Views */ = {
 			isa = PBXGroup;
 			children = (
 				8D8C02FE2F53FBAE00A06866 /* Artifacts */,
+				BN200000 /* Bench */,
 				F8000017 /* Components */,
 				FF200000 /* FileFinder */,
 				2EB8108896BD1402E4BDA10F /* Git */,
@@ -754,6 +770,7 @@
 				TS100011 /* GitWorktreeManagerTests.swift */,
 				TS100021 /* AgentManagerTests.swift */,
 				TS100043 /* AgentTests.swift */,
+				BN100003 /* BenchAgentTests.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -1100,6 +1117,8 @@
 				F4AB26B99E3CC3D579D72293 /* OpenWithProvider.swift in Sources */,
 				48E4A7F10E3C047EF657C139 /* OpenWithAppPicker.swift in Sources */,
 				UP000001 /* UpdaterManager.swift in Sources */,
+				BN000001 /* BenchPopoverView.swift in Sources */,
+				BN000002 /* BenchManagementSheet.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1158,6 +1177,7 @@
 				TS000043 /* ConversationHistoryServiceTests.swift in Sources */,
 				TS000044 /* FuzzyScorerTests.swift in Sources */,
 				TS000045 /* FileSearchServiceTests.swift in Sources */,
+				BN000003 /* BenchAgentTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

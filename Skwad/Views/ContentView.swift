@@ -19,6 +19,7 @@ struct ContentView: View {
   @State private var artifactExpanded = false
 
   @State private var showFileFinder = false
+  @State private var showBenchPopover = false
 
   // Bindings from SkwadApp for menu commands
   @Binding var showNewAgentSheet: Bool
@@ -161,13 +162,13 @@ struct ContentView: View {
                 .buttonStyle(.borderedProminent)
 
                 HStack(spacing: 8) {
-                  ForEach(settings.recentAgents.prefix(5)) { savedAgent in
+                  ForEach(settings.benchAgents.prefix(5)) { benchAgent in
                     Button {
-                      agentManager.addAgent(folder: savedAgent.folder, name: savedAgent.name, avatar: savedAgent.avatar, agentType: savedAgent.agentType)
+                      agentManager.addAgent(folder: benchAgent.folder, name: benchAgent.name, avatar: benchAgent.avatar, agentType: benchAgent.agentType, shellCommand: benchAgent.shellCommand)
                     } label: {
                       HStack(spacing: 6) {
-                        AvatarView(avatar: savedAgent.avatar, size: 20, font: .caption)
-                        Text(savedAgent.name)
+                        AvatarView(avatar: benchAgent.avatar, size: 20, font: .caption)
+                        Text(benchAgent.name)
                           .font(.caption)
                           .lineLimit(1)
                       }
@@ -201,15 +202,18 @@ struct ContentView: View {
             .background(settings.effectiveBackgroundColor)
           }
 
-          // Layout toggle button — positioned in top-right corner
-          if agentManager.currentWorkspaceAgents.count >= 2 {
-            HStack {
-              Spacer()
-              layoutToggleButton
+          // Toolbar buttons — positioned in top-right corner
+          HStack {
+            Spacer()
+            HStack(spacing: 8) {
+              benchButton
+              if agentManager.currentWorkspaceAgents.count >= 2 {
+                layoutToggleButton
+              }
             }
-            .padding(.top, sidebarVisible ? 76 : 36)
-            .padding(.trailing, 12)
           }
+          .padding(.top, sidebarVisible ? 76 : 36)
+          .padding(.trailing, 12)
 
           // Git toggle button — positioned in bottom-right of active pane
           if canShowGitPanel {
@@ -726,6 +730,24 @@ struct ContentView: View {
       }
     }
     return false
+  }
+
+  private var benchButton: some View {
+    Button {
+      showBenchPopover.toggle()
+    } label: {
+      Image(systemName: "tray.2")
+        .font(.system(size: 16, weight: .medium))
+        .foregroundColor(Theme.secondaryText)
+    }
+    .buttonStyle(.plain)
+    .help("Bench")
+    .popover(isPresented: $showBenchPopover) {
+      BenchPopoverView(forkPrefill: $forkPrefill) {
+        showBenchPopover = false
+      }
+      .environment(agentManager)
+    }
   }
 
   private var layoutToggleButton: some View {

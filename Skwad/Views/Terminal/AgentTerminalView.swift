@@ -90,6 +90,9 @@ struct AgentTerminalView: View {
                     },
                     onShellCompanion: {
                         agentManager.createShellCompanion(for: agent)
+                    },
+                    onSaveToBench: {
+                        AppSettings.shared.addToBench(agent)
                     }
                 ) {
                     AgentFullHeader(agent: agent, isFocused: isActive, onGitStatsTap: onGitStatsTap, onPaneTap: onPaneTap)

@@ -162,7 +162,7 @@ struct SkwadApp: App {
 
                 Divider()
 
-                recentAgentsMenu
+                benchMenu
 
                 Divider()
 
@@ -307,43 +307,39 @@ struct SkwadApp: App {
     }
 
     @ViewBuilder
-    private var recentAgentsMenu: some View {
-        Menu("Recent Agents") {
-            if settings.recentAgents.isEmpty {
-                Button("No Recent Agents") {}
+    private var benchMenu: some View {
+        Menu("Bench") {
+            if settings.benchAgents.isEmpty {
+                Button("No Agents on Bench") {}
                     .disabled(true)
             } else {
-                ForEach(settings.recentAgents) { agent in
+                ForEach(settings.benchAgents) { benchAgent in
                     Button {
-                        openRecentAgent(agent)
+                        deployBenchAgent(benchAgent)
                     } label: {
-                        Text("\(agent.name) — \(URL(fileURLWithPath: agent.folder).lastPathComponent)")
+                        Text("\(benchAgent.name) — \(URL(fileURLWithPath: benchAgent.folder).lastPathComponent)")
                     }
                 }
 
                 Divider()
 
-                Button("Clear Recent Agents") {
-                    settings.recentAgents = []
+                Button("Clear Bench") {
+                    settings.benchAgents = []
                 }
             }
         }
     }
 
-    private func openRecentAgent(_ saved: SavedAgent) {
-        // Check if folder still exists
+    private func deployBenchAgent(_ benchAgent: BenchAgent) {
         let fileManager = FileManager.default
         var isDirectory: ObjCBool = false
-        guard fileManager.fileExists(atPath: saved.folder, isDirectory: &isDirectory), isDirectory.boolValue else {
-            // Folder doesn't exist - remove from recent and alert
-            settings.removeRecentAgent(saved)
-            alertMessage = "The folder \"\(saved.folder)\" no longer exists."
+        guard fileManager.fileExists(atPath: benchAgent.folder, isDirectory: &isDirectory), isDirectory.boolValue else {
+            settings.removeFromBench(benchAgent)
+            alertMessage = "The folder \"\(benchAgent.folder)\" no longer exists."
             showAlert = true
             return
         }
-
-        // Add the agent
-        agentManager.addAgent(folder: saved.folder, name: saved.name, avatar: saved.avatar)
+        agentManager.addAgent(folder: benchAgent.folder, name: benchAgent.name, avatar: benchAgent.avatar, agentType: benchAgent.agentType, shellCommand: benchAgent.shellCommand)
     }
 
     private func broadcastToAllAgents(_ message: String) {

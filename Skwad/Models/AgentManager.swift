@@ -543,9 +543,6 @@ final class AgentManager {
         saveAgents()
         saveWorkspaces()
 
-        // Add to recent agents
-        settings.addRecentAgent(agent)
-
         return agent.id
     }
 

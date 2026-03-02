@@ -23,6 +23,12 @@ final class AgentContextMenuTests: XCTestCase {
         XCTAssertTrue(visibility.showDuplicate)
     }
 
+    func testNormalAgentShowsSaveToBench() {
+        let agent = Agent(name: "Test", folder: "/path", agentType: "claude")
+        let visibility = AgentMenuVisibility(agent: agent)
+        XCTAssertTrue(visibility.showSaveToBench)
+    }
+
     func testNormalAgentShowsMoveToWorkspace() {
         let agent = Agent(name: "Test", folder: "/path", agentType: "claude")
         let visibility = AgentMenuVisibility(agent: agent)
@@ -67,6 +73,12 @@ final class AgentContextMenuTests: XCTestCase {
         XCTAssertTrue(visibility.showDuplicate)
     }
 
+    func testShellAgentShowsSaveToBench() {
+        let agent = Agent(name: "Shell", folder: "/path", agentType: "shell")
+        let visibility = AgentMenuVisibility(agent: agent)
+        XCTAssertTrue(visibility.showSaveToBench)
+    }
+
     func testShellAgentShowsMoveToWorkspace() {
         let agent = Agent(name: "Shell", folder: "/path", agentType: "shell")
         let visibility = AgentMenuVisibility(agent: agent)
@@ -105,6 +117,12 @@ final class AgentContextMenuTests: XCTestCase {
         XCTAssertFalse(visibility.showDuplicate)
     }
 
+    func testCompanionHidesSaveToBench() {
+        let agent = Agent(name: "Companion", folder: "/path", agentType: "claude", createdBy: UUID(), isCompanion: true)
+        let visibility = AgentMenuVisibility(agent: agent)
+        XCTAssertFalse(visibility.showSaveToBench)
+    }
+
     func testCompanionHidesMoveToWorkspace() {
         let agent = Agent(name: "Companion", folder: "/path", agentType: "claude", createdBy: UUID(), isCompanion: true)
         let visibility = AgentMenuVisibility(agent: agent)
@@ -141,6 +159,12 @@ final class AgentContextMenuTests: XCTestCase {
         let agent = Agent(name: "ShellComp", folder: "/path", agentType: "shell", createdBy: UUID(), isCompanion: true)
         let visibility = AgentMenuVisibility(agent: agent)
         XCTAssertFalse(visibility.showDuplicate)
+    }
+
+    func testShellCompanionHidesSaveToBench() {
+        let agent = Agent(name: "ShellComp", folder: "/path", agentType: "shell", createdBy: UUID(), isCompanion: true)
+        let visibility = AgentMenuVisibility(agent: agent)
+        XCTAssertFalse(visibility.showSaveToBench)
     }
 
     func testShellCompanionHidesMoveToWorkspace() {
