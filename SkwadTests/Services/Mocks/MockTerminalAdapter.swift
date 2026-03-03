@@ -15,6 +15,7 @@ class MockTerminalAdapter: TerminalAdapter {
     // Recorded calls for assertions
     private(set) var sentTexts: [String] = []
     private(set) var sentReturns = 0
+    private(set) var sentEscapes = 0
     private(set) var focusCalls = 0
     private(set) var terminateCalls = 0
     private(set) var resizeCalls = 0
@@ -26,6 +27,10 @@ class MockTerminalAdapter: TerminalAdapter {
 
     func sendReturn() {
         sentReturns += 1
+    }
+  
+    func sendEscape() {
+        sentEscapes += 1
     }
 
     func focus() {
@@ -70,6 +75,7 @@ class MockTerminalAdapter: TerminalAdapter {
     func reset() {
         sentTexts.removeAll()
         sentReturns = 0
+        sentEscapes = 0
         focusCalls = 0
         terminateCalls = 0
         resizeCalls = 0

@@ -5,9 +5,13 @@ import Foundation
 enum TimingConstants {
     // MARK: - Terminal Operations
 
-    /// Delay between sending text and pressing return key
-    /// Used to ensure text is fully written before return
-    static let returnKeyDelay: TimeInterval = 0.1
+    /// Delay between sending text and pressing escape key
+    /// Ensures text is fully written before escape dismisses autocomplete
+    static let escapeKeyDelay: TimeInterval = 0.3
+
+    /// Delay between escape key and return key
+    /// Ensures autocomplete is dismissed before submitting
+    static let returnKeyDelay: TimeInterval = 0.3
 
     /// Delay for SwiftTerm to initialize shell before marking ready
     static let terminalReadyDelay: TimeInterval = 0.5

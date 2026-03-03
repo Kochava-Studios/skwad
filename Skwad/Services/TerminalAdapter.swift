@@ -28,6 +28,9 @@ protocol TerminalAdapter: AnyObject {
     /// Send return key to the terminal
     func sendReturn()
 
+    /// Send escape key to the terminal (dismiss autocomplete, etc.)
+    func sendEscape()
+
     /// Focus the terminal
     func focus()
     
@@ -131,6 +134,12 @@ class GhosttyTerminalAdapter: TerminalAdapter {
         surface.sendKeyEvent(event)
     }
 
+    func sendEscape() {
+        guard let surface = terminal?.surface else { return }
+        let event = Ghostty.Input.KeyEvent(key: .escape, action: .press, text: "\u{1b}")
+        surface.sendKeyEvent(event)
+    }
+
     func focus() {
         guard let terminal = terminal else { return }
         terminal.window?.makeFirstResponder(terminal)
@@ -194,6 +203,10 @@ class SwiftTermAdapter: TerminalAdapter {
     func sendReturn() {
         // SwiftTerm just needs the carriage return character
         terminal?.send(txt: "\r")
+    }
+
+    func sendEscape() {
+        terminal?.send(txt: "\u{1b}")
     }
 
     func focus() {

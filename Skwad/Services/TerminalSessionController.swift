@@ -269,11 +269,16 @@ class TerminalSessionController: ObservableObject {
         adapter?.sendReturn()
     }
 
-    /// Send text to terminal followed by return key
+    /// Send text to terminal followed by escape (dismiss autocomplete) then return key
+    /// Sequence: text → 300ms → escape → 100ms → enter
+    /// The escape dismisses Claude Code's autocomplete which can intercept Enter
     func sendCommand(_ text: String) {
         adapter?.sendText(text)
-        AsyncDelay.dispatch(after: TimingConstants.returnKeyDelay) { [weak self] in
-            self?.adapter?.sendReturn()
+        AsyncDelay.dispatch(after: TimingConstants.escapeKeyDelay) { [weak self] in
+            self?.adapter?.sendEscape()
+            AsyncDelay.dispatch(after: TimingConstants.returnKeyDelay) { [weak self] in
+                self?.adapter?.sendReturn()
+            }
         }
     }
 
