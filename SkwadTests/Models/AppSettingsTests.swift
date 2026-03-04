@@ -460,4 +460,125 @@ final class AppSettingsTests: XCTestCase {
 
         XCTAssertEqual(decoded.personaId, personaId)
     }
+
+    // MARK: - Persona Type & State
+
+    func testNewPersonaDefaultsToUserEnabled() {
+        let persona = Persona(name: "Test", instructions: "Do stuff")
+        XCTAssertEqual(persona.type, .user)
+        XCTAssertEqual(persona.state, .enabled)
+    }
+
+    func testPersonaDecodesOldFormatWithoutTypeAndState() throws {
+        let id = UUID()
+        let json = """
+        {"id":"\(id.uuidString)","name":"Old","instructions":"Do stuff"}
+        """
+        let data = json.data(using: .utf8)!
+        let decoded = try JSONDecoder().decode(Persona.self, from: data)
+
+        XCTAssertEqual(decoded.type, .user)
+        XCTAssertEqual(decoded.state, .enabled)
+    }
+
+    func testPersonaTypeAndStateRoundTrip() throws {
+        let original = Persona(name: "System", instructions: "Do stuff", type: .system, state: .deleted)
+
+        let data = try JSONEncoder().encode(original)
+        let decoded = try JSONDecoder().decode(Persona.self, from: data)
+
+        XCTAssertEqual(decoded.type, .system)
+        XCTAssertEqual(decoded.state, .deleted)
+    }
+
+    @MainActor
+    func testRemoveUserPersonaHardDeletes() {
+        let settings = AppSettings.shared
+        let originalPersonas = settings.personas
+
+        let persona = settings.addPersona(name: "UserPersona", instructions: "Test")
+        XCTAssertEqual(persona.type, .user)
+
+        settings.removePersona(persona)
+
+        // Should be completely gone — not even in a deleted state
+        XCTAssertNil(settings.persona(for: persona.id))
+
+        settings.personas = originalPersonas
+    }
+
+    @MainActor
+    func testRemoveSystemPersonaSoftDeletes() {
+        let settings = AppSettings.shared
+        let originalPersonas = settings.personas
+
+        // Manually insert a system persona
+        let systemPersona = Persona(id: UUID(), name: "SystemPersona", instructions: "System test", type: .system)
+        var list = settings.personas
+        list.append(systemPersona)
+        settings.personas = list
+
+        // Remove it
+        settings.removePersona(systemPersona)
+
+        // Should not appear in active personas
+        XCTAssertNil(settings.persona(for: systemPersona.id))
+        // But should not be hard-deleted (it's soft-deleted internally)
+        XCTAssertFalse(settings.personas.contains { $0.id == systemPersona.id })
+
+        settings.personas = originalPersonas
+    }
+
+    @MainActor
+    func testInstallDefaultPersonasSkipsExisting() {
+        let settings = AppSettings.shared
+        let originalPersonas = settings.personas
+
+        // Install once
+        settings.installDefaultPersonas()
+        let countAfterFirst = settings.personas.count
+
+        // Install again — should be idempotent
+        settings.installDefaultPersonas()
+        XCTAssertEqual(settings.personas.count, countAfterFirst)
+
+        settings.personas = originalPersonas
+    }
+
+    @MainActor
+    func testInstallDefaultPersonasRespectsDeleted() {
+        let settings = AppSettings.shared
+        let originalPersonas = settings.personas
+
+        // Install defaults
+        settings.installDefaultPersonas()
+
+        // Delete all system personas
+        for persona in settings.personas where persona.type == .system {
+            settings.removePersona(persona)
+        }
+        let countAfterDelete = settings.personas.count
+
+        // Re-install — deleted ones should NOT reappear
+        settings.installDefaultPersonas()
+        XCTAssertEqual(settings.personas.count, countAfterDelete)
+
+        settings.personas = originalPersonas
+    }
+
+    @MainActor
+    func testDeletedPersonasFilteredFromActiveList() {
+        let settings = AppSettings.shared
+        let originalPersonas = settings.personas
+
+        let persona = Persona(id: UUID(), name: "Deleted", instructions: "Gone", type: .system, state: .deleted)
+        var list = settings.personas
+        list.append(persona)
+        settings.personas = list
+
+        // Should not appear in the active list
+        XCTAssertFalse(settings.personas.contains { $0.id == persona.id })
+
+        settings.personas = originalPersonas
+    }
 }

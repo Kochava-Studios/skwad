@@ -44,15 +44,40 @@ struct SavedAgent: Codable, Identifiable {
     }
 }
 
+enum PersonaType: String, Codable {
+    case system
+    case user
+}
+
+enum PersonaState: String, Codable {
+    case enabled
+    case disabled
+    case deleted
+}
+
 struct Persona: Codable, Identifiable, Equatable {
     let id: UUID
     var name: String
     var instructions: String
+    var type: PersonaType
+    var state: PersonaState
 
-    init(id: UUID = UUID(), name: String, instructions: String) {
+    init(id: UUID = UUID(), name: String, instructions: String, type: PersonaType = .user, state: PersonaState = .enabled) {
         self.id = id
         self.name = name
         self.instructions = instructions
+        self.type = type
+        self.state = state
+    }
+
+    // Migration: old personas without type/state default to user/enabled
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        name = try container.decode(String.self, forKey: .name)
+        instructions = try container.decode(String.self, forKey: .instructions)
+        type = try container.decodeIfPresent(PersonaType.self, forKey: .type) ?? .user
+        state = try container.decodeIfPresent(PersonaState.self, forKey: .state) ?? .enabled
     }
 }
 
@@ -231,42 +256,89 @@ class AppSettings: ObservableObject {
     // Personas
     @AppStorage("personasData") private var personasData: Data = Data()
 
-    var personas: [Persona] {
+    /// All personas including deleted (for persistence)
+    private var allPersonas: [Persona] {
         get {
-            let list = (try? JSONDecoder().decode([Persona].self, from: personasData)) ?? []
-            return list.sorted { $0.name.lowercased() < $1.name.lowercased() }
+            (try? JSONDecoder().decode([Persona].self, from: personasData)) ?? []
         }
         set {
             personasData = (try? JSONEncoder().encode(newValue)) ?? Data()
         }
     }
 
+    /// Active personas (excludes deleted), sorted by name
+    var personas: [Persona] {
+        get {
+            allPersonas.filter { $0.state != .deleted }.sorted { $0.name.lowercased() < $1.name.lowercased() }
+        }
+        set {
+            // Replace non-deleted entries, preserve deleted ones
+            let deleted = allPersonas.filter { $0.state == .deleted }
+            allPersonas = newValue + deleted
+        }
+    }
+
+    @discardableResult
     func addPersona(name: String, instructions: String) -> Persona {
         let persona = Persona(name: name, instructions: instructions)
-        var list = personas
+        var list = allPersonas
         list.append(persona)
-        personas = list
+        allPersonas = list
         return persona
     }
 
     func updatePersona(id: UUID, name: String, instructions: String) {
-        var list = personas
+        var list = allPersonas
         if let index = list.firstIndex(where: { $0.id == id }) {
             list[index].name = name
             list[index].instructions = instructions
-            personas = list
+            allPersonas = list
         }
     }
 
     func removePersona(_ persona: Persona) {
-        var list = personas
-        list.removeAll { $0.id == persona.id }
-        personas = list
+        var list = allPersonas
+        if persona.type == .system {
+            // Soft delete: mark as deleted so it won't be re-installed
+            if let index = list.firstIndex(where: { $0.id == persona.id }) {
+                list[index].state = .deleted
+                allPersonas = list
+            }
+        } else {
+            // Hard delete user personas
+            list.removeAll { $0.id == persona.id }
+            allPersonas = list
+        }
     }
 
     func persona(for id: UUID?) -> Persona? {
         guard let id else { return nil }
         return personas.first { $0.id == id }
+    }
+
+    // MARK: - Default Personas
+
+    /// Default system personas shipped with Skwad.
+    /// Uses fixed UUIDs so they can be matched across installs/updates.
+    static let defaultPersonas: [Persona] = [
+        // To be defined — placeholder empty for now
+    ]
+
+    /// Install default personas on startup.
+    /// Inserts missing defaults, skips already existing (by ID), respects deleted state.
+    func installDefaultPersonas() {
+        var list = allPersonas
+        let existingIds = Set(list.map { $0.id })
+        var changed = false
+        for persona in Self.defaultPersonas {
+            if !existingIds.contains(persona.id) {
+                list.append(persona)
+                changed = true
+            }
+        }
+        if changed {
+            allPersonas = list
+        }
     }
 
     // Bench agents (user-curated agent templates)

@@ -54,6 +54,9 @@ struct SkwadApp: App {
         // Initialize source base folder on first launch
         AppSettings.shared.initializeSourceBaseFolderIfNeeded()
 
+        // Install default personas (idempotent — skips existing, respects deleted)
+        AppSettings.shared.installDefaultPersonas()
+
         // Start background repo discovery service
         RepoDiscoveryService.shared.start()
 
