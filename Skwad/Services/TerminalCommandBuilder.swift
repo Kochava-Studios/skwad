@@ -96,7 +96,7 @@ struct TerminalCommandBuilder {
   /// Check if an agent type supports resuming a conversation
   static func canResumeConversation(agentType: String) -> Bool {
     switch agentType {
-    case "claude", "codex":
+    case "claude", "codex", "gemini", "copilot":
       return true
     default:
       return false
@@ -157,19 +157,22 @@ struct TerminalCommandBuilder {
       return #" -c 'developer_instructions="\#(systemPrompt)"' "\#(registrationUserPrompt)""#
 
     case "opencode":
-      // OpenCode: --prompt "..."
-      let userPrompt = registrationUserPrompt(agentId: agentId)
-      return #" --prompt "\#(userPrompt)""#
+      // OpenCode: no system prompt support — skip registration on resume
+      if isResume { return "" }
+      let userPromptOC = registrationUserPrompt(agentId: agentId)
+      return #" --prompt "\#(userPromptOC)""#
 
     case "gemini":
-      // Gemini CLI: --prompt-interactive "..."
-      let userPrompt = registrationUserPrompt(agentId: agentId)
-      return #" --prompt-interactive "\#(userPrompt)""#
+      // Gemini CLI: no system prompt support — skip registration on resume
+      if isResume { return "" }
+      let userPromptG = registrationUserPrompt(agentId: agentId)
+      return #" --prompt-interactive "\#(userPromptG)""#
 
     case "copilot":
-      // GitHub Copilot: --interactive "..."
-      let userPrompt = registrationUserPrompt(agentId: agentId)
-      return #" --interactive "\#(userPrompt)""#
+      // GitHub Copilot: no system prompt support — skip registration on resume
+      if isResume { return "" }
+      let userPromptCP = registrationUserPrompt(agentId: agentId)
+      return #" --interactive "\#(userPromptCP)""#
 
     default:
       return ""

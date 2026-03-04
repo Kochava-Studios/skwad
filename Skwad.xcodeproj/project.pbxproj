@@ -126,6 +126,8 @@
 		SR000009 /* ConversationHistoryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = SR100009 /* ConversationHistoryService.swift */; };
 		SR000011 /* ClaudeHistoryProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = SR100011 /* ClaudeHistoryProvider.swift */; };
 		SR000012 /* CodexHistoryProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = SR100012 /* CodexHistoryProvider.swift */; };
+		SR000013 /* GeminiHistoryProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = SR100013 /* GeminiHistoryProvider.swift */; };
+		SR000014 /* CopilotHistoryProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = SR100014 /* CopilotHistoryProvider.swift */; };
 		SR000010 /* FileSearchService.swift in Sources */ = {isa = PBXBuildFile; fileRef = SR100010 /* FileSearchService.swift */; };
 		TS000001 /* GitOutputParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100001 /* GitOutputParserTests.swift */; };
 		TS000002 /* GitOutputFixtures.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100002 /* GitOutputFixtures.swift */; };
@@ -321,6 +323,8 @@
 		SR100009 /* ConversationHistoryService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ConversationHistoryService.swift; sourceTree = "<group>"; };
 		SR100011 /* ClaudeHistoryProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeHistoryProvider.swift; sourceTree = "<group>"; };
 		SR100012 /* CodexHistoryProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodexHistoryProvider.swift; sourceTree = "<group>"; };
+		SR100013 /* GeminiHistoryProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeminiHistoryProvider.swift; sourceTree = "<group>"; };
+		SR100014 /* CopilotHistoryProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CopilotHistoryProvider.swift; sourceTree = "<group>"; };
 		SR100010 /* FileSearchService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileSearchService.swift; sourceTree = "<group>"; };
 		TS100001 /* GitOutputParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitOutputParserTests.swift; sourceTree = "<group>"; };
 		TS100002 /* GitOutputFixtures.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitOutputFixtures.swift; sourceTree = "<group>"; };
@@ -676,6 +680,8 @@
 				8DBD635D2F47B3480049E5DC /* AutopilotService.swift */,
 				SR100011 /* ClaudeHistoryProvider.swift */,
 				SR100012 /* CodexHistoryProvider.swift */,
+				SR100013 /* GeminiHistoryProvider.swift */,
+				SR100014 /* CopilotHistoryProvider.swift */,
 				SR100009 /* ConversationHistoryService.swift */,
 				SR100010 /* FileSearchService.swift */,
 				SR100008 /* NotificationService.swift */,
@@ -1031,6 +1037,8 @@
 				SR000009 /* ConversationHistoryService.swift in Sources */,
 				SR000011 /* ClaudeHistoryProvider.swift in Sources */,
 				SR000012 /* CodexHistoryProvider.swift in Sources */,
+				SR000013 /* GeminiHistoryProvider.swift in Sources */,
+				SR000014 /* CopilotHistoryProvider.swift in Sources */,
 				F8001001 /* SkwadApp.swift in Sources */,
 				F8001002 /* ContentView.swift in Sources */,
 				F8001003 /* Agent.swift in Sources */,

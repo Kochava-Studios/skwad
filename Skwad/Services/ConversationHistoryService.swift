@@ -26,6 +26,8 @@ class ConversationHistoryService {
     private let providers: [String: ConversationHistoryProvider] = [
         "claude": ClaudeHistoryProvider(),
         "codex": CodexHistoryProvider(),
+        "gemini": GeminiHistoryProvider(),
+        "copilot": CopilotHistoryProvider(),
     ]
 
     private init() {}
