@@ -373,8 +373,9 @@ struct ContentView: View {
           folder: agent.workingFolder,
           onDismiss: { showFileFinder = false },
           onSelect: { path in
-            Clipboard.copy(path)
-            agentManager.sendText(path, for: agent.id)
+            let atPath = "@\(path)"
+            Clipboard.copy(atPath)
+            agentManager.sendText(atPath, for: agent.id)
             showFileFinder = false
           }
         )
