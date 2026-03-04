@@ -124,6 +124,7 @@
 		SR000007 /* TerminalAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = SR100007 /* TerminalAdapter.swift */; };
 		SR000008 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = SR100008 /* NotificationService.swift */; };
 		SR000009 /* ConversationHistoryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = SR100009 /* ConversationHistoryService.swift */; };
+		SR000011 /* ClaudeHistoryProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = SR100011 /* ClaudeHistoryProvider.swift */; };
 		SR000010 /* FileSearchService.swift in Sources */ = {isa = PBXBuildFile; fileRef = SR100010 /* FileSearchService.swift */; };
 		TS000001 /* GitOutputParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100001 /* GitOutputParserTests.swift */; };
 		TS000002 /* GitOutputFixtures.swift in Sources */ = {isa = PBXBuildFile; fileRef = TS100002 /* GitOutputFixtures.swift */; };
@@ -317,6 +318,7 @@
 		SR100007 /* TerminalAdapter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TerminalAdapter.swift; sourceTree = "<group>"; };
 		SR100008 /* NotificationService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
 		SR100009 /* ConversationHistoryService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ConversationHistoryService.swift; sourceTree = "<group>"; };
+		SR100011 /* ClaudeHistoryProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeHistoryProvider.swift; sourceTree = "<group>"; };
 		SR100010 /* FileSearchService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileSearchService.swift; sourceTree = "<group>"; };
 		TS100001 /* GitOutputParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitOutputParserTests.swift; sourceTree = "<group>"; };
 		TS100002 /* GitOutputFixtures.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitOutputFixtures.swift; sourceTree = "<group>"; };
@@ -670,6 +672,7 @@
 			isa = PBXGroup;
 			children = (
 				8DBD635D2F47B3480049E5DC /* AutopilotService.swift */,
+				SR100011 /* ClaudeHistoryProvider.swift */,
 				SR100009 /* ConversationHistoryService.swift */,
 				SR100010 /* FileSearchService.swift */,
 				SR100008 /* NotificationService.swift */,
@@ -1023,6 +1026,7 @@
 				8D8C03012F53FBAE00A06866 /* MarkdownWebView.swift in Sources */,
 				SR000008 /* NotificationService.swift in Sources */,
 				SR000009 /* ConversationHistoryService.swift in Sources */,
+				SR000011 /* ClaudeHistoryProvider.swift in Sources */,
 				F8001001 /* SkwadApp.swift in Sources */,
 				F8001002 /* ContentView.swift in Sources */,
 				F8001003 /* Agent.swift in Sources */,

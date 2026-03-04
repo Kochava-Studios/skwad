@@ -7,7 +7,7 @@ struct ConversationHistoryView: View {
 
     @AppStorage("conversationHistoryExpanded") private var isExpanded = false
     @State private var hoveredSessionId: String?
-    @State private var sessionToDelete: ConversationHistoryService.SessionSummary?
+    @State private var sessionToDelete: SessionSummary?
 
     var body: some View {
         VStack(spacing: 0) {
@@ -129,7 +129,7 @@ struct ConversationHistoryView: View {
 // MARK: - Session Row
 
 struct SessionRowView: View {
-    let session: ConversationHistoryService.SessionSummary
+    let session: SessionSummary
     var isCurrent: Bool = false
     let isHovered: Bool
     let onResume: () -> Void
@@ -186,8 +186,8 @@ struct SessionRowView: View {
 
 // MARK: - Previews
 
-private func previewSession(_ title: String, minutesAgo: Int, messages: Int = 12) -> ConversationHistoryService.SessionSummary {
-    ConversationHistoryService.SessionSummary(
+private func previewSession(_ title: String, minutesAgo: Int, messages: Int = 12) -> SessionSummary {
+    SessionSummary(
         id: UUID().uuidString,
         title: title,
         timestamp: Date().addingTimeInterval(-Double(minutesAgo) * 60),

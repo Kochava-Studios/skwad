@@ -1,18 +1,73 @@
 import Foundation
 
+/// Shared model for a conversation session summary
+struct SessionSummary: Identifiable {
+    let id: String          // session UUID (filename without extension)
+    let title: String       // first meaningful user message
+    let timestamp: Date     // file modification date
+    let messageCount: Int   // number of user+assistant messages
+}
+
+/// Protocol for agent-specific conversation history parsing
+protocol ConversationHistoryProvider {
+    /// Returns the directory where this agent stores sessions for a given project folder
+    func sessionsDirectory(for folder: String) -> String
+    /// Parse all sessions in a directory, returning up to `maxSessions` summaries sorted by date descending
+    func parseSessions(in directory: String) -> [SessionSummary]
+    /// Parse a single session file into a summary, or nil if it has no valid content
+    func parseSessionFile(path: String, sessionId: String, timestamp: Date) -> SessionSummary?
+    /// Delete all files associated with a session (transcript, data directory, etc.)
+    func deleteSessionFiles(id: String, in directory: String)
+}
+
+/// Default implementation for common session discovery logic
+extension ConversationHistoryProvider {
+    func parseSessions(in directory: String) -> [SessionSummary] {
+        let fm = FileManager.default
+        guard let contents = try? fm.contentsOfDirectory(atPath: directory) else { return [] }
+
+        let fileExtension = sessionFileExtension
+        var sessionFiles: [(name: String, date: Date)] = []
+        for file in contents where file.hasSuffix(fileExtension) {
+            let path = (directory as NSString).appendingPathComponent(file)
+            if let attrs = try? fm.attributesOfItem(atPath: path),
+               let modDate = attrs[.modificationDate] as? Date {
+                sessionFiles.append((name: file, date: modDate))
+            }
+        }
+        sessionFiles.sort { $0.date > $1.date }
+
+        let maxSessions = 20
+        var summaries: [SessionSummary] = []
+        for (index, file) in sessionFiles.enumerated() {
+            let sessionId = String(file.name.dropLast(fileExtension.count))
+            let path = (directory as NSString).appendingPathComponent(file.name)
+
+            if let summary = parseSessionFile(path: path, sessionId: sessionId, timestamp: file.date) {
+                summaries.append(summary)
+            } else if index == 0 {
+                summaries.append(SessionSummary(id: sessionId, title: "", timestamp: file.date, messageCount: 0))
+            }
+            if summaries.count >= maxSessions { break }
+        }
+
+        return summaries
+    }
+
+    /// File extension used for session files (including the dot). Override if different from `.jsonl`.
+    var sessionFileExtension: String { ".jsonl" }
+}
+
 @Observable @MainActor
 class ConversationHistoryService {
     static let shared = ConversationHistoryService()
 
-    struct SessionSummary: Identifiable {
-        let id: String          // session UUID (filename without .jsonl)
-        let title: String       // first meaningful user message
-        let timestamp: Date     // file modification date
-        let messageCount: Int   // number of user+assistant messages
-    }
-
     private var cache: [String: [SessionSummary]] = [:]
     private(set) var isLoading = false
+
+    private let providers: [String: ConversationHistoryProvider] = [
+        "claude": ClaudeHistoryProvider(),
+    ]
 
     private init() {}
 
@@ -24,20 +79,20 @@ class ConversationHistoryService {
 
     /// Refresh sessions for a folder/agent type combo
     func refresh(for folder: String, agentType: String) async {
-        guard agentType == "claude" else { return }
+        guard let provider = providers[agentType] else { return }
 
-        let projectDir = claudeProjectsPath(for: folder)
-        guard FileManager.default.fileExists(atPath: projectDir) else {
+        let directory = provider.sessionsDirectory(for: folder)
+        guard FileManager.default.fileExists(atPath: directory) else {
             let key = cacheKey(folder: folder, agentType: agentType)
             cache[key] = []
             return
         }
 
         isLoading = true
-        let dir = projectDir
+        let p = provider
 
         let summaries = await Task.detached(priority: .utility) {
-            Self.parseSessions(in: dir)
+            p.parseSessions(in: directory)
         }.value
 
         let key = cacheKey(folder: folder, agentType: agentType)
@@ -45,20 +100,13 @@ class ConversationHistoryService {
         isLoading = false
     }
 
-    /// Delete a session's JSONL file and data directory, then re-read to backfill
+    /// Delete a session's files, then re-read to backfill
     func deleteSession(id: String, folder: String, agentType: String) async {
-        let projectDir = claudeProjectsPath(for: folder)
-        let fm = FileManager.default
+        guard let provider = providers[agentType] else { return }
 
-        // Delete .jsonl file
-        let jsonlPath = (projectDir as NSString).appendingPathComponent("\(id).jsonl")
-        try? fm.removeItem(atPath: jsonlPath)
+        let directory = provider.sessionsDirectory(for: folder)
+        provider.deleteSessionFiles(id: id, in: directory)
 
-        // Delete data directory (subagents, etc.)
-        let dataPath = (projectDir as NSString).appendingPathComponent(id)
-        try? fm.removeItem(atPath: dataPath)
-
-        // Re-read to backfill the list to 20
         await refresh(for: folder, agentType: agentType)
     }
 
@@ -68,158 +116,7 @@ class ConversationHistoryService {
         cache.removeValue(forKey: key)
     }
 
-    // MARK: - Path Derivation
-
-    /// Derive the Claude projects path for a given folder
-    /// e.g. /Users/foo/src/bar → ~/.claude/projects/-Users-foo-src-bar
-    private func claudeProjectsPath(for folder: String) -> String {
-        let dashPath = folder.replacingOccurrences(of: "/", with: "-")
-        let home = FileManager.default.homeDirectoryForCurrentUser.path
-        return "\(home)/.claude/projects/\(dashPath)"
-    }
-
     private func cacheKey(folder: String, agentType: String) -> String {
         "\(agentType):\(folder)"
-    }
-
-    // MARK: - JSONL Parsing (runs on background thread)
-
-    nonisolated static func parseSessions(in directory: String) -> [SessionSummary] {
-        let fm = FileManager.default
-        guard let contents = try? fm.contentsOfDirectory(atPath: directory) else { return [] }
-
-        // Filter to .jsonl files and sort by modification date descending
-        var jsonlFiles: [(name: String, date: Date)] = []
-        for file in contents where file.hasSuffix(".jsonl") {
-            let path = (directory as NSString).appendingPathComponent(file)
-            if let attrs = try? fm.attributesOfItem(atPath: path),
-               let modDate = attrs[.modificationDate] as? Date {
-                jsonlFiles.append((name: file, date: modDate))
-            }
-        }
-        jsonlFiles.sort { $0.date > $1.date }
-
-        // Parse files until we have 20 valid sessions
-        // The most recent file (first in list) is always included even without a title
-        let maxSessions = 20
-        var summaries: [SessionSummary] = []
-        for (index, file) in jsonlFiles.enumerated() {
-            let sessionId = String(file.name.dropLast(6)) // remove .jsonl
-            let path = (directory as NSString).appendingPathComponent(file.name)
-
-            if let summary = parseJSONLFile(path: path, sessionId: sessionId, timestamp: file.date) {
-                summaries.append(summary)
-            } else if index == 0 {
-                summaries.append(SessionSummary(id: sessionId, title: "", timestamp: file.date, messageCount: 0))
-            } else {
-                continue
-            }
-            if summaries.count >= maxSessions { break }
-        }
-
-        return summaries
-    }
-
-    /// Format a command message like "<command-name>/review</command-name>...<command-args>text</command-args>"
-    /// into "/review text"
-    nonisolated static func formatCommandMessage(_ content: String) -> String {
-        // Extract command name (e.g. "/review")
-        guard let nameStart = content.range(of: "<command-name>"),
-              let nameEnd = content.range(of: "</command-name>") else {
-            return ""
-        }
-        let commandName = String(content[nameStart.upperBound..<nameEnd.lowerBound])
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-
-        // Extract args if present
-        var args = ""
-        if let argsStart = content.range(of: "<command-args>"),
-           let argsEnd = content.range(of: "</command-args>") {
-            args = String(content[argsStart.upperBound..<argsEnd.lowerBound])
-                .trimmingCharacters(in: .whitespacesAndNewlines)
-        }
-
-        if args.isEmpty {
-            return commandName
-        }
-        return "\(commandName) \(args)"
-    }
-
-    nonisolated static func parseJSONLFile(path: String, sessionId: String, timestamp: Date) -> SessionSummary? {
-        guard let data = FileManager.default.contents(atPath: path),
-              let content = String(data: data, encoding: .utf8) else {
-            return nil
-        }
-
-        let lines = content.components(separatedBy: "\n")
-        var title: String?
-        var messageCount = 0
-
-        for line in lines {
-            let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
-            guard !trimmed.isEmpty else { continue }
-
-            guard let lineData = trimmed.data(using: .utf8),
-                  let json = try? JSONSerialization.jsonObject(with: lineData) as? [String: Any],
-                  let type = json["type"] as? String else {
-                continue
-            }
-
-            // Count user + assistant messages
-            if type == "user" || type == "assistant" {
-                messageCount += 1
-            }
-
-            // Extract title from first meaningful user message
-            if title == nil && type == "user" {
-                // Skip meta messages
-                if json["isMeta"] as? Bool == true { continue }
-
-                // Get content string
-                guard let message = json["message"] as? [String: Any],
-                      let messageContent = message["content"] as? String else {
-                    continue
-                }
-
-                // Skip Skwad registration prompts (various phrasings over time)
-                let lc = messageContent.lowercased()
-                if lc.contains("you are part of a team of agents") { continue }
-                if lc.contains("register with the skwad") { continue }
-                if lc.contains("list other agents names and project") { continue }
-
-                // Skip local command messages (system noise)
-                if messageContent.contains("<local-command-") { continue }
-
-                // Format command messages as "/command args"
-                let cleaned: String
-                if messageContent.contains("<command-name>") {
-                    cleaned = formatCommandMessage(messageContent)
-                    if cleaned.isEmpty { continue }
-                } else {
-                    // Skip empty or whitespace-only
-                    let trimmed = messageContent.trimmingCharacters(in: .whitespacesAndNewlines)
-                    if trimmed.isEmpty { continue }
-                    cleaned = trimmed
-                }
-
-                // Use first line, truncated to 80 chars
-                let firstLine = cleaned.components(separatedBy: "\n").first ?? cleaned
-                if firstLine.count > 80 {
-                    title = String(firstLine.prefix(77)) + "..."
-                } else {
-                    title = firstLine
-                }
-            }
-        }
-
-        // Skip files with no valid user messages or no messages at all
-        guard let title = title, messageCount > 0 else { return nil }
-
-        return SessionSummary(
-            id: sessionId,
-            title: title,
-            timestamp: timestamp,
-            messageCount: messageCount
-        )
     }
 }

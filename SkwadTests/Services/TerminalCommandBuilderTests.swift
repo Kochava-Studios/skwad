@@ -219,9 +219,9 @@ final class TerminalCommandBuilderTests: XCTestCase {
         XCTAssertTrue(TerminalCommandBuilder.supportsInlineRegistration(agentType: "shell"))
     }
 
-    func testSupportsSystemPromptOnlyForClaude() {
+    func testSupportsSystemPromptForClaudeAndCodex() {
         XCTAssertTrue(TerminalCommandBuilder.supportsSystemPrompt(agentType: "claude"))
-        XCTAssertFalse(TerminalCommandBuilder.supportsSystemPrompt(agentType: "codex"))
+        XCTAssertTrue(TerminalCommandBuilder.supportsSystemPrompt(agentType: "codex"))
         XCTAssertFalse(TerminalCommandBuilder.supportsSystemPrompt(agentType: "gemini"))
     }
 
@@ -247,7 +247,7 @@ final class TerminalCommandBuilderTests: XCTestCase {
     }
 
     @MainActor
-    func testCodexRegistrationUsesUserPrompt() {
+    func testCodexRegistrationUsesSystemAndUserPrompt() {
         let settings = AppSettings.shared
         let originalMCP = settings.mcpServerEnabled
 
@@ -260,9 +260,10 @@ final class TerminalCommandBuilderTests: XCTestCase {
             agentId: agentId
         )
 
-        // Codex uses positional argument (no flag)
+        // Codex uses -c developer_instructions for system prompt + positional user prompt
         XCTAssertTrue(command.contains(agentId.uuidString))
-        XCTAssertTrue(command.contains("Register with the skwad"))
+        XCTAssertTrue(command.contains("developer_instructions"))
+        XCTAssertTrue(command.contains("List other agents"))
         XCTAssertFalse(command.contains("--append-system-prompt"))
 
         settings.mcpServerEnabled = originalMCP

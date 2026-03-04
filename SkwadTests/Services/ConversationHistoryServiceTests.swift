@@ -1,9 +1,10 @@
 import XCTest
 @testable import Skwad
 
-final class ConversationHistoryServiceTests: XCTestCase {
+final class ClaudeHistoryProviderTests: XCTestCase {
 
     private var tempDir: String!
+    private let provider = ClaudeHistoryProvider()
 
     override func setUp() {
         super.setUp()
@@ -360,8 +361,7 @@ final class ConversationHistoryServiceTests: XCTestCase {
 
     // MARK: - Delete
 
-    @MainActor
-    func testDeleteRemovesFilesAndDirectory() async {
+    func testDeleteRemovesFilesAndDirectory() {
         let sessionId = "test-session-id"
         writeJSONL("\(sessionId).jsonl", lines: [
             userMessage("Hello"),
@@ -376,10 +376,7 @@ final class ConversationHistoryServiceTests: XCTestCase {
         XCTAssertTrue(fm.fileExists(atPath: (tempDir as NSString).appendingPathComponent("\(sessionId).jsonl")))
         XCTAssertTrue(fm.fileExists(atPath: dataDir))
 
-        // We can't easily test deleteSession through the service (it derives its own path)
-        // but we can verify the files would be deleted by testing the file operations directly
-        try? fm.removeItem(atPath: (tempDir as NSString).appendingPathComponent("\(sessionId).jsonl"))
-        try? fm.removeItem(atPath: dataDir)
+        provider.deleteSessionFiles(id: sessionId, in: tempDir)
 
         XCTAssertFalse(fm.fileExists(atPath: (tempDir as NSString).appendingPathComponent("\(sessionId).jsonl")))
         XCTAssertFalse(fm.fileExists(atPath: dataDir))
@@ -388,21 +385,35 @@ final class ConversationHistoryServiceTests: XCTestCase {
     // MARK: - Path Derivation
 
     func testClaudeProjectsPathDerivation() {
-        // Test the path transformation logic: /Users/foo/src/bar → -Users-foo-src-bar
-        let folder = "/Users/foo/src/bar"
-        let dashPath = folder.replacingOccurrences(of: "/", with: "-")
-        XCTAssertEqual(dashPath, "-Users-foo-src-bar")
+        let path = provider.sessionsDirectory(for: "/Users/foo/src/bar")
+        XCTAssertTrue(path.hasSuffix("/.claude/projects/-Users-foo-src-bar"))
     }
 
     func testClaudeProjectsPathWithTrailingSlash() {
-        let folder = "/Users/foo/src/bar/"
-        let dashPath = folder.replacingOccurrences(of: "/", with: "-")
-        XCTAssertEqual(dashPath, "-Users-foo-src-bar-")
+        let path = provider.sessionsDirectory(for: "/Users/foo/src/bar/")
+        XCTAssertTrue(path.hasSuffix("/.claude/projects/-Users-foo-src-bar-"))
+    }
+
+    // MARK: - Format Command Message
+
+    func testFormatCommandMessageBasic() {
+        let result = ClaudeHistoryProvider.formatCommandMessage("<command-name>/review</command-name><command-args>focus on errors</command-args>")
+        XCTAssertEqual(result, "/review focus on errors")
+    }
+
+    func testFormatCommandMessageNoArgs() {
+        let result = ClaudeHistoryProvider.formatCommandMessage("<command-name>/merge</command-name>")
+        XCTAssertEqual(result, "/merge")
+    }
+
+    func testFormatCommandMessageNoCommandName() {
+        let result = ClaudeHistoryProvider.formatCommandMessage("just some text")
+        XCTAssertEqual(result, "")
     }
 
     // MARK: - Helpers
 
-    private func parseSessions() -> [ConversationHistoryService.SessionSummary] {
-        return ConversationHistoryService.parseSessions(in: tempDir)
+    private func parseSessions() -> [SessionSummary] {
+        return provider.parseSessions(in: tempDir)
     }
 }

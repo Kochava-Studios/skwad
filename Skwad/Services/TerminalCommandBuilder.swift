@@ -106,7 +106,7 @@ struct TerminalCommandBuilder {
   /// Check if an agent type supports system prompt injection
   static func supportsSystemPrompt(agentType: String) -> Bool {
     switch agentType {
-    case "claude":
+    case "claude", "codex":
       return true
     default:
       return false
@@ -138,9 +138,12 @@ struct TerminalCommandBuilder {
       return #" --append-system-prompt "\#(systemPrompt)" "\#(registrationUserPrompt)""#
 
     case "codex":
-      // Codex: user prompt as last argument (no flag)
-      let userPrompt = registrationUserPrompt(agentId: agentId)
-      return #" "\#(userPrompt)""#
+      // Codex: system prompt via -c developer_instructions, user prompt as last argument
+      let systemPrompt = registrationSystemPrompt(agentId: agentId)
+      if isResume {
+        return #" -c 'developer_instructions="\#(systemPrompt)"'"#
+      }
+      return #" -c 'developer_instructions="\#(systemPrompt)"' "\#(registrationUserPrompt)""#
 
     case "opencode":
       // OpenCode: --prompt "..."
