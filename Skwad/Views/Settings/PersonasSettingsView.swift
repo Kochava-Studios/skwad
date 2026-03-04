@@ -3,6 +3,7 @@ import SwiftUI
 struct PersonasSettingsView: View {
     @ObservedObject private var settings = AppSettings.shared
     @State private var sheetPersona: SheetPersona? = nil
+    @State private var showingRestoreConfirmation = false
 
     /// Wrapper to drive .sheet(item:) — distinguishes add (nil persona) from edit.
     private struct SheetPersona: Identifiable {
@@ -51,8 +52,14 @@ struct PersonasSettingsView: View {
                     }
                 }
 
-                Button("Add Persona...") {
-                    sheetPersona = SheetPersona(persona: nil)
+                HStack {
+                    Button("Add Persona...") {
+                        sheetPersona = SheetPersona(persona: nil)
+                    }
+                    Spacer()
+                    Button("Restore Defaults") {
+                        showingRestoreConfirmation = true
+                    }
                 }
             } header: {
                 Text("Manage Personas")
@@ -61,6 +68,14 @@ struct PersonasSettingsView: View {
         .formStyle(.grouped)
         .scrollDisabled(true)
         .padding()
+        .alert("Restore Defaults", isPresented: $showingRestoreConfirmation) {
+            Button("Cancel", role: .cancel) {}
+            Button("Restore") {
+                settings.restoreDefaultPersonas()
+            }
+        } message: {
+            Text("This will restore default personas with factory values. Your custom personas will not be affected.")
+        }
         .sheet(item: $sheetPersona) { item in
             PersonaSheet(persona: item.persona) { name, instructions in
                 if let existing = item.persona {

@@ -864,7 +864,7 @@ final class TerminalCommandBuilderTests: XCTestCase {
         settings.mcpServerEnabled = originalMCP
     }
 
-    func testShellEscapeHandlesAllDangerousChars() {
+    func testShellEscapeHandlesDangerousChars() {
         let input = #"He said "hello!" with $var and `cmd`"#
         let escaped = TerminalCommandBuilder.shellEscape(input)
         XCTAssertEqual(escaped, #"He said \"hello\!\" with \$var and \`cmd\`"#)
@@ -873,6 +873,11 @@ final class TerminalCommandBuilderTests: XCTestCase {
     func testShellEscapeHandlesBackslash() {
         let escaped = TerminalCommandBuilder.shellEscape(#"path\to\file"#)
         XCTAssertEqual(escaped, #"path\\to\\file"#)
+    }
+
+    func testShellEscapeLeavesSingleQuoteAlone() {
+        let escaped = TerminalCommandBuilder.shellEscape("can't stop")
+        XCTAssertEqual(escaped, "can't stop")
     }
 
     func testShellEscapeLeavesPlainTextUnchanged() {

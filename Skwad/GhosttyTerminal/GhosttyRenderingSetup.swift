@@ -91,7 +91,17 @@ class GhosttyRenderingSetup {
 
         // Set initial_input if command provided
         if let command = command, !command.isEmpty {
-            let inputWithNewline = command + "\n"
+            let effectiveCommand: String
+            if command.utf8.count > 1000 {
+                // Ghostty's initial_input is limited to 1024 bytes.
+                // For long commands, write to a temp script and execute that instead.
+                let scriptPath = NSTemporaryDirectory() + "skwad-\(UUID().uuidString).sh"
+                try? command.write(toFile: scriptPath, atomically: true, encoding: .utf8)
+                effectiveCommand = " bash '\(scriptPath)' ; rm -f '\(scriptPath)'"
+            } else {
+                effectiveCommand = command
+            }
+            let inputWithNewline = effectiveCommand + "\n"
             if let input = strdup(inputWithNewline) {
                 initialInputPtr = input
                 surfaceConfig.initial_input = UnsafePointer(input)

@@ -567,6 +567,70 @@ final class AppSettingsTests: XCTestCase {
     }
 
     @MainActor
+    func testRestoreDefaultPersonasResetsSystemPersonas() {
+        let settings = AppSettings.shared
+        let originalPersonas = settings.personas
+
+        // Install defaults
+        settings.installDefaultPersonas()
+
+        // Edit a system persona
+        if let system = settings.personas.first(where: { $0.type == .system }) {
+            settings.updatePersona(id: system.id, name: "Modified", instructions: "Changed")
+            XCTAssertEqual(settings.persona(for: system.id)?.name, "Modified")
+
+            // Restore
+            settings.restoreDefaultPersonas()
+
+            // Should be back to original
+            let restored = settings.persona(for: system.id)
+            XCTAssertNotEqual(restored?.name, "Modified")
+            XCTAssertNotEqual(restored?.instructions, "Changed")
+        }
+
+        settings.personas = originalPersonas
+    }
+
+    @MainActor
+    func testRestoreDefaultPersonasReenablesDeleted() {
+        let settings = AppSettings.shared
+        let originalPersonas = settings.personas
+
+        settings.installDefaultPersonas()
+
+        // Delete a system persona
+        if let system = settings.personas.first(where: { $0.type == .system }) {
+            let systemId = system.id
+            settings.removePersona(system)
+            XCTAssertNil(settings.persona(for: systemId))
+
+            // Restore brings it back
+            settings.restoreDefaultPersonas()
+            XCTAssertNotNil(settings.persona(for: systemId))
+            XCTAssertEqual(settings.persona(for: systemId)?.state, .enabled)
+        }
+
+        settings.personas = originalPersonas
+    }
+
+    @MainActor
+    func testRestoreDefaultPersonasKeepsUserPersonas() {
+        let settings = AppSettings.shared
+        let originalPersonas = settings.personas
+
+        settings.installDefaultPersonas()
+        let userPersona = settings.addPersona(name: "MyPersona", instructions: "Custom")
+
+        settings.restoreDefaultPersonas()
+
+        // User persona should still be there, untouched
+        XCTAssertEqual(settings.persona(for: userPersona.id)?.name, "MyPersona")
+        XCTAssertEqual(settings.persona(for: userPersona.id)?.instructions, "Custom")
+
+        settings.personas = originalPersonas
+    }
+
+    @MainActor
     func testDeletedPersonasFilteredFromActiveList() {
         let settings = AppSettings.shared
         let originalPersonas = settings.personas

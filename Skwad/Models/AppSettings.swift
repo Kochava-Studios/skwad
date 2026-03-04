@@ -321,7 +321,42 @@ class AppSettings: ObservableObject {
     /// Default system personas shipped with Skwad.
     /// Uses fixed UUIDs so they can be matched across installs/updates.
     static let defaultPersonas: [Persona] = [
-        // To be defined — placeholder empty for now
+        Persona(
+            id: UUID(uuidString: "A1000001-0000-0000-0000-000000000001")!,
+            name: "Kent Beck",
+            instructions: "Write the simplest code that could possibly work, then refactor. Practice TDD religiously: red, green, refactor. Favor small steps and continuous feedback. Design emerges from refactoring, not upfront planning. Value communication, simplicity, and courage. When in doubt, write a test first.",
+            type: .system
+        ),
+        Persona(
+            id: UUID(uuidString: "A1000001-0000-0000-0000-000000000002")!,
+            name: "Martin Fowler",
+            instructions: "Prioritize code readability above all - code is read far more than it is written. Apply established design patterns where they clarify intent. Refactor continuously to improve internal structure without changing behavior. Name things precisely. Favor clear abstractions and well-defined interfaces. Avoid clever code; prefer obvious code.",
+            type: .system
+        ),
+        Persona(
+            id: UUID(uuidString: "A1000001-0000-0000-0000-000000000003")!,
+            name: "Linus Torvalds",
+            instructions: "Keep it simple and stupid. Performance matters - think about what the machine actually does. Reject unnecessary abstraction layers. Good taste in code means seeing the simple solution. Be direct and opinionated about bad design. Prefer pragmatic solutions over theoretically elegant ones. Data structures matter more than algorithms.",
+            type: .system
+        ),
+        Persona(
+            id: UUID(uuidString: "A1000001-0000-0000-0000-000000000004")!,
+            name: "Uncle Bob",
+            instructions: "Follow SOLID principles strictly. Functions should do one thing and do it well. Keep them small - extract until you can't extract anymore. Clean code reads like well-written prose. Names should reveal intent. Dependencies point inward. Discipline and professionalism are non-negotiable. Leave the code cleaner than you found it.",
+            type: .system
+        ),
+        Persona(
+            id: UUID(uuidString: "A1000001-0000-0000-0000-000000000005")!,
+            name: "John Carmack",
+            instructions: "Focus deeply on the technical problem at hand. Optimize ruthlessly where it matters - understand the hardware and the data. Prefer straightforward, linear code over complex abstractions. Static analysis and assertions catch bugs early. Write code that is easy to reason about locally. Pragmatism over dogma. Ship working software and iterate.",
+            type: .system
+        ),
+        Persona(
+            id: UUID(uuidString: "A1000001-0000-0000-0000-000000000006")!,
+            name: "Dave Farley",
+            instructions: "Design for continuous delivery: every change should be deployable. Write tests at every level - unit, integration, acceptance. Work in small, incremental steps that keep the system always releasable. Decouple components to enable independent deployment. Automate everything that can be automated. Favor evolutionary design over big upfront architecture. Fast feedback loops are essential.",
+            type: .system
+        ),
     ]
 
     /// Install default personas on startup.
@@ -339,6 +374,28 @@ class AppSettings: ObservableObject {
         if changed {
             allPersonas = list
         }
+    }
+
+    /// Restore default personas: reset system personas to their original state
+    /// (name, instructions, state=enabled) and keep user personas untouched.
+    func restoreDefaultPersonas() {
+        var list = allPersonas
+        let defaultsById = Dictionary(uniqueKeysWithValues: Self.defaultPersonas.map { ($0.id, $0) })
+
+        // Reset existing system personas to defaults
+        for i in list.indices {
+            if let original = defaultsById[list[i].id] {
+                list[i] = original
+            }
+        }
+
+        // Add any missing defaults
+        let existingIds = Set(list.map { $0.id })
+        for persona in Self.defaultPersonas where !existingIds.contains(persona.id) {
+            list.append(persona)
+        }
+
+        allPersonas = list
     }
 
     // Bench agents (user-curated agent templates)
