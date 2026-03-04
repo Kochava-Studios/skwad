@@ -31,9 +31,20 @@ struct TerminalCommandBuilder {
 
     // Add resume/fork session arguments
     if let sessionId = resumeSessionId, canResumeConversation(agentType: agentType) {
-      fullCommand += " --resume \(sessionId)"
-      if forkSession && canForkConversation(agentType: agentType) {
-        fullCommand += " --fork-session"
+      switch agentType {
+      case "codex":
+        // Codex uses subcommands: `codex resume <id>` or `codex fork <id>`
+        if forkSession && canForkConversation(agentType: agentType) {
+          fullCommand += " fork \(sessionId)"
+        } else {
+          fullCommand += " resume \(sessionId)"
+        }
+      default:
+        // Claude and others use flags: `--resume <id> [--fork-session]`
+        fullCommand += " --resume \(sessionId)"
+        if forkSession && canForkConversation(agentType: agentType) {
+          fullCommand += " --fork-session"
+        }
       }
     }
 
@@ -75,17 +86,17 @@ struct TerminalCommandBuilder {
   /// Check if an agent type supports forking a conversation (--resume + --fork-session)
   static func canForkConversation(agentType: String) -> Bool {
     switch agentType {
-    case "claude":
+    case "claude", "codex":
       return true
     default:
       return false
     }
   }
 
-  /// Check if an agent type supports resuming a conversation (--resume / --continue)
+  /// Check if an agent type supports resuming a conversation
   static func canResumeConversation(agentType: String) -> Bool {
     switch agentType {
-    case "claude":
+    case "claude", "codex":
       return true
     default:
       return false

@@ -10,52 +10,10 @@ struct SessionSummary: Identifiable {
 
 /// Protocol for agent-specific conversation history parsing
 protocol ConversationHistoryProvider {
-    /// Returns the directory where this agent stores sessions for a given project folder
-    func sessionsDirectory(for folder: String) -> String
-    /// Parse all sessions in a directory, returning up to `maxSessions` summaries sorted by date descending
-    func parseSessions(in directory: String) -> [SessionSummary]
-    /// Parse a single session file into a summary, or nil if it has no valid content
-    func parseSessionFile(path: String, sessionId: String, timestamp: Date) -> SessionSummary?
-    /// Delete all files associated with a session (transcript, data directory, etc.)
-    func deleteSessionFiles(id: String, in directory: String)
-}
-
-/// Default implementation for common session discovery logic
-extension ConversationHistoryProvider {
-    func parseSessions(in directory: String) -> [SessionSummary] {
-        let fm = FileManager.default
-        guard let contents = try? fm.contentsOfDirectory(atPath: directory) else { return [] }
-
-        let fileExtension = sessionFileExtension
-        var sessionFiles: [(name: String, date: Date)] = []
-        for file in contents where file.hasSuffix(fileExtension) {
-            let path = (directory as NSString).appendingPathComponent(file)
-            if let attrs = try? fm.attributesOfItem(atPath: path),
-               let modDate = attrs[.modificationDate] as? Date {
-                sessionFiles.append((name: file, date: modDate))
-            }
-        }
-        sessionFiles.sort { $0.date > $1.date }
-
-        let maxSessions = 20
-        var summaries: [SessionSummary] = []
-        for (index, file) in sessionFiles.enumerated() {
-            let sessionId = String(file.name.dropLast(fileExtension.count))
-            let path = (directory as NSString).appendingPathComponent(file.name)
-
-            if let summary = parseSessionFile(path: path, sessionId: sessionId, timestamp: file.date) {
-                summaries.append(summary)
-            } else if index == 0 {
-                summaries.append(SessionSummary(id: sessionId, title: "", timestamp: file.date, messageCount: 0))
-            }
-            if summaries.count >= maxSessions { break }
-        }
-
-        return summaries
-    }
-
-    /// File extension used for session files (including the dot). Override if different from `.jsonl`.
-    var sessionFileExtension: String { ".jsonl" }
+    /// Load sessions for a given project folder (up to 20, sorted by date descending)
+    func loadSessions(for folder: String) -> [SessionSummary]
+    /// Delete a session and its associated files
+    func deleteSession(id: String, folder: String)
 }
 
 @Observable @MainActor
@@ -67,9 +25,15 @@ class ConversationHistoryService {
 
     private let providers: [String: ConversationHistoryProvider] = [
         "claude": ClaudeHistoryProvider(),
+        "codex": CodexHistoryProvider(),
     ]
 
     private init() {}
+
+    /// Whether conversation history is available for a given agent type
+    func supportsHistory(agentType: String) -> Bool {
+        providers[agentType] != nil
+    }
 
     /// Get cached sessions for a folder/agent type combo
     func sessions(for folder: String, agentType: String) -> [SessionSummary] {
@@ -81,18 +45,12 @@ class ConversationHistoryService {
     func refresh(for folder: String, agentType: String) async {
         guard let provider = providers[agentType] else { return }
 
-        let directory = provider.sessionsDirectory(for: folder)
-        guard FileManager.default.fileExists(atPath: directory) else {
-            let key = cacheKey(folder: folder, agentType: agentType)
-            cache[key] = []
-            return
-        }
-
         isLoading = true
         let p = provider
+        let f = folder
 
         let summaries = await Task.detached(priority: .utility) {
-            p.parseSessions(in: directory)
+            p.loadSessions(for: f)
         }.value
 
         let key = cacheKey(folder: folder, agentType: agentType)
@@ -100,12 +58,11 @@ class ConversationHistoryService {
         isLoading = false
     }
 
-    /// Delete a session's files, then re-read to backfill
+    /// Delete a session, then re-read to backfill
     func deleteSession(id: String, folder: String, agentType: String) async {
         guard let provider = providers[agentType] else { return }
 
-        let directory = provider.sessionsDirectory(for: folder)
-        provider.deleteSessionFiles(id: id, in: directory)
+        provider.deleteSession(id: id, folder: folder)
 
         await refresh(for: folder, agentType: agentType)
     }

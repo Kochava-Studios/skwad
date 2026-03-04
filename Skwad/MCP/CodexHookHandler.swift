@@ -25,6 +25,11 @@ struct CodexHookHandler {
             await mcpService.updateMetadata(for: agentId, metadata: metadata)
         }
 
+        // Store thread ID as session ID for resume support
+        if let threadId = payload?["thread-id"] as? String, !threadId.isEmpty {
+            await mcpService.setSessionId(for: agentId, sessionId: threadId)
+        }
+
         // Autopilot: Codex gives us last-assistant-message directly (no transcript needed)
         if AppSettings.shared.autopilotEnabled,
            !AppSettings.shared.aiApiKey.isEmpty {

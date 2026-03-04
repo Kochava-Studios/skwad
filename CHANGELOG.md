@@ -6,9 +6,13 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - Manage your bench of favorite agents and deploy them into workspaces as needed
+- Codex: system prompt injection via `developer_instructions`
+- Codex: conversation history and resume/fork support
+- Codex: session ID tracking from hook `thread-id`
 
 ### Changed
 - Improved text injection method
+- Conversation history abstracted into provider pattern (supports Claude and Codex)
 
 ### Fixed
 - Voice input: transcript loss during long dictation (Apple speech recognizer silent resets)

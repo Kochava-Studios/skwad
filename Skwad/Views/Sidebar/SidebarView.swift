@@ -172,7 +172,7 @@ struct SidebarView: View {
             }
 
             // Conversation history for selected agent
-            if !isCompact, let agent = agentManager.selectedAgent, TerminalCommandBuilder.canResumeConversation(agentType: agent.agentType) {
+            if !isCompact, let agent = agentManager.selectedAgent, ConversationHistoryService.shared.supportsHistory(agentType: agent.agentType) {
                 ConversationHistoryView(agent: agent)
             }
 

@@ -14,10 +14,12 @@ This document tracks the CLI arguments across supported coding agents.
 | **MCP Server Filter** | N/A | N/A | N/A | `--allowed-mcp-server-names` | N/A |
 | **Allowed Tools** | `--allowed-tools 'mcp__skwad__*'` | N/A | N/A | N/A | `--allow-tool 'skwad(<tool>)'` (per tool) |
 | **Hooks / Plugins** | `--plugin-dir "<path>"` | `-c 'notify=["bash","<script>"]'` | N/A | N/A | N/A |
-| **Resume Conversation** | `--resume <session-id>` | `codex resume` subcommand | `-c` / `-s <session-id>` | N/A | N/A |
-| **Fork Conversation** | `--fork-session` (with `--resume`) | `codex fork` subcommand | `--fork` (with `-c` or `-s`) | N/A | N/A |
+| **Resume Conversation** | `--resume <session-id>` | `codex resume <thread-id>` | `-c` / `-s <session-id>` | N/A | N/A |
+| **Fork Conversation** | `--fork-session` (with `--resume`) | `codex fork <thread-id>` | `--fork` (with `-c` or `-s`) | N/A | N/A |
 | **Inline Registration** | Yes (system + user prompt) | Yes (system + user prompt) | Yes (user prompt) | Yes (user prompt) | Yes (user prompt) |
 | **Activity Detection** | Hook-based (plugin) | Hook-based (notify script) | Terminal output | Terminal output | Terminal output |
+| **Session ID Source** | `session_id` (hook payload) | `thread-id` (hook payload) | N/A | N/A | N/A |
+| **History Storage** | JSONL in `~/.claude/projects/` | SQLite `~/.codex/state_5.sqlite` | N/A | N/A | N/A |
 
 ## Usage in Skwad
 
@@ -25,4 +27,4 @@ These arguments are used by `TerminalCommandBuilder.swift` to:
 1. Inject MCP server configuration
 2. Add inline registration prompts so agents auto-register with the skwad
 3. Configure hook-based activity detection (Claude, Codex)
-4. Resume/fork previous conversations (Claude)
+4. Resume/fork previous conversations (Claude, Codex)

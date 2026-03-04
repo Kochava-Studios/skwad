@@ -2,18 +2,58 @@ import Foundation
 
 struct ClaudeHistoryProvider: ConversationHistoryProvider {
 
-    func sessionsDirectory(for folder: String) -> String {
-        let dashPath = folder.replacingOccurrences(of: "/", with: "-")
-        let home = FileManager.default.homeDirectoryForCurrentUser.path
-        return "\(home)/.claude/projects/\(dashPath)"
+    func loadSessions(for folder: String) -> [SessionSummary] {
+        let directory = sessionsDirectory(for: folder)
+        let fm = FileManager.default
+        guard fm.fileExists(atPath: directory),
+              let contents = try? fm.contentsOfDirectory(atPath: directory) else {
+            return []
+        }
+
+        var jsonlFiles: [(name: String, date: Date)] = []
+        for file in contents where file.hasSuffix(".jsonl") {
+            let path = (directory as NSString).appendingPathComponent(file)
+            if let attrs = try? fm.attributesOfItem(atPath: path),
+               let modDate = attrs[.modificationDate] as? Date {
+                jsonlFiles.append((name: file, date: modDate))
+            }
+        }
+        jsonlFiles.sort { $0.date > $1.date }
+
+        let maxSessions = 20
+        var summaries: [SessionSummary] = []
+        for (index, file) in jsonlFiles.enumerated() {
+            let sessionId = String(file.name.dropLast(6)) // remove .jsonl
+            let path = (directory as NSString).appendingPathComponent(file.name)
+
+            if let summary = parseSessionFile(path: path, sessionId: sessionId, timestamp: file.date) {
+                summaries.append(summary)
+            } else if index == 0 {
+                summaries.append(SessionSummary(id: sessionId, title: "", timestamp: file.date, messageCount: 0))
+            }
+            if summaries.count >= maxSessions { break }
+        }
+
+        return summaries
     }
 
-    func deleteSessionFiles(id: String, in directory: String) {
+    func deleteSession(id: String, folder: String) {
+        let directory = sessionsDirectory(for: folder)
         let fm = FileManager.default
         let jsonlPath = (directory as NSString).appendingPathComponent("\(id).jsonl")
         try? fm.removeItem(atPath: jsonlPath)
         let dataPath = (directory as NSString).appendingPathComponent(id)
         try? fm.removeItem(atPath: dataPath)
+    }
+
+    // MARK: - Internal
+
+    /// Derive the Claude projects path for a given folder
+    /// e.g. /Users/foo/src/bar → ~/.claude/projects/-Users-foo-src-bar
+    func sessionsDirectory(for folder: String) -> String {
+        let dashPath = folder.replacingOccurrences(of: "/", with: "-")
+        let home = FileManager.default.homeDirectoryForCurrentUser.path
+        return "\(home)/.claude/projects/\(dashPath)"
     }
 
     func parseSessionFile(path: String, sessionId: String, timestamp: Date) -> SessionSummary? {
