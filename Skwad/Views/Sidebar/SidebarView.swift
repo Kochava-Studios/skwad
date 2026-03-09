@@ -248,7 +248,7 @@ struct SidebarView: View {
                 )
                 .cornerRadius(8)
                 .contentShape(Rectangle())
-                .help("Overview")
+                .help("Dashboard")
             } else {
                 HStack(spacing: 12) {
                     Image(systemName: "square.grid.2x2")
@@ -256,7 +256,7 @@ struct SidebarView: View {
                         .foregroundColor(agentManager.showDashboard ? Theme.primaryText : Theme.secondaryText)
                         .frame(width: 40, height: 40)
 
-                    Text("Overview")
+                    Text("Dashboard")
                         .font(.system(size: 14, weight: .semibold))
                         .foregroundColor(agentManager.showDashboard ? Theme.primaryText : Theme.secondaryText)
 

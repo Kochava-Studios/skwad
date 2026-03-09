@@ -25,7 +25,7 @@ struct DashboardView: View {
         if let workspaceId, let ws = agentManager.workspaces.first(where: { $0.id == workspaceId }) {
             return ws.name
         }
-        return "All Workspaces"
+        return "Command Center"
     }
 
     private var headerAgents: [Agent] {
