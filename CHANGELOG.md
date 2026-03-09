@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Dashboard views (global and per-workspace) showing agent status, recent activity, and quick actions
 - MCP tools for agents to list bench and deploy bench agents
+- Restart workspace
 
 ### Changed
 - N/A
