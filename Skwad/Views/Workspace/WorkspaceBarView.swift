@@ -12,6 +12,7 @@ struct WorkspaceBarView: View {
 
     @State private var showingNewWorkspaceSheet = false
     @State private var workspaceToEdit: Workspace?
+    @State private var workspaceToRestart: Workspace?
     @State private var workspaceToClose: Workspace?
 
     private var backgroundColor: Color {
@@ -71,6 +72,13 @@ struct WorkspaceBarView: View {
                         } label: {
                             Label("Edit Workspace...", systemImage: "pencil")
                         }
+
+                        Button {
+                            workspaceToRestart = workspace
+                        } label: {
+                            Label("Restart Workspace", systemImage: "arrow.clockwise")
+                        }
+                        .disabled(workspace.agentIds.isEmpty)
 
                         Divider()
 
@@ -135,6 +143,25 @@ struct WorkspaceBarView: View {
                 workspaceToClose = workspace
             }
         }
+        .alert("Restart Workspace", isPresented: Binding(
+            get: { workspaceToRestart != nil },
+            set: { if !$0 { workspaceToRestart = nil } }
+        )) {
+            Button("Cancel", role: .cancel) {
+                workspaceToRestart = nil
+            }
+            Button("Restart All", role: .destructive) {
+                if let workspace = workspaceToRestart {
+                    restartWorkspace(workspace)
+                }
+                workspaceToRestart = nil
+            }
+        } message: {
+            if let workspace = workspaceToRestart {
+                let count = workspace.agentIds.count
+                Text("This will restart \(count) agent\(count == 1 ? "" : "s") in \"\(workspace.name)\", resetting their context.")
+            }
+        }
         .alert("Close Workspace", isPresented: Binding(
             get: { workspaceToClose != nil },
             set: { if !$0 { workspaceToClose = nil } }
@@ -157,6 +184,13 @@ struct WorkspaceBarView: View {
                     Text("Close workspace \"\(workspace.name)\"?")
                 }
             }
+        }
+    }
+
+    private func restartWorkspace(_ workspace: Workspace) {
+        let agents = agentManager.agents.filter { workspace.agentIds.contains($0.id) }
+        for agent in agents {
+            agentManager.restartAgent(agent)
         }
     }
 }
