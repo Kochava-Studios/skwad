@@ -182,23 +182,23 @@ struct DashboardView: View {
     private func navigateToWorkspaceDashboard(_ workspace: Workspace) {
         withAnimation(.easeInOut(duration: 0.25)) {
             agentManager.showGlobalDashboard = false
+            agentManager.switchToWorkspace(workspace.id)
+            agentManager.showDashboard = true
         }
-        agentManager.switchToWorkspace(workspace.id)
-        agentManager.showDashboard = true
     }
 
     private func navigateToAgent(_ agent: Agent, in workspace: Workspace) {
-        if isGlobal {
-            withAnimation(.easeInOut(duration: 0.25)) {
+        // Batch all state changes in a single animation transaction so the
+        // terminal header doesn't animate separately from the dashboard fade
+        withAnimation(.easeInOut(duration: 0.25)) {
+            if isGlobal {
                 agentManager.showGlobalDashboard = false
-            }
-            agentManager.switchToWorkspace(workspace.id)
-        } else {
-            withAnimation(.easeInOut(duration: 0.25)) {
+                agentManager.switchToWorkspace(workspace.id)
+            } else {
                 agentManager.showDashboard = false
             }
+            agentManager.selectAgent(agent.id)
         }
-        agentManager.selectAgent(agent.id)
     }
 }
 

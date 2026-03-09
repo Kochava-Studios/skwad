@@ -60,6 +60,9 @@ struct GhosttyHostView: NSViewRepresentable {
     }
 
     func updateNSView(_ nsView: TerminalScrollView, context: Context) {
+        // Skip everything when the terminal is not actually visible on screen
+        guard !nsView.visibleRect.isEmpty else { return }
+
         // Ensure view matches the allocated size to trigger layout updates
         if nsView.frame.size != size || nsView.frame.origin != .zero {
             nsView.frame = CGRect(origin: .zero, size: size)

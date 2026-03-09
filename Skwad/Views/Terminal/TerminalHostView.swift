@@ -104,6 +104,9 @@ struct TerminalHostView: NSViewRepresentable {
     func updateNSView(_ nsView: TerminalContainerView, context: Context) {
         guard let terminal = nsView.terminal else { return }
 
+        // Skip everything when the terminal is not actually visible on screen
+        guard !nsView.visibleRect.isEmpty else { return }
+
         // Keep terminal filling the container
         terminal.frame = nsView.bounds
 
