@@ -13,7 +13,7 @@ struct DashboardAgentGrid: View {
     let onAgentTap: (Agent) -> Void
 
     var body: some View {
-        LazyVGrid(columns: DashboardMetrics.gridColumns, spacing: DashboardMetrics.gridSpacing) {
+        LazyVGrid(columns: DashboardMetrics.gridColumns, alignment: .leading, spacing: DashboardMetrics.gridSpacing) {
             ForEach(agents) { agent in
                 AgentContextMenu(
                     agent: agent,

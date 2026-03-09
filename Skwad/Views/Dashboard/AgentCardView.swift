@@ -1,7 +1,7 @@
 import SwiftUI
 
 enum DashboardMetrics {
-    static let gridColumns = [GridItem(.adaptive(minimum: 260, maximum: 320), spacing: 16)]
+    static let gridColumns = [GridItem(.adaptive(minimum: 300, maximum: 300), spacing: 16, alignment: .leading)]
     static let gridSpacing: CGFloat = 16
 
     static func idleDuration(since date: Date, now: Date) -> String {
