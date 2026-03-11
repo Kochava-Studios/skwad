@@ -522,11 +522,14 @@ struct ContentView: View {
             }
           }
         },
+        onMarkdownApprove: { text in
+          agentManager.injectText(text, for: agent.id)
+        },
         onMarkdownComment: { text in
           agentManager.sendText(text, for: agent.id)
         },
         onMarkdownSubmitReview: {
-          agentManager.sendReturn(for: agent.id)
+          agentManager.submitReturn(for: agent.id)
         }
       )
       .transition(.move(edge: .trailing))

@@ -10,6 +10,7 @@ struct ArtifactPanelView: View {
     @Binding var isExpanded: Bool
     let onCloseMarkdown: () -> Void
     let onCloseMermaid: () -> Void
+    let onMarkdownApprove: (String) -> Void
     let onMarkdownComment: (String) -> Void
     let onMarkdownSubmitReview: () -> Void
 
@@ -67,6 +68,7 @@ struct ArtifactPanelView: View {
                     agentId: agent.id,
                     isCollapsed: .constant(false),
                     onClose: onCloseMarkdown,
+                    onApprove: onMarkdownApprove,
                     onComment: onMarkdownComment,
                     onSubmitReview: onMarkdownSubmitReview
                 )
@@ -95,6 +97,7 @@ struct ArtifactPanelView: View {
                     isCollapsible: true,
                     isCollapsed: $markdownCollapsed,
                     onClose: onCloseMarkdown,
+                    onApprove: onMarkdownApprove,
                     onComment: onMarkdownComment,
                     onSubmitReview: onMarkdownSubmitReview
                 )

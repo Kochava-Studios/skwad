@@ -435,6 +435,11 @@ final class AgentManager {
         controllers[agentId]?.sendReturn()
     }
 
+    /// Send escape (dismiss autocomplete) then return key to an agent's terminal
+    func submitReturn(for agentId: UUID) {
+        controllers[agentId]?.submitReturn()
+    }
+
     /// Inject text into an agent's terminal followed by return
     func injectText(_ text: String, for agentId: UUID) {
         controllers[agentId]?.injectText(text)

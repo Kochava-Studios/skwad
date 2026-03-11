@@ -14,8 +14,9 @@ struct MarkdownPanelView: View {
     var isCollapsible: Bool = false
     @Binding var isCollapsed: Bool
     let onClose: () -> Void
+    let onApprove: (String) -> Void  // send text + escape + return as one command
     let onComment: (String) -> Void  // formatted comment text -> inject into terminal
-    let onSubmitReview: () -> Void  // send return to submit the prompt
+    let onSubmitReview: () -> Void  // send escape + return to submit the prompt
 
     @Environment(\.colorScheme) private var colorScheme
     @ObservedObject private var settings = AppSettings.shared
@@ -241,8 +242,7 @@ struct MarkdownPanelView: View {
                 switch reviewState {
                 case .viewing:
                     Button {
-                        onComment("approved let's do it")
-                        onSubmitReview()
+                        onApprove("approved let's do it")
                         reviewState = .submitted
                     } label: {
                         HStack(spacing: 4) {
@@ -436,6 +436,9 @@ struct MarkdownPanelView: View {
         agentId: UUID(),
         isCollapsed: .constant(false),
         onClose: {},
+        onApprove: { text in
+            print("Approve: \(text)")
+        },
         onComment: { text in
             print("Comment: \(text)")
         },
