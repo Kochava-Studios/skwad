@@ -294,16 +294,28 @@ struct SkwadApp: App {
                 .keyboardShortcut("[", modifiers: .command)
                 .disabled(isAnyDashboardVisible)
 
-                // Cmd+1-9 to switch workspaces (changes rarely so safe to use dynamic ForEach)
-                if !agentManager.workspaces.isEmpty {
-                    Divider()
+                Divider()
 
-                    ForEach(Array(agentManager.workspaces.enumerated().prefix(9)), id: \.element.id) { index, workspace in
-                        Button(workspace.name) {
-                            agentManager.switchToWorkspace(workspace.id)
+                Button("Command Center") {
+                    withAnimation(.easeInOut(duration: 0.25)) {
+                        agentManager.showGlobalDashboard.toggle()
+                        if agentManager.showGlobalDashboard {
+                            agentManager.showDashboard = false
                         }
-                        .keyboardShortcut(KeyEquivalent(Character("\(index + 1)")), modifiers: .command)
                     }
+                }
+                .keyboardShortcut("0", modifiers: .command)
+
+                // Cmd+1-9 to switch workspaces
+                ForEach(Array(agentManager.workspaces.enumerated().prefix(9)), id: \.element.id) { index, workspace in
+                    Button(workspace.name) {
+                        withAnimation(.easeInOut(duration: 0.25)) {
+                            agentManager.showGlobalDashboard = false
+                            agentManager.showDashboard = false
+                        }
+                        agentManager.switchToWorkspace(workspace.id)
+                    }
+                    .keyboardShortcut(KeyEquivalent(Character("\(index + 1)")), modifiers: .command)
                 }
 
                 Divider()

@@ -66,24 +66,7 @@ struct ContentView: View {
   }
 
   var body: some View {
-    HStack(spacing: 0) {
-      workspaceBar
-      ZStack {
-        // Sidebar + terminal always present underneath
-        HStack(spacing: 0) {
-          sidebar
-          terminalArea
-        }
-        // Dashboard overlays on top when active
-        if isAnyDashboardVisible {
-          dashboardOverlay
-            .transition(.opacity)
-            .zIndex(1)
-        }
-      }
-      gitPanel
-      artifactPanel
-    }
+    mainContent
     .background(settings.sidebarBackgroundColor)
     .frame(minWidth: 900, minHeight: 600)
     .ignoresSafeArea()
@@ -212,6 +195,25 @@ struct ContentView: View {
       if activeAgent != nil {
         showFileFinder.toggle()
       }
+    }
+  }
+
+  private var mainContent: some View {
+    HStack(spacing: 0) {
+      workspaceBar
+      ZStack {
+        HStack(spacing: 0) {
+          sidebar
+          terminalArea
+        }
+        if isAnyDashboardVisible {
+          dashboardOverlay
+            .transition(.opacity)
+            .zIndex(1)
+        }
+      }
+      gitPanel
+      artifactPanel
     }
   }
 

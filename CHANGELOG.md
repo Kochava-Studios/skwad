@@ -5,7 +5,8 @@ All notable changes to this project will be documented in this file.
 ## [1.8.1] - WIP
 
 ### Added
-- N/A
+- Command Center shortcut (Cmd+0) in View menu
+- Cmd+1-9 now exits Command Center and switches to workspace
 
 ### Changed
 - N/A
