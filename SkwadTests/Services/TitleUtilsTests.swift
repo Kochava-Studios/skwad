@@ -17,6 +17,10 @@ final class TitleUtilsTests: XCTestCase {
         XCTAssertTrue(TitleUtils.isRegistrationPrompt("List other agents names and project (no ID) in a table"))
     }
 
+    func testDetectsCheckInboxPrompt() {
+        XCTAssertTrue(TitleUtils.isRegistrationPrompt("Check your inbox for messages from other agents"))
+    }
+
     func testRegistrationCheckIsCaseInsensitive() {
         XCTAssertTrue(TitleUtils.isRegistrationPrompt("YOU ARE PART OF A TEAM OF AGENTS"))
         XCTAssertTrue(TitleUtils.isRegistrationPrompt("REGISTER WITH THE SKWAD"))

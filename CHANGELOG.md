@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.8.1] - WIP
+
+### Added
+- N/A
+
+### Changed
+- N/A
+
+### Fixed
+- Conversation title no longer picks up "check your inbox" injected messages
+
+### Removed
+- N/A
+
+
 ## [1.8.0] - 2026-11-03
 
 ### Added

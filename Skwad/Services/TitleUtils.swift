@@ -2,12 +2,13 @@ import Foundation
 
 enum TitleUtils {
 
-    /// Check if a string is a skwad registration prompt (not a valid title candidate)
+    /// Check if a string is a skwad-injected prompt (not a valid title candidate)
     static func isRegistrationPrompt(_ text: String) -> Bool {
         let lc = text.lowercased()
         return lc.contains("you are part of a team of agents")
             || lc.contains("register with the skwad")
             || lc.contains("list other agents names and project")
+            || lc.contains("check your inbox for messages")
     }
 
     /// Check if a string is a valid title candidate
