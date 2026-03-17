@@ -67,6 +67,7 @@ struct DetachedWorkspaceView: View {
         .background(settings.sidebarBackgroundColor)
         .frame(minWidth: 700, minHeight: 500)
         .ignoresSafeArea()
+        .background(WindowTitleSetter(title: workspace?.name ?? "Workspace"))
         .overlay {
             if showFileFinder, let agent = activeAgent {
                 FileFinderView(
@@ -352,6 +353,25 @@ struct DetachedWorkspaceView: View {
             )
             .transition(.move(edge: .trailing))
         }
+    }
+}
+
+// MARK: - Window Title Setter
+
+/// Sets the NSWindow title for use in Mission Control and Window menu
+private struct WindowTitleSetter: NSViewRepresentable {
+    let title: String
+
+    func makeNSView(context: Context) -> NSView {
+        let view = NSView()
+        DispatchQueue.main.async {
+            view.window?.title = title
+        }
+        return view
+    }
+
+    func updateNSView(_ nsView: NSView, context: Context) {
+        nsView.window?.title = title
     }
 }
 
