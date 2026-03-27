@@ -37,6 +37,7 @@ struct SidebarView: View {
                       .foregroundColor(Theme.secondaryText)
                   }
                   .buttonStyle(.plain)
+                  .focusEffectDisabled()
                   .help("Collapse sidebar")
               }
             }

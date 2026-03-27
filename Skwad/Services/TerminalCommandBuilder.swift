@@ -21,14 +21,14 @@ struct TerminalCommandBuilder {
     if agentType == "shell" {
       return shellCommand ?? ""
     }
-
+    
     let cmd = settings.getCommand(for: agentType)
     let userOpts = settings.getOptions(for: agentType)
-
+    
     guard !cmd.isEmpty else { return "" }
-
+    
     var fullCommand = cmd
-
+    
     // Add resume/fork session arguments
     if let sessionId = resumeSessionId, canResumeConversation(agentType: agentType) {
       switch agentType {
@@ -47,27 +47,27 @@ struct TerminalCommandBuilder {
         }
       }
     }
-
+    
     // Add user-provided options first (e.g., --settings)
     if !userOpts.isEmpty {
       fullCommand += " \(userOpts)"
     }
-
+    
     // Add MCP-specific arguments if MCP is enabled
     if settings.mcpServerEnabled {
       fullCommand += getMCPArguments(for: agentType, mcpURL: settings.mcpServerURL)
-
+      
       // Add inline registration for supported agents
       if let agentId = agentId {
         fullCommand += getInlineRegistrationArguments(for: agentType, agentId: agentId, isResume: resumeSessionId != nil, persona: persona)
       }
     }
-
+    
     return fullCommand
   }
-
+  
   // MARK: - Shell Escaping
-
+  
   /// Escape a string for safe embedding inside double-quoted shell arguments.
   /// Handles: backslash, double quote, dollar sign, backtick, and exclamation mark.
   static func shellEscape(_ string: String) -> String {
@@ -79,34 +79,29 @@ struct TerminalCommandBuilder {
     result = result.replacingOccurrences(of: "!", with: "\\!")
     return result
   }
-
+  
   /// Build the persona prompt from a Persona.
   static func personaPrompt(from persona: Persona?) -> String? {
     guard let persona, !persona.instructions.isEmpty else { return nil }
     return "You are asked to impersonate \(persona.name) based on the following instructions: \(persona.instructions)"
   }
-
+  
   // MARK: - Registration Prompt Strings
-
+  
   /// The user prompt sent to Claude on first launch to trigger the agent list table.
-  static let registrationUserPrompt = "List other agents names and project (no ID) in a table based on context then set your status to indicate you are ready to get going!"
-
-  /// System prompt for agents that support it (currently none besides Claude)
-  private static func skwadInstructions(agentId: UUID) -> String {
-    "You are part of a team of agents called a skwad. A skwad is made of high-performing agents who collaborate to achieve complex goals so engage with them: ask for help and in return help them succeed. Your skwad agent ID: \(agentId.uuidString). CRITICAL RULE: Before you start working on anything, your FIRST action must be calling set-status with what you are about to do. When you finish, call set-status again. When you change direction, call set-status. Other agents depend on your status to coordinate — if you do not update it, the team cannot function. This is not optional."
-  }
-
+  static let registrationUserPrompt = AgentPrompts.registrationUserPrompt
+  
   /// Public accessor for re-registration from AgentManager context menu
   static func registrationPrompt(agentId: UUID) -> String {
-    "\(skwadInstructions(agentId: agentId)) Register with the skwad"
+    AgentPrompts.registrationPrompt(agentId: agentId)
   }
-
+  
   private static func registrationSystemPrompt(agentId: UUID) -> String {
-    skwadInstructions(agentId: agentId)
+    AgentPrompts.skwadInstructions(agentId: agentId)
   }
-
+  
   // MARK: - Inline Registration
-
+  
   /// Check if an agent type supports forking a conversation (--resume + --fork-session)
   static func canForkConversation(agentType: String) -> Bool {
     switch agentType {
@@ -116,7 +111,7 @@ struct TerminalCommandBuilder {
       return false
     }
   }
-
+  
   /// Check if an agent type supports resuming a conversation
   static func canResumeConversation(agentType: String) -> Bool {
     switch agentType {
@@ -126,7 +121,7 @@ struct TerminalCommandBuilder {
       return false
     }
   }
-
+  
   /// Check if an agent type uses hook-based activity detection (via plugin)
   /// When true, terminal-level activity tracking is disabled
   static func usesActivityHooks(agentType: String) -> Bool {
@@ -137,7 +132,7 @@ struct TerminalCommandBuilder {
       return false
     }
   }
-
+  
   /// Check if an agent type supports system prompt injection
   static func supportsSystemPrompt(agentType: String) -> Bool {
     switch agentType {
@@ -147,7 +142,7 @@ struct TerminalCommandBuilder {
       return false
     }
   }
-
+  
   /// Check if an agent type supports inline registration via command-line arguments
   /// Shell returns true to skip registration prompts entirely
   static func supportsInlineRegistration(agentType: String) -> Bool {
@@ -158,7 +153,7 @@ struct TerminalCommandBuilder {
       return false
     }
   }
-
+  
   /// Get inline registration arguments for supported agents
   /// See `doc/agent-cli-arguments.md` for CLI argument reference
   private static func getInlineRegistrationArguments(for agentType: String, agentId: UUID, isResume: Bool = false, persona: Persona? = nil) -> String {
@@ -174,7 +169,7 @@ struct TerminalCommandBuilder {
         return #" --append-system-prompt "\#(systemPrompt)""#
       }
       return #" --append-system-prompt "\#(systemPrompt)" "\#(registrationUserPrompt)""#
-
+      
     case "codex":
       // Codex: system prompt via -c developer_instructions, user prompt as last argument
       var systemPrompt = registrationSystemPrompt(agentId: agentId)
@@ -185,25 +180,25 @@ struct TerminalCommandBuilder {
         return #" -c 'developer_instructions="\#(systemPrompt)"'"#
       }
       return #" -c 'developer_instructions="\#(systemPrompt)"' "\#(registrationUserPrompt)""#
-
+      
     case "opencode":
       // OpenCode: no system prompt support — skip registration on resume
       if isResume { return "" }
       let userPromptOC = registrationPrompt(agentId: agentId)
       return #" --prompt "\#(userPromptOC)""#
-
+      
     case "gemini":
       // Gemini CLI: no system prompt support — skip registration on resume
       if isResume { return "" }
       let userPromptG = registrationPrompt(agentId: agentId)
       return #" --prompt-interactive "\#(userPromptG)""#
-
+      
     case "copilot":
       // GitHub Copilot: no system prompt support — skip registration on resume
       if isResume { return "" }
       let userPromptCP = registrationPrompt(agentId: agentId)
       return #" --interactive "\#(userPromptCP)""#
-
+      
     default:
       return ""
     }
@@ -229,7 +224,7 @@ struct TerminalCommandBuilder {
         args += #" -c 'notify=["bash","\#(notifyScript)"]'"#
       }
       return args
-
+      
     case "gemini":
       return " --allowed-mcp-server-names skwad"
       
@@ -292,7 +287,7 @@ struct TerminalCommandBuilder {
     }
     return nil
   }
-
+  
   /// Gets the default shell executable path
   static func getDefaultShell() -> String {
     return ProcessInfo.processInfo.environment["SHELL"] ?? "/bin/zsh"

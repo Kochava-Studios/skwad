@@ -589,7 +589,7 @@ final class AgentManager {
                 guard self.lastNotifiedMessageId[agentId] != messageId else { return }
                 self.lastNotifiedMessageId[agentId] = messageId
 
-                self.injectText("Check your inbox for messages from other agents", for: agentId)
+                self.injectText(AgentPrompts.checkInbox, for: agentId)
             }
         }
     }

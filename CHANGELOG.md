@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.8.2] - 2026-03-25
+
+### Added
+- N/A
+
+### Changed
+- Check inbox prompt message
+
+### Fixed
+- Codex launch command fix
+
+### Removed
+- N/A
+
+
 ## [1.8.1] - 2026-03-16
 
 ### Added

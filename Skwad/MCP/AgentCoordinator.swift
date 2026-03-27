@@ -236,7 +236,7 @@ actor AgentCoordinator: AgentCoordinatorProtocol {
 
     private func notifyAgentOfMessage(_ agent: Agent, messageId: UUID) async {
         guard let provider = agentDataProvider else { return }
-        await provider.injectText("Check your inbox for messages from other agents", for: agent.id)
+        await provider.injectText(AgentPrompts.checkInbox, for: agent.id)
     }
 
     func checkMessages(for agentId: String, markAsRead: Bool = true) async -> [MCPMessage] {

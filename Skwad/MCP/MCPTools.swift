@@ -48,7 +48,7 @@ actor MCPToolHandler {
             ),
             ToolDefinition(
                 name: MCPToolName.checkMessages.rawValue,
-                description: "Check your inbox for messages from other agents",
+                description: AgentPrompts.checkInbox,
                 inputSchema: ToolInputSchema(
                     properties: [
                         "agentId": PropertySchema(type: "string", description: "Your agent ID"),
