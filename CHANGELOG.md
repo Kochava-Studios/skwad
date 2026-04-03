@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.9.1] - 2026-04-03
+
+### Added
+- Use status for header title
+
+### Changed
+- N/A
+
+### Fixed
+- N/A
+
+### Removed
+- N/A
+
+
 ## [1.9.0] - 2026-03-27
 
 ### Added
