@@ -8,7 +8,7 @@ Meet your new, slightly revolutionary coding crew. Skwad is a macOS app that run
 
 ![macOS](https://img.shields.io/badge/macOS-14.0+-blue)
 ![Swift](https://img.shields.io/badge/Swift-5.9+-orange)
-![License](https://img.shields.io/badge/License-MIT-green)
+![License](https://img.shields.io/badge/License-AGPL--3.0-green)
 [![Downloads](https://img.shields.io/github/downloads/Kochava-Studios/skwad/total.svg?color=orange)](https://tooomm.github.io/github-release-stats/?username=Kochava-Studios&repository=skwad)
 
 ## Why Skwad
@@ -69,4 +69,19 @@ See [AGENTS.md](AGENTS.md) for detailed architecture documentation.
 
 ## License
 
-MIT
+AGPL-3.0 — see [LICENSE](LICENSE) for details.
+
+Copyright (C) 2026 Kochava Studios
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
